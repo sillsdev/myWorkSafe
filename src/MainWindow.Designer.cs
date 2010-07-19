@@ -29,14 +29,16 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			System.Windows.Forms.ListViewItem listViewItem7 = new System.Windows.Forms.ListViewItem("Paratext");
-			System.Windows.Forms.ListViewItem listViewItem8 = new System.Windows.Forms.ListViewItem("AdaptIt");
-			System.Windows.Forms.ListViewItem listViewItem9 = new System.Windows.Forms.ListViewItem(new string[] {
+			System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
+            "Paratext",
+            "Will be backed up"}, -1);
+			System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("AdaptIt");
+			System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem(new string[] {
             "WeSay (Not found)"}, -1, System.Drawing.SystemColors.GrayText, System.Drawing.Color.Empty, null);
-			System.Windows.Forms.ListViewItem listViewItem10 = new System.Windows.Forms.ListViewItem("Other Documents");
-			System.Windows.Forms.ListViewItem listViewItem11 = new System.Windows.Forms.ListViewItem(new string[] {
+			System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("Other Documents");
+			System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem(new string[] {
             "Music (Not Enough Space)"}, -1, System.Drawing.SystemColors.GrayText, System.Drawing.Color.Empty, null);
-			System.Windows.Forms.ListViewItem listViewItem12 = new System.Windows.Forms.ListViewItem(new string[] {
+			System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem(new string[] {
             "Video (Not Enough Space)"}, -1, System.Drawing.SystemColors.GrayText, System.Drawing.SystemColors.Window, null);
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
 			this.backupNowButton = new System.Windows.Forms.Button();
@@ -80,12 +82,12 @@
 			this.listView1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.listView1.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
 			this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem7,
-            listViewItem8,
-            listViewItem9,
-            listViewItem10,
-            listViewItem11,
-            listViewItem12});
+            listViewItem1,
+            listViewItem2,
+            listViewItem3,
+            listViewItem4,
+            listViewItem5,
+            listViewItem6});
 			this.listView1.Location = new System.Drawing.Point(129, 45);
 			this.listView1.Name = "listView1";
 			this.listView1.Size = new System.Drawing.Size(340, 152);
@@ -97,11 +99,12 @@
 			// columnHeader1
 			// 
 			this.columnHeader1.Text = "Name";
-			this.columnHeader1.Width = 200;
+			this.columnHeader1.Width = 150;
 			// 
 			// columnHeader2
 			// 
 			this.columnHeader2.Text = "Size";
+			this.columnHeader2.Width = 189;
 			// 
 			// imageList1
 			// 
@@ -131,7 +134,7 @@
 			this.statusLabel.TabIndex = 6;
 			this.statusLabel.Text = "{0} files will be backed up:";
 			// 
-			// button1
+			// cancelButton
 			// 
 			this.cancelButton.Location = new System.Drawing.Point(394, 317);
 			this.cancelButton.Name = "cancelButton";
