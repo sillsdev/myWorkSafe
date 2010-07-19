@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
@@ -10,20 +11,30 @@ namespace SafeStick
 		Synchronizer _synchronizer;
 		private BackgroundWorker _preparationWorker;
 		private BackgroundWorker _backupWorker;
+		private List<FileSource> _groups;
 
 		public Form1(string destinationPath)
 		{
 			InitializeComponent();
 			listView1.Visible = false;
 			backupNowButton.Visible = false;
-			_synchronizer = new Synchronizer(destinationPath);
+			_groups = new List<FileSource>(){
+				new ParatextFiles(), 
+				new DevChorusFiles(),
+				//new WeSayFiles(), 
+				//new OtherFiles(), 
+				new OtherDesktopFiles()
+			};
+			_synchronizer = new Synchronizer(destinationPath, _groups, 85*1024);
+			_synchronizer.GroupProgress +=new Action(OnSynchronizer_GroupProgress);
 			var info =new DriveInfo(Path.GetPathRoot(destinationPath));
 			mediaStatus1.FillPercentage = (int) (100.0*info.AvailableFreeSpace/info.TotalSize);
 
 			closeButton.Visible = false;
 			cancelButton.Visible = true;
-                      
-                       
+
+			listView1.Visible = true;
+			Cursor = Cursors.WaitCursor;
 
 			statusLabel.Text = "Looking at what files have changed...";
 			_preparationWorker = new BackgroundWorker();
@@ -33,13 +44,51 @@ namespace SafeStick
 			_preparationWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(OnPreparationCompleted);
 		}
 
+		private void OnSynchronizer_GroupProgress()
+		{
+			InvokeIfRequired(() => listView1.Items.Clear());
+			foreach (var group in _groups)
+			{
+				var item = new ListViewItem(group.Name);
+				switch(group.Disposition)
+				{
+					case FileSource.DispositionChoice.Waiting:
+						break;
+					case FileSource.DispositionChoice.Calculating:
+						item.SubItems.Add("Calculating...");
+						break;
+					case FileSource.DispositionChoice.Synchronizing:
+						item.SubItems.Add("Synchronizing...");
+						break;
+					case FileSource.DispositionChoice.WillBeBackedUp:
+						item.ImageIndex = 0;
+						item.SubItems.Add(group.UpdateFileCount + group.NewFileCount +" files to backup.");
+						break;
+					case FileSource.DispositionChoice.WillBeSkipped:
+						//item.ImageIndex = 1;
+						item.SubItems.Add("Not enough room.");
+						break;
+					case FileSource.DispositionChoice.WasBackedUp:
+						item.ImageIndex = 0;
+						item.SubItems.Add("Done");
+						break;
+				}
+				InvokeIfRequired(() => listView1.Items.Add(item));
+			}
+		}
+
 		void OnPreparationCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
 			cancelButton.Visible = false;
 			Cursor = Cursors.Default;
 			listView1.Visible = true;
 			backupNowButton.Visible = true;
-			syncProgressBar.Maximum = _synchronizer.TotalFilesThatWillBeCopied;
+			syncProgressBar.Maximum = 0;
+			foreach (var group in _groups)
+			{
+				if(group.Disposition == FileSource.DispositionChoice.WillBeBackedUp)
+					syncProgressBar.Maximum += group.UpdateFileCount + group.NewFileCount;
+			}
 			syncProgressBar.Minimum = 0;
 
 			statusLabel.Text = string.Format("{0} files will be backed up:", _synchronizer.TotalFilesThatWillBeCopied);
@@ -55,7 +104,7 @@ namespace SafeStick
 		/// returns true if we want to cancel
 		/// </summary>
 		/// <returns></returns>
-		public bool OnProgress()
+		public bool OnFileProgress()
 		{
 			InvokeIfRequired(()=>syncProgressBar.Value = _synchronizer.FilesCopiedThusFar);
 			return _backupWorker.CancellationPending;
@@ -80,7 +129,7 @@ namespace SafeStick
 			backupNowButton.Visible = false;
 			syncProgressBar.Visible = true;
 			cancelButton.Visible = true;
-			_synchronizer.Progress += OnProgress;
+			_synchronizer.FileProgress += OnFileProgress;
 			_backupWorker = new BackgroundWorker();
 			_backupWorker.DoWork += new DoWorkEventHandler(_backupWorker_DoWork);
 			_backupWorker.WorkerSupportsCancellation = true;
