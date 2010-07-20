@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Palaso.TestUtilities;
-using SafeStick;
+using SafetyStick;
 using System.IO;
 
 namespace SafetypeStickTests

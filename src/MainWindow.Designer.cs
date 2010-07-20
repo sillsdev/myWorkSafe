@@ -1,6 +1,6 @@
-﻿namespace SafeStick
+﻿namespace SafetyStick
 {
-	partial class Form1
+	partial class MainWindow
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -40,7 +40,7 @@
             "Music (Not Enough Space)"}, -1, System.Drawing.SystemColors.GrayText, System.Drawing.Color.Empty, null);
 			System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem(new string[] {
             "Video (Not Enough Space)"}, -1, System.Drawing.SystemColors.GrayText, System.Drawing.SystemColors.Window, null);
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
 			this.backupNowButton = new System.Windows.Forms.Button();
 			this.syncProgressBar = new System.Windows.Forms.ProgressBar();
 			this.listView1 = new System.Windows.Forms.ListView();
@@ -50,7 +50,8 @@
 			this.closeButton = new System.Windows.Forms.Button();
 			this.statusLabel = new System.Windows.Forms.Label();
 			this.cancelButton = new System.Windows.Forms.Button();
-			this.mediaStatus1 = new SafeStick.MediaStatus();
+			this.mediaStatus1 = new SafetyStick.MediaStatus();
+			this._safeToRemoveLabel = new System.Windows.Forms.Label();
 			this.SuspendLayout();
 			// 
 			// backupNowButton
@@ -111,6 +112,7 @@
 			this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
 			this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
 			this.imageList1.Images.SetKeyName(0, "");
+			this.imageList1.Images.SetKeyName(1, "DeleteMessageBoxImage.png");
 			// 
 			// closeButton
 			// 
@@ -153,7 +155,19 @@
 			this.mediaStatus1.Size = new System.Drawing.Size(100, 323);
 			this.mediaStatus1.TabIndex = 3;
 			// 
-			// Form1
+			// _safeToRemoveLabel
+			// 
+			this._safeToRemoveLabel.AutoSize = true;
+			this._safeToRemoveLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._safeToRemoveLabel.ForeColor = System.Drawing.Color.Teal;
+			this._safeToRemoveLabel.Location = new System.Drawing.Point(129, 200);
+			this._safeToRemoveLabel.Name = "_safeToRemoveLabel";
+			this._safeToRemoveLabel.Size = new System.Drawing.Size(356, 21);
+			this._safeToRemoveLabel.TabIndex = 8;
+			this._safeToRemoveLabel.Text = "It is now safe to remove the USB Memory Stick.";
+			this._safeToRemoveLabel.Visible = false;
+			// 
+			// MainWindow
 			// 
 			this.AcceptButton = this.backupNowButton;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -161,6 +175,7 @@
 			this.BackColor = System.Drawing.SystemColors.Window;
 			this.CancelButton = this.closeButton;
 			this.ClientSize = new System.Drawing.Size(492, 354);
+			this.Controls.Add(this._safeToRemoveLabel);
 			this.Controls.Add(this.cancelButton);
 			this.Controls.Add(this.statusLabel);
 			this.Controls.Add(this.listView1);
@@ -170,8 +185,8 @@
 			this.Controls.Add(this.closeButton);
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
-			this.Name = "Form1";
-			this.Text = "SafeStick";
+			this.Name = "MainWindow";
+			this.Text = "SafetyStick";
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -189,6 +204,7 @@
 		private System.Windows.Forms.Button closeButton;
 		private System.Windows.Forms.Label statusLabel;
 		private System.Windows.Forms.Button cancelButton;
+		private System.Windows.Forms.Label _safeToRemoveLabel;
 	}
 }
 

@@ -1,4 +1,4 @@
-﻿namespace SafeStick
+﻿namespace SafetyStick
 {
 	partial class MediaStatus
 	{

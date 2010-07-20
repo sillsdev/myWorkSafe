@@ -4,8 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Synchronization.Files;
+using Microsoft.Win32;
 
-namespace SafeStick
+namespace SafetyStick
 {
 	public abstract class FileSource
 	{
@@ -43,6 +44,16 @@ namespace SafeStick
 			DeleteFileCount = 0;
 			UpdateFileCount = 0;
 		}
+
+		public string GetDestinationSubFolder(string destinationRoot)
+		{
+			var dir = Path.Combine(destinationRoot, Name);
+			if(!Directory.Exists(dir))
+			{
+				Directory.CreateDirectory(dir);
+			}
+			return dir;
+		}
 	}
 
 
@@ -61,8 +72,8 @@ namespace SafeStick
 		{
 			get
 			{
-				//todo: get from registry
-				return @"C:\My Paratext Projects";
+				return (string) Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\ScrChecks\1.0", "Settings_Directory", @"C:\my paratext projects");
+				//return @"C:\My Paratext Projects";
 			}
 		}
 	}

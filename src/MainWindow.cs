@@ -1,34 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.IO;
+using System.Media;
+using System.Reflection;
 using System.Windows.Forms;
+using UsbEject.Library;
 
-namespace SafeStick
+namespace SafetyStick
 {
-	public partial class Form1 : Form
+	public partial class MainWindow : Form
 	{
+		private readonly string _destinationDeviceRoot;
 		Synchronizer _synchronizer;
 		private BackgroundWorker _preparationWorker;
 		private BackgroundWorker _backupWorker;
 		private List<FileSource> _groups;
 
-		public Form1(string destinationPath)
+		public MainWindow(string destinationDeviceRoot, long availableFreeSpaceInKilobytes, long totalSpaceInKilobytes)
 		{
+			_destinationDeviceRoot = destinationDeviceRoot;
 			InitializeComponent();
+			SetWindowText();
 			listView1.Visible = false;
 			backupNowButton.Visible = false;
 			_groups = new List<FileSource>(){
 				new ParatextFiles(), 
-				new DevChorusFiles(),
+				//new DevChorusFiles(),
 				//new WeSayFiles(), 
 				//new OtherFiles(), 
-				new OtherDesktopFiles()
+				//new OtherDesktopFiles()
 			};
-			_synchronizer = new Synchronizer(destinationPath, _groups, 85*1024);
+
+			_synchronizer = new Synchronizer(destinationDeviceRoot, _groups, totalSpaceInKilobytes);
 			_synchronizer.GroupProgress +=new Action(OnSynchronizer_GroupProgress);
-			var info =new DriveInfo(Path.GetPathRoot(destinationPath));
-			mediaStatus1.FillPercentage = (int) (100.0*info.AvailableFreeSpace/info.TotalSize);
+			
+			mediaStatus1.FillPercentage = (int)(100.0*availableFreeSpaceInKilobytes / totalSpaceInKilobytes);
 
 			closeButton.Visible = false;
 			cancelButton.Visible = true;
@@ -38,10 +46,16 @@ namespace SafeStick
 
 			statusLabel.Text = "Looking at what files have changed...";
 			_preparationWorker = new BackgroundWorker();
-			_preparationWorker.DoWork+=new DoWorkEventHandler(_preparationWorker_DoWork);
+			_preparationWorker.DoWork+= OnPreparationWorker_DoWork;
 			_preparationWorker.WorkerSupportsCancellation = true;
 			_preparationWorker.RunWorkerAsync();
-			_preparationWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(OnPreparationCompleted);
+			_preparationWorker.RunWorkerCompleted += OnPreparationCompleted;
+		}
+
+		private void SetWindowText()
+		{
+			var ver = Assembly.GetExecutingAssembly().GetName().Version;
+			Text = string.Format("{0}, build {1}.{2}.{3}", Assembly.GetExecutingAssembly().GetName().Name, ver.Major, ver.Minor, ver.Build);
 		}
 
 		private void OnSynchronizer_GroupProgress()
@@ -65,7 +79,7 @@ namespace SafeStick
 						item.SubItems.Add(group.UpdateFileCount + group.NewFileCount +" files to backup.");
 						break;
 					case FileSource.DispositionChoice.WillBeSkipped:
-						//item.ImageIndex = 1;
+						item.ImageIndex = 1;
 						item.SubItems.Add("Not enough room.");
 						break;
 					case FileSource.DispositionChoice.WasBackedUp:
@@ -91,13 +105,21 @@ namespace SafeStick
 			}
 			syncProgressBar.Minimum = 0;
 
-			statusLabel.Text = string.Format("{0} files will be backed up:", _synchronizer.TotalFilesThatWillBeCopied);
+			statusLabel.Text = string.Format("{0} files will be backed up:", _synchronizer.TotalFilesThatWillBeBackedUpThatWillBeCopied);
 		}
 
-		void _preparationWorker_DoWork(object sender, DoWorkEventArgs e)
+		void OnPreparationWorker_DoWork(object sender, DoWorkEventArgs e)
 		{
+			_synchronizer.FileProgress += GetIsCancellationPending;
 			_synchronizer.GatherInformation();
+			_synchronizer.FileProgress -= GetIsCancellationPending;
 		
+		}
+
+		bool GetIsCancellationPending()
+		{
+			return _preparationWorker.CancellationPending || (_backupWorker!=null &&_backupWorker.CancellationPending);
+				
 		}
 
 		/// <summary>
@@ -107,7 +129,7 @@ namespace SafeStick
 		public bool OnFileProgress()
 		{
 			InvokeIfRequired(()=>syncProgressBar.Value = _synchronizer.FilesCopiedThusFar);
-			return _backupWorker.CancellationPending;
+			return GetIsCancellationPending();
 		}
 
 		public void InvokeIfRequired(Action action)
@@ -149,6 +171,39 @@ namespace SafeStick
 			cancelButton.Visible = false;
 			closeButton.Focus();
 			Cursor = Cursors.Default;
+
+
+			try
+			{
+				using (var x = new UsbEject.Library.VolumeDeviceClass())
+				{
+					var device = x.Devices.FirstOrDefault(d =>
+					                                      	{
+					                                      		Volume v = d as Volume;
+					                                      		if (v==null)
+					                                      			return false;
+					                                      		return _destinationDeviceRoot.StartsWith(v.LogicalDrive);
+					                                      	});
+					if (device != null)
+					{
+						device.Eject(true);
+					}
+					else
+					{
+						_safeToRemoveLabel.Text = "No stick ejected";
+					}
+					_safeToRemoveLabel.Visible = true;
+				}
+			}
+			catch(Exception err)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(err, "Could not eject the usb memory stick.");
+			}
+
+			using (var player = new SoundPlayer(Properties.Resources.finished))
+			{
+				player.Play();
+			}
 		}
 
 		void _backupWorker_DoWork(object sender, DoWorkEventArgs e)

@@ -1,34 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using Microsoft.Synchronization;
 using Microsoft.Synchronization.Files;
 
-namespace SafeStick
+namespace SafetyStick
 {
 	public class Synchronizer
 	{       
-		private int _totalFiles;
+		private int _totalFilesThatWillBeBackedUp;
 		private int _files;
-		public string DestinationFolder;
+		public string DestinationRootForThisUser;
 		private readonly IEnumerable<FileSource> _groups;
 		private readonly long _maxInKilobytes;
 		private SyncOrchestrator _agent;
-		public int TotalFilesThatWillBeCopied {get{ return _totalFiles;}}
+		private FileSource _currentSource;
+		private long _totalKiloBytesCalculatedThusFar;
+		private bool _cancelRequested;
 
-		public Synchronizer(string destinationFolder, IEnumerable<FileSource> groups, long maxInKilobytes)
+	
+		public Synchronizer(string destinationDeviceRoot, IEnumerable<FileSource> groups, long maxInKilobytes)
 		{
-			_agent = new SyncOrchestrator();
-
-			DestinationFolder = destinationFolder;
 			_groups = groups;
 			_maxInKilobytes = maxInKilobytes;
+			SetDestinationFolderPath(destinationDeviceRoot);
+			_agent = new SyncOrchestrator();
+		}
 
-
-			if (!Directory.Exists(DestinationFolder))
-				Directory.CreateDirectory(DestinationFolder);
+		/// <summary>
+		/// We want to name the root of the backup in a way that allows multiple
+		/// team members to use the same key if necessary, and to help support
+		/// staff identify whose backup they are looking at. Ideally, the computer
+		/// name would have the language name.
+		/// </summary>
+		private void SetDestinationFolderPath(string destinationDeviceRoot)
+		{
+			var id = string.Format("{0}-{1}", System.Environment.UserName,  System.Environment.MachineName);           
+			DestinationRootForThisUser = Path.Combine(destinationDeviceRoot, id);
+			if (!Directory.Exists(DestinationRootForThisUser))
+				Directory.CreateDirectory(DestinationRootForThisUser);
 		}
 
 		public int FilesCopiedThusFar	
@@ -36,17 +46,28 @@ namespace SafeStick
 			get { return _files;}
 		}
 
-		private FileSource _currentSource;
-		private long _totalKiloBytesCalculatedThusFar;
+		public int TotalFilesThatWillBeBackedUpThatWillBeCopied
+		{
+			get
+			{
+				return _totalFilesThatWillBeBackedUp;
+			}
+		}
 
 		public void GatherInformation()
 		{
+			_cancelRequested = false;
 			_files = 0;
 			_totalKiloBytesCalculatedThusFar = 0;
+			_totalFilesThatWillBeBackedUp = 0;
 			var options = FileSyncOptions.None;
 
 			foreach (var group in _groups)
 			{
+				if(_cancelRequested)
+				{
+					break;
+				}
 				_currentSource = group;//used by callbacks
 				group.ClearStatistics();
 
@@ -59,23 +80,47 @@ namespace SafeStick
 				group.Disposition = FileSource.DispositionChoice.Calculating;
 				InvokeGroupProgress();
 
+				
 				using (var sourceProvider = new FileSyncProvider(group.SourceGuid, group.RootFolder, group.Filter, options))
-				using (var destinationProvider = new FileSyncProvider(group.DestGuid, DestinationFolder, group.Filter, options))
+				using (var destinationProvider = new FileSyncProvider(group.DestGuid, group.GetDestinationSubFolder(DestinationRootForThisUser), group.Filter, options))
 				{
 					destinationProvider.PreviewMode = true;
 					destinationProvider.ApplyingChange += (OnDestinationPreviewChange);
-					
-					_agent.LocalProvider = sourceProvider;
-					_agent.RemoteProvider = destinationProvider;
-					_agent.Direction = SyncDirectionOrder.Upload; // Synchronize source to destination
-					_agent.Synchronize();
-				}
-				group.Disposition = FileSource.DispositionChoice.WillBeBackedUp;
-			}
-			InvokeGroupProgress();
 
-			_totalFiles = _files;
+					sourceProvider.DetectingChanges += (x, y) => InvokeProgress();//just to detect cancel
+
+					PreviewOrSynchronizeCore(destinationProvider, sourceProvider);
+				}
+
+				//would this push us over the limit?
+				if (_totalKiloBytesCalculatedThusFar >= _maxInKilobytes)
+				{
+					group.Disposition = FileSource.DispositionChoice.WillBeSkipped;
+				} 
+				else
+				{
+					_totalFilesThatWillBeBackedUp += group.UpdateFileCount + group.NewFileCount;
+					group.Disposition = FileSource.DispositionChoice.WillBeBackedUp;
+				}
+			}
+			InvokeGroupProgress();		
 			_files = 0;
+		}
+
+		private void PreviewOrSynchronizeCore(FileSyncProvider destinationProvider, FileSyncProvider sourceProvider)
+		{
+			_agent.LocalProvider = sourceProvider;
+			_agent.RemoteProvider = destinationProvider;
+			_agent.Direction = SyncDirectionOrder.Upload; // Synchronize source to destination
+
+			try
+			{
+				_agent.Synchronize();
+			}
+			catch (Microsoft.Synchronization.SyncAbortedException err)
+			{
+				//swallow                        
+			}
 		}
 
 		private void InvokeGroupProgress()
@@ -86,13 +131,17 @@ namespace SafeStick
 			}
 		}
 
-
 		public void DoSynchronization()
 		{
+			_cancelRequested = false;
 			var options = FileSyncOptions.RecycleDeletedFiles;
 		
 			foreach (var group in _groups)
 			{
+				if (_cancelRequested)
+				{
+					break;
+				}
 				_currentSource = group;//used by callbacks
 				if (group.Disposition == FileSource.DispositionChoice.WillBeSkipped)
 					continue;
@@ -101,15 +150,11 @@ namespace SafeStick
 				group.Disposition = FileSource.DispositionChoice.Synchronizing;
 				InvokeGroupProgress();
 				using (var sourceProvider = new FileSyncProvider(group.SourceGuid, group.RootFolder, group.Filter, options))
-				using (var destinationProvider = new FileSyncProvider(group.DestGuid, DestinationFolder, group.Filter, options))
+				using (var destinationProvider = new FileSyncProvider(group.DestGuid, group.GetDestinationSubFolder(DestinationRootForThisUser), group.Filter, options))
 				{
 					destinationProvider.PreviewMode = false;
 					destinationProvider.ApplyingChange += (OnDestinationChange);
-					_agent.LocalProvider = sourceProvider;
-					_agent.RemoteProvider = destinationProvider;
-					_agent.Direction = SyncDirectionOrder.Upload; // Synchronize source to destination
-					
-					_agent.Synchronize();
+					PreviewOrSynchronizeCore(destinationProvider, sourceProvider);
 				}
 
 				group.Disposition = FileSource.DispositionChoice.WasBackedUp;
@@ -167,7 +212,6 @@ namespace SafeStick
 			}
 		}
 
-
 		/// <summary>
 		/// Return true if you want to cancel
 		/// </summary>
@@ -182,41 +226,10 @@ namespace SafeStick
 			{
 				if(handler())
 				{
+					_cancelRequested = true;
 					_agent.Cancel();
 				}
 			}
 		}
-
-//		private SyncId GetSyncId(string idFilePath)
-//		{
-//			SyncId replicaId = null;
-//
-			//Try to read existing ReplicaID
-//			if (File.Exists(idFilePath))
-//			{
-//				using (StreamReader sr = File.OpenText(idFilePath))
-//				{
-//					string strGuid = sr.ReadLine();
-//					if (!string.IsNullOrEmpty(strGuid))
-//					{
-//						replicaId = new SyncId(new Guid(strGuid));
-//					}
-//				}
-//			}
-			//If not exist, Create ReplicaID file
-//			if (replicaId == null)
-//			{
-//				using (FileStream idFile = File.Open(idFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-//				{
-//					using (StreamWriter sw = new StreamWriter(idFile))
-//					{
-//						replicaId = new SyncId(Guid.NewGuid());
-//						sw.WriteLine(replicaId.GetGuidId().ToString("D"));
-//					}
-//				}
-//			}
-//
-//			return replicaId;
-//		}
 	}
 }

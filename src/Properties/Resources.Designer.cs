@@ -60,10 +60,9 @@ namespace SafetyStick.Properties {
             }
         }
         
-        internal static System.Drawing.Bitmap usbkey {
+        internal static System.IO.UnmanagedMemoryStream finished {
             get {
-                object obj = ResourceManager.GetObject("usbkey", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                return ResourceManager.GetStream("finished", resourceCulture);
             }
         }
         
