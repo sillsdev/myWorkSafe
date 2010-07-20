@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace SafeStick
+namespace SafetyStick
 {
 	public partial class MediaStatus : UserControl
 	{

@@ -1,3 +1,40 @@
-<mockup version="1.0" skin="sketch" measuredW="10" measuredH="10" mockupW="-100000000" mockupH="-100000000">
-  <controls/>
+<mockup version="1.0" skin="sketch" measuredW="904" measuredH="432" mockupW="834" mockupH="412">
+  <controls>
+    <control controlID="2" controlTypeID="__group__" x="60" y="10" w="-1" h="-1" measuredW="834" measuredH="412" zOrder="0" locked="false" isInGroup="-1">
+      <groupChildrenDescriptors>
+        <control controlID="0" controlTypeID="com.balsamiq.mockups::TitleWindow" x="0" y="0" w="834" h="412" measuredW="450" measuredH="400" zOrder="0" locked="false" isInGroup="2">
+          <controlProperties>
+            <bottomheight>0</bottomheight>
+            <text>Safe%20Stick</text>
+          </controlProperties>
+        </control>
+        <control controlID="1" controlTypeID="com.balsamiq.mockups::TabBar" x="0" y="28" w="834" h="384" measuredW="250" measuredH="100" zOrder="1" locked="false" isInGroup="2">
+          <controlProperties>
+            <selectedIndex>1</selectedIndex>
+            <text>Backup%2C%20Set%20Up%2C%20About</text>
+          </controlProperties>
+        </control>
+      </groupChildrenDescriptors>
+    </control>
+    <control controlID="4" controlTypeID="com.balsamiq.mockups::CheckBoxGroup" x="99" y="113" w="-1" h="-1" measuredW="172" measuredH="198" zOrder="1" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>%5Bx%5D%20AdpatIt%20files%0A%5Bx%5D%20Paratextt%20files%0A%5Bx%5D%20WeSay%20files%0A%5Bx%5D%20Other%20Documents%0A%20%0A%5B%20%5D%20Pictures%0A%5B%20%5D%20Sound%20%28music%2C%20voice%29%0A%5B%20%5D%20Videos%0A%20%20%20%20Programs%20%28.exe%2C%20.dll%2C%20.msi%29</text>
+      </controlProperties>
+    </control>
+    <control controlID="6" controlTypeID="com.balsamiq.mockups::FieldSet" x="411" y="83" w="374" h="203" measuredW="200" measuredH="170" zOrder="2" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>What%20size%20Memory%20Stick%20do%20I%20need%3F</text>
+      </controlProperties>
+    </control>
+    <control controlID="7" controlTypeID="com.balsamiq.mockups::Label" x="99" y="83" w="-1" h="-1" measuredW="108" measuredH="22" zOrder="3" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>What%20to%20back%20up%3F</text>
+      </controlProperties>
+    </control>
+    <control controlID="9" controlTypeID="com.balsamiq.mockups::Paragraph" x="442" y="133" w="328" h="147" measuredW="200" measuredH="140" zOrder="4" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Memory%20Sticks%20com%20in%20different%20sizes.%20%20The%20files%20you%20have%20marked%20for%20backing%20up%20will%20take%20up%202.3%20Gigabytes%20of%20space%20on%20a%20memory%20stick%20today.%20.%20%20As%20you%20do%20more%20work%2C%20you%20will%20need%20more%20space.</text>
+      </controlProperties>
+    </control>
+  </controls>
 </mockup>

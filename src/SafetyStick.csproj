@@ -102,12 +102,22 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Synchronizer.cs" />
+    <Compile Include="Usb\Device.cs" />
+    <Compile Include="Usb\DeviceCapabilities.cs" />
+    <Compile Include="Usb\DeviceClass.cs" />
+    <Compile Include="Usb\DiskDeviceClass.cs" />
+    <Compile Include="Usb\Native.cs" />
+    <Compile Include="Usb\Volume.cs" />
+    <Compile Include="Usb\VolumeDeviceClass.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\usbkey.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\usbstick.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\finished.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
