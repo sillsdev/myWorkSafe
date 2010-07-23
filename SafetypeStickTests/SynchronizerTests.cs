@@ -20,9 +20,9 @@ namespace SafetypeStickTests
 			{
 				System.IO.File.WriteAllText(from.Combine("test1.txt"),"Blah blah");
 				System.IO.File.WriteAllText(from.Combine("test2.txt"), "Blah blah blah");
-				var source = new FileGroup(from.Path);
+				var source = new RawDirectorySource(from.Path);
 				var groups = new List<FileSource>(new[] {source});        
-				var sync = new Synchronizer(to.Path, groups, -1);
+				var sync = new Synchronizer(to.Path, groups, 100);
 
 				sync.GatherInformation();
 				Assert.AreEqual(0, source.UpdateFileCount);
@@ -40,9 +40,9 @@ namespace SafetypeStickTests
 			{
 				System.IO.File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
 				System.IO.File.WriteAllText(from.Combine("test2.txt"), "dee dee dee");
-				var source = new FileGroup(from.Path);
+				var source = new RawDirectorySource(from.Path);
 				var groups = new List<FileSource>(new[] { source });
-				var sync = new Synchronizer(to.Path, groups, -1);
+				var sync = new Synchronizer(to.Path, groups, 100);
 				sync.GatherInformation();
 				sync.DoSynchronization();
 				System.IO.File.WriteAllText(from.Combine("test1.txt"), "Blah blah Blah Blah Blah");
@@ -62,9 +62,9 @@ namespace SafetypeStickTests
 			using (var to = new TemporaryFolder("synctest_dest"))
 			{
 				File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
-				var source = new FileGroup(from.Path);
+				var source = new RawDirectorySource(from.Path);
 				var groups = new List<FileSource>(new[] { source });
-				var sync = new Synchronizer(to.Path, groups, -1);
+				var sync = new Synchronizer(to.Path, groups, 100);
 				sync.GatherInformation();
 				sync.DoSynchronization();
 				File.Delete(from.Combine("test1.txt"));
@@ -85,9 +85,9 @@ namespace SafetypeStickTests
 			using (var to = new TemporaryFolder("synctest_dest"))
 			{
 				File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
-				var source = new FileGroup(from.Path);
+				var source = new RawDirectorySource(from.Path);
 				var groups = new List<FileSource>(new[] { source });
-				var sync = new Synchronizer(to.Path, groups, -1);
+				var sync = new Synchronizer(to.Path, groups, 100);
 				sync.GatherInformation();
 				sync.DoSynchronization();
 				File.Delete(from.Combine("test1.txt"));

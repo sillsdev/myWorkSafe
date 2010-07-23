@@ -166,13 +166,14 @@ namespace SafetyStick
 			}
 		}
 	}
-	public class FileGroup : FileSource
+	public class RawDirectorySource : FileSource
 	{
 		private string _path;
-		public FileGroup(string path)	//todo: what if this is used for more than one path?
+		public RawDirectorySource(string path)	//todo: what if this is used for more than one path?
 			: base("33BCC0DE-C329-4bdd-9A03-ECEC16A588F8", "44BCC0DE-C329-4bdd-9A03-ECEC16A588F8")
 		{
 			_path = path;
+			Name = Path.GetFileName(path);
 		}
 
 

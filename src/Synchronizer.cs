@@ -15,7 +15,7 @@ namespace SafetyStick
 		private readonly long _maxInKilobytes;
 		private SyncOrchestrator _agent;
 		private FileSource _currentSource;
-		private long _totalKiloBytesCalculatedThusFar;
+		public long PredictedSpaceInKiloBytes;
 		private bool _cancelRequested;
 
 	
@@ -58,7 +58,7 @@ namespace SafetyStick
 		{
 			_cancelRequested = false;
 			_files = 0;
-			_totalKiloBytesCalculatedThusFar = 0;
+			PredictedSpaceInKiloBytes = 0;
 			_totalFilesThatWillBeBackedUp = 0;
 			var options = FileSyncOptions.None;
 
@@ -71,7 +71,7 @@ namespace SafetyStick
 				_currentSource = group;//used by callbacks
 				group.ClearStatistics();
 
-				if (_totalKiloBytesCalculatedThusFar >= _maxInKilobytes)
+				if (PredictedSpaceInKiloBytes >= _maxInKilobytes)
 				{
 					group.Disposition = FileSource.DispositionChoice.WillBeSkipped;
 					InvokeGroupProgress();
@@ -93,7 +93,7 @@ namespace SafetyStick
 				}
 
 				//would this push us over the limit?
-				if (_totalKiloBytesCalculatedThusFar >= _maxInKilobytes)
+				if (PredictedSpaceInKiloBytes >= _maxInKilobytes)
 				{
 					group.Disposition = FileSource.DispositionChoice.WillBeSkipped;
 				} 
@@ -175,7 +175,7 @@ namespace SafetyStick
 			if(y.CurrentFileData !=null)
 			{
 				_currentSource.NetChangeInBytes -= y.CurrentFileData.Size;
-				_totalKiloBytesCalculatedThusFar -= y.CurrentFileData.Size/1024;
+				PredictedSpaceInKiloBytes -= y.CurrentFileData.Size/1024;
 				//next the new size will be added back, below
 			}
 			switch(y.ChangeType)
@@ -183,12 +183,12 @@ namespace SafetyStick
 				case ChangeType.Create:
 					_currentSource.NewFileCount++;
 					_currentSource.NetChangeInBytes += y.NewFileData.Size;
-					_totalKiloBytesCalculatedThusFar += y.NewFileData.Size/1024;
+					PredictedSpaceInKiloBytes += y.NewFileData.Size/1024;
 					break;
 				case ChangeType.Update:
 					_currentSource.UpdateFileCount++;
 					_currentSource.NetChangeInBytes += y.NewFileData.Size;
-					_totalKiloBytesCalculatedThusFar += y.NewFileData.Size/1024;
+					PredictedSpaceInKiloBytes += y.NewFileData.Size/1024;
 					break;
 				case ChangeType.Delete:
 					_currentSource.DeleteFileCount++;

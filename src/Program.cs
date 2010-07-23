@@ -21,7 +21,7 @@ namespace SafetyStick
 
 			SetUpErrorHandling();
 
-			//DoTestRun();
+			DoTestRun();
 
 			var preExistingDrives = new List<UsbDriveInfo>();
 			preExistingDrives.AddRange(UsbDriveInfo.GetDrives());
