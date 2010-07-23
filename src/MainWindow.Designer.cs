@@ -48,10 +48,11 @@
 			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
 			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
 			this.closeButton = new System.Windows.Forms.Button();
-			this.statusLabel = new System.Windows.Forms.Label();
+			this._upperStatusLabel = new System.Windows.Forms.Label();
 			this.cancelButton = new System.Windows.Forms.Button();
-			this.mediaStatus1 = new SafetyStick.MediaStatus();
+			this._mediaStatusIndicator = new SafetyStick.MediaStatus();
 			this._safeToRemoveLabel = new System.Windows.Forms.Label();
+			this._lowerStatus = new System.Windows.Forms.Label();
 			this.SuspendLayout();
 			// 
 			// backupNowButton
@@ -128,13 +129,13 @@
 			// 
 			// statusLabel
 			// 
-			this.statusLabel.AutoSize = true;
-			this.statusLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.statusLabel.Location = new System.Drawing.Point(129, 22);
-			this.statusLabel.Name = "statusLabel";
-			this.statusLabel.Size = new System.Drawing.Size(171, 17);
-			this.statusLabel.TabIndex = 6;
-			this.statusLabel.Text = "{0} files will be backed up:";
+			this._upperStatusLabel.AutoSize = true;
+			this._upperStatusLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._upperStatusLabel.Location = new System.Drawing.Point(129, 22);
+			this._upperStatusLabel.Name = "_upperStatusLabel";
+			this._upperStatusLabel.Size = new System.Drawing.Size(171, 17);
+			this._upperStatusLabel.TabIndex = 6;
+			this._upperStatusLabel.Text = "{0} files will be backed up:";
 			// 
 			// cancelButton
 			// 
@@ -148,12 +149,14 @@
 			// 
 			// mediaStatus1
 			// 
-			this.mediaStatus1.BackColor = System.Drawing.Color.Transparent;
-			this.mediaStatus1.FillPercentage = 50;
-			this.mediaStatus1.Location = new System.Drawing.Point(10, 17);
-			this.mediaStatus1.Name = "mediaStatus1";
-			this.mediaStatus1.Size = new System.Drawing.Size(100, 323);
-			this.mediaStatus1.TabIndex = 3;
+			this._mediaStatusIndicator.BackColor = System.Drawing.Color.Transparent;
+			this._mediaStatusIndicator.DeviceSizeInKiloBytes = ((long)(131072));
+			this._mediaStatusIndicator.ExistingFillPercentage = 50;
+			this._mediaStatusIndicator.Location = new System.Drawing.Point(10, 17);
+			this._mediaStatusIndicator.Name = "_mediaStatusIndicator";
+			this._mediaStatusIndicator.PendingFillPercentage = 25;
+			this._mediaStatusIndicator.Size = new System.Drawing.Size(100, 323);
+			this._mediaStatusIndicator.TabIndex = 3;
 			// 
 			// _safeToRemoveLabel
 			// 
@@ -167,6 +170,16 @@
 			this._safeToRemoveLabel.Text = "It is now safe to remove the USB Memory Stick.";
 			this._safeToRemoveLabel.Visible = false;
 			// 
+			// _lowerStatus
+			// 
+			this._lowerStatus.AutoSize = true;
+			this._lowerStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._lowerStatus.Location = new System.Drawing.Point(130, 231);
+			this._lowerStatus.Name = "_lowerStatus";
+			this._lowerStatus.Size = new System.Drawing.Size(114, 17);
+			this._lowerStatus.TabIndex = 6;
+			this._lowerStatus.Text = "this will be status";
+			// 
 			// MainWindow
 			// 
 			this.AcceptButton = this.backupNowButton;
@@ -177,9 +190,10 @@
 			this.ClientSize = new System.Drawing.Size(492, 354);
 			this.Controls.Add(this._safeToRemoveLabel);
 			this.Controls.Add(this.cancelButton);
-			this.Controls.Add(this.statusLabel);
+			this.Controls.Add(this._lowerStatus);
+			this.Controls.Add(this._upperStatusLabel);
 			this.Controls.Add(this.listView1);
-			this.Controls.Add(this.mediaStatus1);
+			this.Controls.Add(this._mediaStatusIndicator);
 			this.Controls.Add(this.syncProgressBar);
 			this.Controls.Add(this.backupNowButton);
 			this.Controls.Add(this.closeButton);
@@ -196,15 +210,16 @@
 
 		private System.Windows.Forms.Button backupNowButton;
 		private System.Windows.Forms.ProgressBar syncProgressBar;
-		private MediaStatus mediaStatus1;
+		private MediaStatus _mediaStatusIndicator;
 		private System.Windows.Forms.ListView listView1;
 		private System.Windows.Forms.ColumnHeader columnHeader1;
 		private System.Windows.Forms.ColumnHeader columnHeader2;
 		private System.Windows.Forms.ImageList imageList1;
 		private System.Windows.Forms.Button closeButton;
-		private System.Windows.Forms.Label statusLabel;
+		private System.Windows.Forms.Label _upperStatusLabel;
 		private System.Windows.Forms.Button cancelButton;
 		private System.Windows.Forms.Label _safeToRemoveLabel;
+		private System.Windows.Forms.Label _lowerStatus;
 	}
 }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.IO;
 using System.Media;
@@ -13,14 +14,19 @@ namespace SafetyStick
 	public partial class MainWindow : Form
 	{
 		private readonly string _destinationDeviceRoot;
+		private readonly long _availableFreeSpaceInKilobytes;
+		private readonly long _totalSpaceOfDeviceInKilobytes;
 		Synchronizer _synchronizer;
 		private BackgroundWorker _preparationWorker;
 		private BackgroundWorker _backupWorker;
 		private List<FileSource> _groups;
 
-		public MainWindow(string destinationDeviceRoot, long availableFreeSpaceInKilobytes, long totalSpaceInKilobytes)
+		public MainWindow(string destinationDeviceRoot, long availableFreeSpaceInKilobytes, long totalSpaceOfDeviceInKilobytes)
 		{
+			//Font = SystemFonts.MessageBoxFont;
 			_destinationDeviceRoot = destinationDeviceRoot;
+			_availableFreeSpaceInKilobytes = availableFreeSpaceInKilobytes;
+			_totalSpaceOfDeviceInKilobytes = totalSpaceOfDeviceInKilobytes;
 			InitializeComponent();
 			SetWindowText();
 			listView1.Visible = false;
@@ -33,10 +39,14 @@ namespace SafetyStick
 				//new OtherDesktopFiles()
 			};
 
-			_synchronizer = new Synchronizer(destinationDeviceRoot, _groups, totalSpaceInKilobytes);
+			_synchronizer = new Synchronizer(destinationDeviceRoot, _groups, totalSpaceOfDeviceInKilobytes);
 			_synchronizer.GroupProgress +=new Action(OnSynchronizer_GroupProgress);
 			
-			mediaStatus1.FillPercentage = (int)(100.0*availableFreeSpaceInKilobytes / totalSpaceInKilobytes);
+			_mediaStatusIndicator.ExistingFillPercentage = (int)(100.0*availableFreeSpaceInKilobytes / totalSpaceOfDeviceInKilobytes);
+			
+			//until we know how much we're going to fill up
+			_mediaStatusIndicator.PendingFillPercentage = _mediaStatusIndicator.ExistingFillPercentage;
+			_mediaStatusIndicator.DeviceSizeInKiloBytes = totalSpaceOfDeviceInKilobytes;
 
 			closeButton.Visible = false;
 			cancelButton.Visible = true;
@@ -44,7 +54,7 @@ namespace SafetyStick
 			listView1.Visible = true;
 			Cursor = Cursors.WaitCursor;
 
-			statusLabel.Text = "Looking at what files have changed...";
+			_upperStatusLabel.Text = "Looking at what files have changed...";
 			_preparationWorker = new BackgroundWorker();
 			_preparationWorker.DoWork+= OnPreparationWorker_DoWork;
 			_preparationWorker.WorkerSupportsCancellation = true;
@@ -75,7 +85,7 @@ namespace SafetyStick
 						item.SubItems.Add("Synchronizing...");
 						break;
 					case FileSource.DispositionChoice.WillBeBackedUp:
-						item.ImageIndex = 0;
+						//item.ImageIndex = 0;
 						item.SubItems.Add(group.UpdateFileCount + group.NewFileCount +" files to backup.");
 						break;
 					case FileSource.DispositionChoice.WillBeSkipped:
@@ -105,8 +115,13 @@ namespace SafetyStick
 			}
 			syncProgressBar.Minimum = 0;
 
-			statusLabel.Text = string.Format("{0} files will be backed up:", _synchronizer.TotalFilesThatWillBeBackedUpThatWillBeCopied);
+			_upperStatusLabel.Visible = false;
+			_lowerStatus.Text = string.Format("Will back up {0} files ({1})", _synchronizer.TotalFilesThatWillBeBackedUpThatWillBeCopied, MediaStatus.GetStringForStorageSize(_synchronizer.PredictedSpaceInKiloBytes));
+			_lowerStatus.Visible = true;
+			_mediaStatusIndicator.PendingFillPercentage = (int)(100.0 * (_availableFreeSpaceInKilobytes - _synchronizer.PredictedSpaceInKiloBytes) / _totalSpaceOfDeviceInKilobytes);
 		}
+
+
 
 		void OnPreparationWorker_DoWork(object sender, DoWorkEventArgs e)
 		{
@@ -147,7 +162,7 @@ namespace SafetyStick
 		private void backupNowButton_Click(object sender, EventArgs e)
 		{
 			CancelButton = null;
-			statusLabel.Text = "Copying files to USB Stick...";
+			_lowerStatus.Text = "Copying files...";
 			backupNowButton.Visible = false;
 			syncProgressBar.Visible = true;
 			cancelButton.Visible = true;
@@ -162,7 +177,7 @@ namespace SafetyStick
 
 		void OnBackupWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
-			statusLabel.Text = "Finished";
+			_lowerStatus.Text = "Finished";
 			syncProgressBar.Visible = false;
 			cancelButton.Visible = false;
 			closeButton.Visible = true;
@@ -215,13 +230,13 @@ namespace SafetyStick
 		{
 			if (_preparationWorker != null)
 			{
-				statusLabel.Text = "Cancelling...";
+				_upperStatusLabel.Text = "Cancelling...";
 				_preparationWorker.RunWorkerCompleted +=new RunWorkerCompletedEventHandler((x,y)=>Close());
 				_preparationWorker.CancelAsync();
 			}
 			if(_backupWorker !=null)
 			{
-				statusLabel.Text = "Cancelling...";
+				_upperStatusLabel.Text = "Cancelling...";
 				syncProgressBar.Visible = false;
 				_backupWorker.CancelAsync();
 			}

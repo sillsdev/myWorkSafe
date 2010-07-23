@@ -29,6 +29,7 @@
 		private void InitializeComponent()
 		{
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
+			this._deviceSizeLabel = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -43,22 +44,35 @@
 			this.pictureBox1.TabStop = false;
 			this.pictureBox1.Visible = false;
 			// 
+			// _deviceSizeLabel
+			// 
+			this._deviceSizeLabel.AutoSize = true;
+			this._deviceSizeLabel.Location = new System.Drawing.Point(29, 30);
+			this._deviceSizeLabel.Name = "_deviceSizeLabel";
+			this._deviceSizeLabel.Size = new System.Drawing.Size(38, 13);
+			this._deviceSizeLabel.TabIndex = 1;
+			this._deviceSizeLabel.Text = "99 MB";
+			this._deviceSizeLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+			// 
 			// MediaStatus
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.Transparent;
+			this.Controls.Add(this._deviceSizeLabel);
 			this.Controls.Add(this.pictureBox1);
 			this.Name = "MediaStatus";
 			this.Size = new System.Drawing.Size(105, 318);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			this.ResumeLayout(false);
+			this.PerformLayout();
 
 		}
 
 		#endregion
 
 		private System.Windows.Forms.PictureBox pictureBox1;
+		private System.Windows.Forms.Label _deviceSizeLabel;
 
 	}
 }
