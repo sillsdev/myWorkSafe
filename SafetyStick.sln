@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafetyStick", "src\SafetyStick.csproj", "{C573DDE1-9BC6-4358-8671-3F5BC17462F1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafetyStick", "src\SafetyStick\SafetyStick.csproj", "{C573DDE1-9BC6-4358-8671-3F5BC17462F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafetyStickTests", "SafetypeStickTests\SafetyStickTests.csproj", "{BD94769D-4D77-4BAB-9C95-4087FFF33AD2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkSafe.Tests", "src\WorkSafe.Tests\WorkSafe.Tests.csproj", "{212AD974-7299-48B7-B9BD-A63250A54999}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +15,10 @@ Global
 		{C573DDE1-9BC6-4358-8671-3F5BC17462F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C573DDE1-9BC6-4358-8671-3F5BC17462F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C573DDE1-9BC6-4358-8671-3F5BC17462F1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BD94769D-4D77-4BAB-9C95-4087FFF33AD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BD94769D-4D77-4BAB-9C95-4087FFF33AD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BD94769D-4D77-4BAB-9C95-4087FFF33AD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BD94769D-4D77-4BAB-9C95-4087FFF33AD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{212AD974-7299-48B7-B9BD-A63250A54999}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{212AD974-7299-48B7-B9BD-A63250A54999}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{212AD974-7299-48B7-B9BD-A63250A54999}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{212AD974-7299-48B7-B9BD-A63250A54999}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
