@@ -2,6 +2,7 @@
 using System.IO;
 using Microsoft.Synchronization.Files;
 using Microsoft.Win32;
+using Palaso.Extensions;
 
 namespace myWorkSafe
 {
@@ -14,9 +15,11 @@ namespace myWorkSafe
 			DestGuid = new Guid(destGuid);
 		}
 
-		public enum DispositionChoice {Waiting=0, Calculating, WillBeBackedUp, WillBeSkipped,
+		public enum DispositionChoice {Waiting=0, Calculating, WillBeBackedUp, NotEnoughRoom,
 			Synchronizing,
-			WasBackedUp
+			WasBackedUp,
+			WillBeDeleted,
+			Hide
 		}
 
 		public DispositionChoice Disposition;
@@ -51,6 +54,11 @@ namespace myWorkSafe
 			}
 			return dir;
 		}
+
+		public bool GetIsRelevantOnThisMachine()
+		{
+			return Directory.Exists(RootFolder);
+		}
 	}
 
 
@@ -61,6 +69,7 @@ namespace myWorkSafe
 			: base("11BCC0DE-C329-4bdd-9A03-ECEC16A588F8", "22BCC0DE-C329-4bdd-9A03-ECEC16A588F8")
 		{
 			Name = "Paratext";
+			
 			Filter.SubdirectoryExcludes.Add("TNE Notes Database");
 			Filter.SubdirectoryExcludes.Add("cms");
 		}
@@ -99,6 +108,7 @@ namespace myWorkSafe
 			: base("472D2CAB-C4FE-4f80-A21E-F9ECA725F6C3", "E732ADF7-81F4-41ef-B664-BE910593288E")
 		{
 			Name = "DevChorusFiles";
+			//Wildcards (* and ?) can be used in file names.
 			Filter.FileNameExcludes.Add("*.dll");
 			Filter.FileNameExcludes.Add("*.exe");
 		}
@@ -117,7 +127,7 @@ namespace myWorkSafe
 		public OtherFiles()
 			: base("98BCC0DE-C329-4bdd-9A03-ECEC16A588F8", "97BCC0DE-C329-4bdd-9A03-ECEC16A588F8")
 		{
-			Name = "Other";
+			Name = "Other in My Documents";
 			Filter.FileNameExcludes.Add("*.exe");
 			Filter.FileNameExcludes.Add("*.msi");
 			Filter.FileNameExcludes.Add("*.dll");
@@ -163,6 +173,105 @@ namespace myWorkSafe
 			}
 		}
 	}
+	
+	public class WindowsLiveMail : FileSource
+	{
+		public WindowsLiveMail()
+			: base("1239CDE9-3355-4d67-9826-1FC4376462EA", "1249CDE9-3355-4d67-9826-1FC4376462EA")
+		{
+			Name = "Windows Live Mail";
+			Filter.SubdirectoryExcludes.Add("news.sil.org.pg");
+			Filter.SubdirectoryExcludes.Add("Your Feeds");
+		}
+
+		public override string RootFolder
+		{
+			get
+			{
+				var localData= Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+				return localData.CombineForPath(@"Microsoft\Windows Live Mail");
+			}
+		}
+	}
+	
+	public class ThunderbirdMail : FileSource
+	{
+		public ThunderbirdMail()
+			: base("1239CDE9-3355-4d67-9826-1FC4376462EA", "1249CDE9-3355-4d67-9826-1FC4376462EA")
+		{
+			Name = "Thunderbird Mail";
+			Filter.FileNameExcludes.Add("global-messages-db.sqlite");//just a big index
+			Filter.SubdirectoryExcludes.Add("News");
+			Filter.SubdirectoryExcludes.Add("extensions");
+		}
+
+		public override string RootFolder
+		{
+			get
+			{
+				var localData= Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+				return localData.CombineForPath(@"Microsoft\Windows Live Mail");
+			}
+		}
+	}
+	public class MyPictures : FileSource
+	{
+		public MyPictures()
+			: base("2179CDE9-3355-4d67-9826-1FC4376462EA", "1119CDE9-3355-4d67-9826-1FC4376462EA")
+		{
+			Name = "My Pictures";
+			Filter.SubdirectoryExcludes.Add("Sample Pictures");
+		}
+
+		public override string RootFolder
+		{
+			get
+			{
+				return Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+			}
+		}
+	}
+
+	public class MyMusic : FileSource
+	{
+		public MyMusic()
+			: base("3339CDE9-3355-4d67-9826-1FC4376462EA", "4449CDE9-3355-4d67-9826-1FC4376462EA")
+		{
+			Name = "My Music";
+			Filter.SubdirectoryExcludes.Add("Sample Music");
+		}
+
+		public override string RootFolder
+		{
+			get
+			{
+				return Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+			}
+		}
+	}
+
+	public class MyVideos : FileSource
+	{
+		public MyVideos()
+			: base("5B32BBB0-1F19-4f5a-9F35-651DB56DA010", "5532BBB0-1F19-4f5a-9F35-651DB56DA010")
+		{
+			Name = "Videos";
+			Filter.SubdirectoryExcludes.Add("Sample Videos");
+		}
+
+		public override string RootFolder
+		{
+			get
+			{
+				var win7= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "My Videos");
+				if(Directory.Exists(win7))
+					return win7;
+	
+				var xp= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Videos");
+				return xp;
+			}
+		}
+	}
 	public class RawDirectorySource : FileSource
 	{
 		private string _path;
@@ -172,8 +281,6 @@ namespace myWorkSafe
 			_path = path;
 			Name = Path.GetFileName(path);
 		}
-
-
 
 		public override string RootFolder
 		{

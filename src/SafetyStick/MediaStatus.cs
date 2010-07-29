@@ -15,8 +15,19 @@ namespace myWorkSafe
 			DeviceSizeInKiloBytes = 128*1024;
 		}
 
-		public long DeviceSizeInKiloBytes { get; set; }
+		public string DriveLabel
+		{
+			get
+			{
+				return _driveLetter.Text;
+			}
+			set
+			{
+				_driveLetter.Text = value;
+			}
+		}
 
+		public long DeviceSizeInKiloBytes { get; set; }
 		public int ExistingFillPercentage { get; set; }
 
 		private int _pendingFillPercentage;
