@@ -12,17 +12,18 @@ namespace myWorkSafe
 		private int _files;
 		public string DestinationRootForThisUser;
 		private readonly IEnumerable<FileSource> _groups;
-		private readonly long _maxInKilobytes;
+		private readonly long _totalAvailableOnDeviceInKilobytes;
 		private SyncOrchestrator _agent;
 		private FileSource _currentSource;
-		public long PredictedSpaceInKiloBytes;
+//		public long PredictedChangeInKiloBytes;
 		private bool _cancelRequested;
+		public long ApprovedChangeInKB;
 
-	
-		public Synchronizer(string destinationDeviceRoot, IEnumerable<FileSource> groups, long maxInKilobytes)
+
+		public Synchronizer(string destinationDeviceRoot, IEnumerable<FileSource> groups, long totalAvailableOnDeviceInKilobytes)
 		{
 			_groups = groups;
-			_maxInKilobytes = maxInKilobytes;
+			_totalAvailableOnDeviceInKilobytes = totalAvailableOnDeviceInKilobytes;
 			SetDestinationFolderPath(destinationDeviceRoot);
 			_agent = new SyncOrchestrator();
 		}
@@ -56,11 +57,20 @@ namespace myWorkSafe
 
 		public void GatherInformation()
 		{
+			/* enhance: we could try to deal with the situation where a lower-priority group
+			 * is hogging space from a newly enlarged higher-priority group. We'd have to
+			 * scan ahead, perhaps first collecting the current on-backup sizes of each.
+			 * 
+			 * Then, as we go through the groups, we could keep going so long as deleting
+			 * some lower-priority group would allow us to keep going.
+			 */
 			_cancelRequested = false;
 			_files = 0;
-			PredictedSpaceInKiloBytes = 0;
+			ApprovedChangeInKB = 0;
+			//PredictedChangeInKiloBytes = 0;
 			_totalFilesThatWillBeBackedUp = 0;
 			var options = FileSyncOptions.None;
+			var limitHasBeenReached = false;
 
 			foreach (var group in _groups)
 			{
@@ -70,19 +80,29 @@ namespace myWorkSafe
 				}
 				_currentSource = group;//used by callbacks
 				group.ClearStatistics();
-
-				if (PredictedSpaceInKiloBytes >= _maxInKilobytes)
+				if (!group.GetIsRelevantOnThisMachine())
 				{
-					group.Disposition = FileSource.DispositionChoice.WillBeSkipped;
+					group.Disposition = FileSource.DispositionChoice.Hide;
+					continue;
+				}
+
+				if (limitHasBeenReached)
+				{
+					//don't even investigate.
+					//NB: there might actually be enough room, if this group is smaller
+					//than the first one which was too big. Or algorithm doesn't try
+					//to fit it in.
+					group.Disposition = FileSource.DispositionChoice.NotEnoughRoom;
 					InvokeGroupProgress();
 					continue;
 				}
 				group.Disposition = FileSource.DispositionChoice.Calculating;
 				InvokeGroupProgress();
 
-				
+
+				string destinationSubFolder = group.GetDestinationSubFolder(DestinationRootForThisUser);
 				using (var sourceProvider = new FileSyncProvider(group.SourceGuid, group.RootFolder, group.Filter, options))
-				using (var destinationProvider = new FileSyncProvider(group.DestGuid, group.GetDestinationSubFolder(DestinationRootForThisUser), group.Filter, options))
+				using (var destinationProvider = new FileSyncProvider(group.DestGuid, destinationSubFolder, group.Filter, options))
 				{
 					destinationProvider.PreviewMode = true;
 					destinationProvider.ApplyingChange += (OnDestinationPreviewChange);
@@ -92,16 +112,17 @@ namespace myWorkSafe
 					PreviewOrSynchronizeCore(destinationProvider, sourceProvider);
 				}
 
-				//would this push us over the limit?
-				if (PredictedSpaceInKiloBytes >= _maxInKilobytes)
-				{
-					group.Disposition = FileSource.DispositionChoice.WillBeSkipped;
-				} 
-				else
+				//is there room to fit in this whole group?
+				if(ApprovedChangeInKB + group.NetChangeInBytes < _totalAvailableOnDeviceInKilobytes)
 				{
 					_totalFilesThatWillBeBackedUp += group.UpdateFileCount + group.NewFileCount;
 					group.Disposition = FileSource.DispositionChoice.WillBeBackedUp;
 				}
+				else
+				{
+					limitHasBeenReached = true;	//nb: remove if/when we go to the system below of deleting
+					group.Disposition = FileSource.DispositionChoice.NotEnoughRoom;
+				} 
 			}
 			InvokeGroupProgress();		
 			_files = 0;
@@ -143,7 +164,7 @@ namespace myWorkSafe
 					break;
 				}
 				_currentSource = group;//used by callbacks
-				if (group.Disposition == FileSource.DispositionChoice.WillBeSkipped)
+				if (group.Disposition == FileSource.DispositionChoice.NotEnoughRoom)
 					continue;
 
 				group.ClearStatistics();
@@ -175,7 +196,7 @@ namespace myWorkSafe
 			if(y.CurrentFileData !=null)
 			{
 				_currentSource.NetChangeInBytes -= y.CurrentFileData.Size;
-				PredictedSpaceInKiloBytes -= y.CurrentFileData.Size/1024;
+			//	PredictedSpaceInKiloBytes -= y.CurrentFileData.Size/1024;
 				//next the new size will be added back, below
 			}
 			switch(y.ChangeType)
@@ -183,12 +204,12 @@ namespace myWorkSafe
 				case ChangeType.Create:
 					_currentSource.NewFileCount++;
 					_currentSource.NetChangeInBytes += y.NewFileData.Size;
-					PredictedSpaceInKiloBytes += y.NewFileData.Size/1024;
+					//PredictedSpaceInKiloBytes += y.NewFileData.Size/1024;
 					break;
 				case ChangeType.Update:
 					_currentSource.UpdateFileCount++;
 					_currentSource.NetChangeInBytes += y.NewFileData.Size;
-					PredictedSpaceInKiloBytes += y.NewFileData.Size/1024;
+					//PredictedSpaceInKiloBytes += y.NewFileData.Size/1024;
 					break;
 				case ChangeType.Delete:
 					_currentSource.DeleteFileCount++;

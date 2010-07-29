@@ -38,22 +38,32 @@ namespace myWorkSafe
 			backupNowButton.Visible = false;
 			_groups = new List<FileSource>(){
 				new ParatextFiles(), 
-				//new DevChorusFiles(),
-				//new WeSayFiles(), 
-				//new OtherFiles(), 
-				//new OtherDesktopFiles()
+				new WeSayFiles(), 
+				new OtherFiles(), 
+				new OtherDesktopFiles(),
+				new WindowsLiveMail(),
+				new ThunderbirdMail(),
+				new MyPictures(),
+				new MyMusic(),
+				new MyVideos(),
 			};
 
 
 			var driveDetector = new DriveDetector();
+
+			//TODO: use this instead of polling in the main program
 			//driveDetector.DeviceArrived += new DriveDetectorEventHandler(OnDriveArrived);
+
+			//TODO: see if DeviceRemoved could be used instaead of DeviceSomethingHappened
 			//driveDetector.DeviceRemoved += new DriveDetectorEventHandler(OnDriveRemoved);
 			driveDetector.DeviceSomethingHappened += new DriveDetectorEventHandler(OnDriveSomething);
 			//driveDetector.QueryRemove += new DriveDetectorEventHandler(OnQueryRemove);
 
-			_synchronizer = new Synchronizer(destinationDeviceRoot, _groups, totalSpaceOfDeviceInKilobytes);
+			_synchronizer = new Synchronizer(destinationDeviceRoot, _groups, availableFreeSpaceInKilobytes);
 			_synchronizer.GroupProgress +=new Action(OnSynchronizer_GroupProgress);
-			
+
+			_mediaStatusIndicator.DriveLabel = destinationDeviceRoot;
+
 			_mediaStatusIndicator.ExistingFillPercentage = (int)(100.0*availableFreeSpaceInKilobytes / totalSpaceOfDeviceInKilobytes);
 			
 			//until we know how much we're going to fill up
@@ -66,7 +76,7 @@ namespace myWorkSafe
 			listView1.Visible = true;
 			Cursor = Cursors.WaitCursor;
 
-			_upperStatusLabel.Text = "Looking at what files have changed...";
+			_status.Text = "Looking at what files have changed...";
 			_preparationWorker = new BackgroundWorker();
 			_preparationWorker.DoWork+= OnPreparationWorker_DoWork;
 			_preparationWorker.WorkerSupportsCancellation = true;
@@ -101,6 +111,9 @@ namespace myWorkSafe
 				var item = new ListViewItem(group.Name);
 				switch(group.Disposition)
 				{
+					case FileSource.DispositionChoice.Hide:
+						continue;
+						break;
 					case FileSource.DispositionChoice.Waiting:
 						break;
 					case FileSource.DispositionChoice.Calculating:
@@ -113,7 +126,7 @@ namespace myWorkSafe
 						//item.ImageIndex = 0;
 						item.SubItems.Add(group.UpdateFileCount + group.NewFileCount +" files to backup.");
 						break;
-					case FileSource.DispositionChoice.WillBeSkipped:
+					case FileSource.DispositionChoice.NotEnoughRoom:
 						item.ImageIndex = 1;
 						item.SubItems.Add("Not enough room.");
 						break;
@@ -140,10 +153,10 @@ namespace myWorkSafe
 			}
 			syncProgressBar.Minimum = 0;
 
-			_upperStatusLabel.Visible = false;
-			_lowerStatus.Text = string.Format("Will back up {0} files ({1})", _synchronizer.TotalFilesThatWillBeBackedUpThatWillBeCopied, MediaStatus.GetStringForStorageSize(_synchronizer.PredictedSpaceInKiloBytes));
-			_lowerStatus.Visible = true;
-			_mediaStatusIndicator.PendingFillPercentage = (int)(100.0 * (_availableFreeSpaceInKilobytes - _synchronizer.PredictedSpaceInKiloBytes) / _totalSpaceOfDeviceInKilobytes);
+			//_status.Visible = false;
+			_status.Text = string.Format("Will back up {0} files ({1})", _synchronizer.TotalFilesThatWillBeBackedUpThatWillBeCopied, MediaStatus.GetStringForStorageSize(_synchronizer.ApprovedChangeInKB));
+			//_status.Visible = true;
+			_mediaStatusIndicator.PendingFillPercentage = (int)(100.0 * (_availableFreeSpaceInKilobytes - _synchronizer.ApprovedChangeInKB) / _totalSpaceOfDeviceInKilobytes);
 		}
 
 
@@ -191,7 +204,7 @@ namespace myWorkSafe
 
 		private void backupNowButton_Click(object sender, EventArgs e)
 		{
-			_lowerStatus.Text = "Copying files...";
+			_status.Text = "Copying files...";
 			backupNowButton.Visible = false;
 			syncProgressBar.Visible = true;
 			cancelButton.Visible = true;
@@ -206,7 +219,7 @@ namespace myWorkSafe
 
 		void OnBackupWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
-			_lowerStatus.Text = "Finished";
+			_status.Text = "Finished";
 			syncProgressBar.Visible = false;
 			cancelButton.Visible = false;
 			closeButton.Visible = true;
@@ -286,13 +299,13 @@ namespace myWorkSafe
 		{
 			if (_preparationWorker != null)
 			{
-				_upperStatusLabel.Text = "Cancelling...";
+				_status.Text = "Cancelling...";
 				_preparationWorker.RunWorkerCompleted +=new RunWorkerCompletedEventHandler((x,y)=>Application.Exit());
 				_preparationWorker.CancelAsync();
 			}
 			if(_backupWorker !=null)
 			{
-				_upperStatusLabel.Text = "Cancelling...";
+				_status.Text = "Cancelling...";
 				syncProgressBar.Visible = false;
 				_backupWorker.CancelAsync();
 			}
