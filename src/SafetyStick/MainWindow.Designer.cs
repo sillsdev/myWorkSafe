@@ -45,7 +45,7 @@
 			this.tabControl1.Multiline = true;
 			this.tabControl1.Name = "tabControl1";
 			this.tabControl1.SelectedIndex = 0;
-			this.tabControl1.Size = new System.Drawing.Size(492, 378);
+			this.tabControl1.Size = new System.Drawing.Size(575, 414);
 			this.tabControl1.TabIndex = 0;
 			this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
 			// 
@@ -54,7 +54,7 @@
 			this._backupPage.Location = new System.Drawing.Point(4, 4);
 			this._backupPage.Name = "_backupPage";
 			this._backupPage.Padding = new System.Windows.Forms.Padding(3);
-			this._backupPage.Size = new System.Drawing.Size(484, 352);
+			this._backupPage.Size = new System.Drawing.Size(567, 388);
 			this._backupPage.TabIndex = 0;
 			this._backupPage.Text = "Backup";
 			this._backupPage.UseVisualStyleBackColor = true;
@@ -74,7 +74,7 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.SystemColors.Window;
-			this.ClientSize = new System.Drawing.Size(492, 378);
+			this.ClientSize = new System.Drawing.Size(575, 414);
 			this.Controls.Add(this.tabControl1);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MaximizeBox = false;

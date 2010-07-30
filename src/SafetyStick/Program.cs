@@ -36,7 +36,7 @@ namespace myWorkSafe
 				trayIcon.Visible = true;
 
 
-			//	DoTestRun();
+				DoTestRun();
 
 				var preExistingDrives = new List<UsbDriveInfo>();
 				preExistingDrives.AddRange(UsbDriveInfo.GetDrives());
@@ -118,8 +118,8 @@ namespace myWorkSafe
 
 			//		var info = new DriveInfo(Path.GetPathRoot(destinationPath));
 
-			var totalSpaceInKilobytes = 90 * 1024;// (int)(100.0 * info.AvailableFreeSpace / info.TotalSize);
-			var freeSpaceInKilobytes = 80*1024;
+			var totalSpaceInKilobytes = 900 * 1024;// (int)(100.0 * info.AvailableFreeSpace / info.TotalSize);
+			var freeSpaceInKilobytes = 800*1024;
 			var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes);
 			new MainWindow(backupControl).ShowDialog();
 		}
