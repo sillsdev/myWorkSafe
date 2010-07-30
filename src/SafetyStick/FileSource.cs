@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Microsoft.Synchronization.Files;
 using Microsoft.Win32;
 using Palaso.Extensions;
@@ -13,6 +14,8 @@ namespace myWorkSafe
 			Filter = new FileSyncScopeFilter();
 			SourceGuid = new Guid(sourceGuid);
 			DestGuid = new Guid(destGuid);
+			Filter.AttributeExcludeMask = FileAttributes.Hidden | FileAttributes.Temporary | FileAttributes.System;
+			Filter.FileNameExcludes.Add("parent.lock");//a mozilla thing (e.g. thunderbird)
 		}
 
 		public enum DispositionChoice {Waiting=0, Calculating, WillBeBackedUp, NotEnoughRoom,
@@ -35,6 +38,8 @@ namespace myWorkSafe
 		public int DeleteFileCount;
 		public Guid SourceGuid;
 		public Guid DestGuid;
+		public string SourceTempMetaFile;
+		public string DestTempMetaFile;
 
 		public void ClearStatistics()
 		{
@@ -58,6 +63,27 @@ namespace myWorkSafe
 		public bool GetIsRelevantOnThisMachine()
 		{
 			return Directory.Exists(RootFolder);
+		}
+
+		public bool ShouldSkipDirectory(FileData directoryData)
+		{
+			//we bracket with spaces so that we don't match substrings
+			string value = " "+directoryData.Name.ToLower()+" ";
+			if(Filter.SubdirectoryExcludes.Any(s => (" "+s.ToLower()+" ") ==value))
+				return true;
+			return ShouldSkip(directoryData.RelativePath);
+		}
+
+		public bool ShouldSkip(string relativePath)
+		{
+			string value = "//"+relativePath.ToLower()+"//";
+			var parts = relativePath.Split(new char[] {Path.DirectorySeparatorChar});
+			foreach (var part in parts)
+			{
+				if(Filter.SubdirectoryExcludes.Any(s => s.ToLower() == part.ToLower()))
+					return true;
+			}
+			return false;
 		}
 	}
 
@@ -182,6 +208,7 @@ namespace myWorkSafe
 			Name = "Windows Live Mail";
 			Filter.SubdirectoryExcludes.Add("news.sil.org.pg");
 			Filter.SubdirectoryExcludes.Add("Your Feeds");
+			//Filter.SubdirectoryExcludes.Add("Deleted Items");
 		}
 
 		public override string RootFolder
@@ -209,8 +236,9 @@ namespace myWorkSafe
 		{
 			get
 			{
-				var localData= Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-				return localData.CombineForPath(@"Microsoft\Windows Live Mail");
+				var appData= Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+				//on my win7 machine, this is in the "roaming" dir.
+				return appData.CombineForPath(@"Thunderbird");
 			}
 		}
 	}

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Microsoft.Synchronization;
 using Microsoft.Synchronization.Files;
 
@@ -101,8 +103,27 @@ namespace myWorkSafe
 
 
 				string destinationSubFolder = group.GetDestinationSubFolder(DestinationRootForThisUser);
-				using (var sourceProvider = new FileSyncProvider(group.SourceGuid, group.RootFolder, group.Filter, options))
-				using (var destinationProvider = new FileSyncProvider(group.DestGuid, destinationSubFolder, group.Filter, options))
+
+				//nb: it seems so far that the persisant metat data file thing is counter productive,
+				//since we aren't sync'ing, really, we're just copying from computer-->key.  We could
+				//imagine that file helping speed things up, but I can't yet see that it does, but I
+				//have seen it cause things to not be copied over (in circumnstances which might make
+				//sense in some syncing contexts).
+
+				group.SourceTempMetaFile = Path.GetTempFileName();
+				group.DestTempMetaFile = Path.GetTempFileName();
+				string tempDirectory = Path.GetDirectoryName(group.SourceTempMetaFile);
+				using (var sourceProvider = new FileSyncProvider(group.SourceGuid, group.RootFolder, group.Filter, options,
+					tempDirectory,
+					Path.GetFileName(group.SourceTempMetaFile),
+					tempDirectory,
+					tempDirectory)) 
+				using (var destinationProvider = new FileSyncProvider(group.DestGuid, destinationSubFolder, group.Filter, options,
+					tempDirectory,
+					Path.GetFileName(group.DestTempMetaFile),
+					tempDirectory,
+					tempDirectory
+				))
 				{
 					destinationProvider.PreviewMode = true;
 					destinationProvider.ApplyingChange += (OnDestinationPreviewChange);
@@ -112,9 +133,11 @@ namespace myWorkSafe
 					PreviewOrSynchronizeCore(destinationProvider, sourceProvider);
 				}
 
+				var groupsChangeInKB = (long)Math.Ceiling(group.NetChangeInBytes / 1024.0);
 				//is there room to fit in this whole group?
-				if(ApprovedChangeInKB + group.NetChangeInBytes < _totalAvailableOnDeviceInKilobytes)
+				if (ApprovedChangeInKB + groupsChangeInKB < _totalAvailableOnDeviceInKilobytes)
 				{
+					ApprovedChangeInKB = groupsChangeInKB;
 					_totalFilesThatWillBeBackedUp += group.UpdateFileCount + group.NewFileCount;
 					group.Disposition = FileSource.DispositionChoice.WillBeBackedUp;
 				}
@@ -156,43 +179,84 @@ namespace myWorkSafe
 		{
 			_cancelRequested = false;
 			var options = FileSyncOptions.RecycleDeletedFiles;
-		
+
+			try
+			{
+				foreach (var group in _groups)
+				{
+					if (_cancelRequested)
+					{
+						break;
+					}
+					_currentSource = group; //used by callbacks
+					if (group.Disposition == FileSource.DispositionChoice.NotEnoughRoom)
+						continue;
+
+					group.ClearStatistics();
+					group.Disposition = FileSource.DispositionChoice.Synchronizing;
+					InvokeGroupProgress();
+					string tempDirectory = Path.GetDirectoryName(group.SourceTempMetaFile);
+
+					using (var sourceProvider = new FileSyncProvider(group.SourceGuid, group.RootFolder, group.Filter, options,
+																	 tempDirectory,
+																	 Path.GetFileName(group.SourceTempMetaFile),
+																	 tempDirectory,
+																	 tempDirectory))
+					using (
+						var destinationProvider = new FileSyncProvider(group.DestGuid,
+																	   group.GetDestinationSubFolder(DestinationRootForThisUser),
+																	   group.Filter, options,
+																	   tempDirectory,
+																	   Path.GetFileName(group.SourceTempMetaFile),
+																	   tempDirectory,
+																	   tempDirectory))
+					{
+						destinationProvider.PreviewMode = false;
+						destinationProvider.ApplyingChange += (OnDestinationChange);
+						PreviewOrSynchronizeCore(destinationProvider, sourceProvider);
+					}
+
+					group.Disposition = FileSource.DispositionChoice.WasBackedUp;
+
+					if (GroupProgress != null)
+					{
+						GroupProgress.Invoke();
+					}
+				}
+				InvokeGroupProgress();
+			}
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, something didn't work.");
+			}
+			finally
+			{
+				CleanupTempFiles();
+			}
+		}
+
+		private void CleanupTempFiles()
+		{
 			foreach (var group in _groups)
 			{
-				if (_cancelRequested)
+				if(File.Exists(group.SourceTempMetaFile))
 				{
-					break;
+					File.Delete(group.SourceTempMetaFile);
 				}
-				_currentSource = group;//used by callbacks
-				if (group.Disposition == FileSource.DispositionChoice.NotEnoughRoom)
-					continue;
-
-				group.ClearStatistics();
-				group.Disposition = FileSource.DispositionChoice.Synchronizing;
-				InvokeGroupProgress();
-				using (var sourceProvider = new FileSyncProvider(group.SourceGuid, group.RootFolder, group.Filter, options))
-				using (var destinationProvider = new FileSyncProvider(group.DestGuid, group.GetDestinationSubFolder(DestinationRootForThisUser), group.Filter, options))
+				if (File.Exists(group.DestTempMetaFile))
 				{
-					destinationProvider.PreviewMode = false;
-					destinationProvider.ApplyingChange += (OnDestinationChange);
-					PreviewOrSynchronizeCore(destinationProvider, sourceProvider);
-				}
-
-				group.Disposition = FileSource.DispositionChoice.WasBackedUp;
-
-				if(GroupProgress !=null)
-				{
-					GroupProgress.Invoke();
+					File.Delete(group.DestTempMetaFile);
 				}
 			}
-			InvokeGroupProgress();
 		}
 
 		private void OnDestinationPreviewChange(object x, ApplyingChangeEventArgs y)
 		{
-			//todo: at the moment, this is never true, there's never a current file, even if the file does exist.
-			//Not sure when that is supposed to be available
-
+			if(ShouldSkip(y))
+			{
+				y.SkipChange = true;
+				return;
+			}
 			if(y.CurrentFileData !=null)
 			{
 				_currentSource.NetChangeInBytes -= y.CurrentFileData.Size;
@@ -217,8 +281,36 @@ namespace myWorkSafe
 			}
 			InvokeProgress();
 		}
+
+		private bool ShouldSkip(ApplyingChangeEventArgs args)
+		{
+			//the built-in directory system is lame, you can't just specify the name of the directory
+			//this changes the behavior to do just that
+			if (args.NewFileData!=null && args.NewFileData.IsDirectory)
+				return _currentSource.ShouldSkipDirectory(args.NewFileData);
+
+			if (args.CurrentFileData != null && args.CurrentFileData.IsDirectory)
+				return _currentSource.ShouldSkipDirectory(args.CurrentFileData);
+
+			if (args.NewFileData != null)
+				return _currentSource.ShouldSkip(args.NewFileData.RelativePath);
+
+			if (args.CurrentFileData != null)
+				return _currentSource.ShouldSkip(args.CurrentFileData.RelativePath);
+
+			return false;
+		}
+
 		private void OnDestinationChange(object x, ApplyingChangeEventArgs y)
 		{
+			if (ShouldSkip(y))
+			{
+				y.SkipChange = true;
+				return;
+			}
+
+			Debug.Assert(y == null || y.NewFileData == null || !y.NewFileData.Name.Contains("extensions"));
+
 			_files++;
 			InvokeProgress();
 

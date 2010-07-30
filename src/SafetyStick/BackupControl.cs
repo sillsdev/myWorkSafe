@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Dolinay;
 using myWorkSafe.Usb;
 using System.IO;
+using Timer = System.Threading.Timer;
 
 namespace myWorkSafe
 {
@@ -37,15 +38,15 @@ namespace myWorkSafe
 			listView1.Visible = false;
 			backupNowButton.Visible = false;
 			_groups = new List<FileSource>(){
-				new ParatextFiles(), 
-				new WeSayFiles(), 
-				new OtherFiles(), 
-				new OtherDesktopFiles(),
+//				new ParatextFiles(), 
+//				new WeSayFiles(), 
+//				new OtherFiles(), 
+//				new OtherDesktopFiles(),
 				new WindowsLiveMail(),
-				new ThunderbirdMail(),
-				new MyPictures(),
-				new MyMusic(),
-				new MyVideos(),
+//				new ThunderbirdMail(),
+//				new MyPictures(),
+//				new MyMusic(),
+//				new MyVideos(),
 			};
 
 
@@ -153,9 +154,19 @@ namespace myWorkSafe
 			}
 			syncProgressBar.Minimum = 0;
 
-			//_status.Visible = false;
-			_status.Text = string.Format("Will back up {0} files ({1})", _synchronizer.TotalFilesThatWillBeBackedUpThatWillBeCopied, MediaStatus.GetStringForStorageSize(_synchronizer.ApprovedChangeInKB));
-			//_status.Visible = true;
+			if (_synchronizer.TotalFilesThatWillBeBackedUpThatWillBeCopied > 0)
+			{
+				_status.Text = string.Format("Will back up {0} files ({1})",
+				                             _synchronizer.TotalFilesThatWillBeBackedUpThatWillBeCopied,
+				                             MediaStatus.GetStringForStorageSize(_synchronizer.ApprovedChangeInKB));
+			}
+			else
+			{
+				_status.Text = "No files need to be backed up";
+				closeButton.Visible = true;
+				backupNowButton.Visible = false;
+			}
+
 			_mediaStatusIndicator.PendingFillPercentage = (int)(100.0 * (_availableFreeSpaceInKilobytes - _synchronizer.ApprovedChangeInKB) / _totalSpaceOfDeviceInKilobytes);
 		}
 
@@ -227,8 +238,24 @@ namespace myWorkSafe
 			closeButton.Focus();
 			Cursor = Cursors.Default;
 
+			AttemptEjectInAMoment();
+		}
 
-			if(AttemptUsbEject())
+		private void AttemptEjectInAMoment()
+		{
+			var timer = new System.Windows.Forms.Timer();
+			timer.Tick += ((o, args) =>
+			                                  	{
+			                                  		((System.Windows.Forms.Timer) o).Enabled = false;
+			                                  		TryToEjectUsb();
+			                                  	});
+			timer.Interval = 100;
+			timer.Enabled = true;
+		}
+
+		private void TryToEjectUsb()
+		{
+			if (AttemptUsbEject())
 			{
 				using (var player = new SoundPlayer(Properties.Resources.finished))
 				{
@@ -246,6 +273,7 @@ namespace myWorkSafe
 				CurrentState = State.CouldNotEject;
 			}
 		}
+
 
 		private bool AttemptUsbEject()
 		{
