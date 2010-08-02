@@ -17,9 +17,9 @@ namespace myWorkSafe
 		private readonly long _totalAvailableOnDeviceInKilobytes;
 		private SyncOrchestrator _agent;
 		private FileSource _currentSource;
-//		public long PredictedChangeInKiloBytes;
 		private bool _cancelRequested;
 		public long ApprovedChangeInKB;
+		private HashSet<string> _alreadyAccountedFor;
 
 
 		public Synchronizer(string destinationDeviceRoot, IEnumerable<FileSource> groups, long totalAvailableOnDeviceInKilobytes)
@@ -66,6 +66,7 @@ namespace myWorkSafe
 			 * Then, as we go through the groups, we could keep going so long as deleting
 			 * some lower-priority group would allow us to keep going.
 			 */
+			_alreadyAccountedFor = new HashSet<string>();
 			_cancelRequested = false;
 			_files = 0;
 			ApprovedChangeInKB = 0;
@@ -179,6 +180,7 @@ namespace myWorkSafe
 		{
 			_cancelRequested = false;
 			var options = FileSyncOptions.RecycleDeletedFiles;
+			_alreadyAccountedFor = new HashSet<string>();
 
 			try
 			{
@@ -250,39 +252,40 @@ namespace myWorkSafe
 			}
 		}
 
-		private void OnDestinationPreviewChange(object x, ApplyingChangeEventArgs y)
+		private void OnDestinationPreviewChange(object provider, ApplyingChangeEventArgs args)
 		{
-			if(ShouldSkip(y))
+			if(ShouldSkip((FileSyncProvider)provider,args))
 			{
-				y.SkipChange = true;
+				args.SkipChange = true;
 				return;
 			}
-			if(y.CurrentFileData !=null)
+			if(args.CurrentFileData !=null)
 			{
-				_currentSource.NetChangeInBytes -= y.CurrentFileData.Size;
-			//	PredictedSpaceInKiloBytes -= y.CurrentFileData.Size/1024;
-				//next the new size will be added back, below
+				_currentSource.NetChangeInBytes -= args.CurrentFileData.Size;
+				//below, we'll add back the new size, giving us the correct net change
 			}
-			switch(y.ChangeType)
+			string rootDirectoryPath = ((FileSyncProvider)provider).RootDirectoryPath;
+			switch (args.ChangeType)
 			{
 				case ChangeType.Create:
 					_currentSource.NewFileCount++;
-					_currentSource.NetChangeInBytes += y.NewFileData.Size;
-					//PredictedSpaceInKiloBytes += y.NewFileData.Size/1024;
+					_currentSource.NetChangeInBytes += args.NewFileData.Size;
+					_alreadyAccountedFor.Add(Path.Combine(rootDirectoryPath, args.NewFileData.RelativePath));
 					break;
 				case ChangeType.Update:
 					_currentSource.UpdateFileCount++;
-					_currentSource.NetChangeInBytes += y.NewFileData.Size;
-					//PredictedSpaceInKiloBytes += y.NewFileData.Size/1024;
+					_currentSource.NetChangeInBytes += args.NewFileData.Size;
+					_alreadyAccountedFor.Add(Path.Combine(rootDirectoryPath, args.CurrentFileData.RelativePath));
 					break;
 				case ChangeType.Delete:
+					_alreadyAccountedFor.Add(Path.Combine(rootDirectoryPath, args.CurrentFileData.RelativePath));
 					_currentSource.DeleteFileCount++;
 					break;
 			}
 			InvokeProgress();
 		}
 
-		private bool ShouldSkip(ApplyingChangeEventArgs args)
+		private bool ShouldSkip(FileSyncProvider provider,ApplyingChangeEventArgs args)
 		{
 			//the built-in directory system is lame, you can't just specify the name of the directory
 			//this changes the behavior to do just that
@@ -292,29 +295,32 @@ namespace myWorkSafe
 			if (args.CurrentFileData != null && args.CurrentFileData.IsDirectory)
 				return _currentSource.ShouldSkipDirectory(args.CurrentFileData);
 
+			string rootDirectoryPath = provider.RootDirectoryPath; 
 			if (args.NewFileData != null)
-				return _currentSource.ShouldSkip(args.NewFileData.RelativePath);
+				return _alreadyAccountedFor.Contains(Path.Combine(rootDirectoryPath, args.NewFileData.RelativePath)) 
+						||_currentSource.ShouldSkip(args.NewFileData.RelativePath);
 
 			if (args.CurrentFileData != null)
-				return _currentSource.ShouldSkip(args.CurrentFileData.RelativePath);
+				return _alreadyAccountedFor.Contains(Path.Combine(rootDirectoryPath, args.CurrentFileData.RelativePath)) 
+						|| _currentSource.ShouldSkip(args.CurrentFileData.RelativePath);
 
 			return false;
 		}
 
-		private void OnDestinationChange(object x, ApplyingChangeEventArgs y)
+		private void OnDestinationChange(object provider, ApplyingChangeEventArgs args)
 		{
-			if (ShouldSkip(y))
+			if (ShouldSkip((FileSyncProvider)provider, args))
 			{
-				y.SkipChange = true;
+				args.SkipChange = true;
 				return;
 			}
 
-			Debug.Assert(y == null || y.NewFileData == null || !y.NewFileData.Name.Contains("extensions"));
+			Debug.Assert(args == null || args.NewFileData == null || !args.NewFileData.Name.Contains("extensions"));
 
 			_files++;
 			InvokeProgress();
 
-			switch (y.ChangeType)
+			switch (args.ChangeType)
 			{
 				case ChangeType.Create:
 					break;

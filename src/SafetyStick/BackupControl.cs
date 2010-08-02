@@ -38,15 +38,15 @@ namespace myWorkSafe
 			listView1.Visible = false;
 			backupNowButton.Visible = false;
 			_groups = new List<FileSource>(){
-//				new ParatextFiles(), 
-//				new WeSayFiles(), 
-//				new OtherFiles(), 
-//				new OtherDesktopFiles(),
+				new ParatextFiles(), 
+				new WeSayFiles(), 
+				new OtherFiles(), 
+				new OtherDesktopFiles(),
 				new WindowsLiveMail(),
-//				new ThunderbirdMail(),
-//				new MyPictures(),
-//				new MyMusic(),
-//				new MyVideos(),
+				new ThunderbirdMail(),
+				new MyPictures(),
+				new MyMusic(),
+				new MyVideos(),
 			};
 
 

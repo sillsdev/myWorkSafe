@@ -31,15 +31,16 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Synchronization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Synchronization, Version=2.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\Microsoft.Synchronization.dll</HintPath>
+      <HintPath>..\..\lib\Microsoft.Synchronization.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Synchronization.Files, Version=1.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Synchronization.Files, Version=2.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\Microsoft.Synchronization.Files.dll</HintPath>
+      <HintPath>..\..\lib\Microsoft.Synchronization.Files.dll</HintPath>
     </Reference>
     <Reference Include="Palaso, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>

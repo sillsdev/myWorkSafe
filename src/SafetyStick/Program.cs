@@ -36,7 +36,7 @@ namespace myWorkSafe
 				trayIcon.Visible = true;
 
 
-				DoTestRun();
+			//	DoTestRun();
 
 				var preExistingDrives = new List<UsbDriveInfo>();
 				preExistingDrives.AddRange(UsbDriveInfo.GetDrives());
@@ -67,7 +67,14 @@ namespace myWorkSafe
 						}
 					}
 					preExistingDrives = foundDrives;
-					Thread.Sleep(2000);
+					if (!_exitNow)
+						Thread.Sleep(500);
+					if (!_exitNow)
+						Thread.Sleep(500);
+					if (!_exitNow)
+						Thread.Sleep(500);
+					if (!_exitNow)
+						Thread.Sleep(500);					
 				}
 			}
 		}
@@ -105,7 +112,7 @@ namespace myWorkSafe
 
 		private static void OnExit(object sender, EventArgs e)
 	        {
-		 	Application.Exit();
+		 		//Application.Exit();
 		 		_exitNow = true;
 	        }
 

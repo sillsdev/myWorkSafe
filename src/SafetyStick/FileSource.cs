@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Synchronization.Files;
@@ -12,8 +13,14 @@ namespace myWorkSafe
 		public FileSource(string sourceGuid, string destGuid)
 		{
 			Filter = new FileSyncScopeFilter();
-			SourceGuid = new Guid(sourceGuid);
-			DestGuid = new Guid(destGuid);
+			
+			//this could bear further research, but so far, it looks like helping the MS file sync provider
+			//with these guids and persisten metadata files, if anything, just leads to behavior contrary
+			//to what we want for simple backup.  
+			SourceGuid = Guid.NewGuid();
+			DestGuid = Guid.NewGuid();
+			//	SourceGuid = new Guid(sourceGuid);
+			//	DestGuid = new Guid(destGuid);
 			Filter.AttributeExcludeMask = FileAttributes.Hidden | FileAttributes.Temporary | FileAttributes.System;
 			Filter.FileNameExcludes.Add("parent.lock");//a mozilla thing (e.g. thunderbird)
 		}
@@ -128,13 +135,15 @@ namespace myWorkSafe
 		}
 	}
 
-	public class DevChorusFiles : FileSource
+	/*
+	 There doesn't appear to be a way to know where the backups go, nor identify them, as the
+	 * are simply zips.
+	public class TEBackupFiles : FileSource
 	{
-		public DevChorusFiles()
+		public TEBackupFiles()
 			: base("472D2CAB-C4FE-4f80-A21E-F9ECA725F6C3", "E732ADF7-81F4-41ef-B664-BE910593288E")
 		{
-			Name = "DevChorusFiles";
-			//Wildcards (* and ?) can be used in file names.
+			Name = "TE Backup Files";
 			Filter.FileNameExcludes.Add("*.dll");
 			Filter.FileNameExcludes.Add("*.exe");
 		}
@@ -147,6 +156,8 @@ namespace myWorkSafe
 			}
 		}
 	}
+	*
+	 */
 
 	public class OtherFiles : FileSource
 	{
@@ -303,11 +314,27 @@ namespace myWorkSafe
 	public class RawDirectorySource : FileSource
 	{
 		private string _path;
-		public RawDirectorySource(string path)	//todo: what if this is used for more than one path?
-			: base("33BCC0DE-C329-4bdd-9A03-ECEC16A588F8", "44BCC0DE-C329-4bdd-9A03-ECEC16A588F8")
+
+		public RawDirectorySource(string name, string rootFolder, 
+			IEnumerable<string> excludeFilePattern, IEnumerable<string> excludeDirectoryName)
+			:base(null,null)
 		{
-			_path = path;
-			Name = Path.GetFileName(path);
+			_path = rootFolder;
+			Name = name;
+			if (null != excludeFilePattern)
+			{
+				foreach (var pattern in excludeFilePattern)
+				{
+					Filter.FileNameIncludes.Add(pattern);
+				}
+			}
+			if (null != excludeDirectoryName)
+			{
+				foreach (var dir in excludeDirectoryName)
+				{
+					Filter.SubdirectoryExcludes.Add(dir);
+				}
+			}
 		}
 
 		public override string RootFolder
