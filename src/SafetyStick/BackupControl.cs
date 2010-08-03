@@ -7,8 +7,10 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Dolinay;
+using myWorkSafe.Groups;
 using myWorkSafe.Usb;
 using System.IO;
+using Palaso.IO;
 using Timer = System.Threading.Timer;
 
 namespace myWorkSafe
@@ -25,7 +27,8 @@ namespace myWorkSafe
 		Synchronizer _synchronizer;
 		private BackgroundWorker _preparationWorker;
 		private BackgroundWorker _backupWorker;
-		private List<FileSource> _groups;
+		private IEnumerable<FileGroup> _groups;
+		private DriveDetector _driveDetector;
 
 		public BackupControl(string destinationDeviceRoot, long availableFreeSpaceInKilobytes, long totalSpaceOfDeviceInKilobytes)
 		{
@@ -37,27 +40,30 @@ namespace myWorkSafe
 			SetWindowText();
 			listView1.Visible = false;
 			backupNowButton.Visible = false;
-			_groups = new List<FileSource>(){
-				new ParatextFiles(), 
-				new WeSayFiles(), 
-				new OtherFiles(), 
-				new OtherDesktopFiles(),
-				new WindowsLiveMail(),
-				new ThunderbirdMail(),
-				new MyPictures(),
-				new MyMusic(),
-				new MyVideos(),
-			};
+			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "groups.ini");
+			var reader = new GroupIniFileReader(path);
+			_groups = reader.CreateGroups();
+//			_groups = new List<FileGroup>(){
+//				new ParatextFiles(), 
+//				new WeSayFiles(), 
+//				new OtherFiles(), 
+//				new OtherDesktopFiles(),
+//				new WindowsLiveMail(),
+//				new ThunderbirdMail(),
+//				new MyPictures(),
+//				new MyMusic(),
+//				new MyVideos(),
+//			};
 
 
-			var driveDetector = new DriveDetector();
+			_driveDetector = new DriveDetector();
 
 			//TODO: use this instead of polling in the main program
 			//driveDetector.DeviceArrived += new DriveDetectorEventHandler(OnDriveArrived);
 
 			//TODO: see if DeviceRemoved could be used instaead of DeviceSomethingHappened
 			//driveDetector.DeviceRemoved += new DriveDetectorEventHandler(OnDriveRemoved);
-			driveDetector.DeviceSomethingHappened += new DriveDetectorEventHandler(OnDriveSomething);
+			_driveDetector.DeviceSomethingHappened += new DriveDetectorEventHandler(OnDriveSomething);
 			//driveDetector.QueryRemove += new DriveDetectorEventHandler(OnQueryRemove);
 
 			_synchronizer = new Synchronizer(destinationDeviceRoot, _groups, availableFreeSpaceInKilobytes);
@@ -83,6 +89,7 @@ namespace myWorkSafe
 			_preparationWorker.WorkerSupportsCancellation = true;
 			_preparationWorker.RunWorkerCompleted += OnPreparationCompleted;
 		}
+
 
 		private void OnDriveSomething(object sender, DriveDetectorEventArgs e)
 		{
@@ -112,26 +119,26 @@ namespace myWorkSafe
 				var item = new ListViewItem(group.Name);
 				switch(group.Disposition)
 				{
-					case FileSource.DispositionChoice.Hide:
+					case FileGroup.DispositionChoice.Hide:
 						continue;
 						break;
-					case FileSource.DispositionChoice.Waiting:
+					case FileGroup.DispositionChoice.Waiting:
 						break;
-					case FileSource.DispositionChoice.Calculating:
+					case FileGroup.DispositionChoice.Calculating:
 						item.SubItems.Add("Calculating...");
 						break;
-					case FileSource.DispositionChoice.Synchronizing:
+					case FileGroup.DispositionChoice.Synchronizing:
 						item.SubItems.Add("Synchronizing...");
 						break;
-					case FileSource.DispositionChoice.WillBeBackedUp:
+					case FileGroup.DispositionChoice.WillBeBackedUp:
 						//item.ImageIndex = 0;
 						item.SubItems.Add(group.UpdateFileCount + group.NewFileCount +" files to backup.");
 						break;
-					case FileSource.DispositionChoice.NotEnoughRoom:
+					case FileGroup.DispositionChoice.NotEnoughRoom:
 						item.ImageIndex = 1;
 						item.SubItems.Add("Not enough room.");
 						break;
-					case FileSource.DispositionChoice.WasBackedUp:
+					case FileGroup.DispositionChoice.WasBackedUp:
 						item.ImageIndex = 0;
 						item.SubItems.Add("Done");
 						break;
@@ -149,7 +156,7 @@ namespace myWorkSafe
 			syncProgressBar.Maximum = 0;
 			foreach (var group in _groups)
 			{
-				if(group.Disposition == FileSource.DispositionChoice.WillBeBackedUp)
+				if(group.Disposition == FileGroup.DispositionChoice.WillBeBackedUp)
 					syncProgressBar.Maximum += group.UpdateFileCount + group.NewFileCount;
 			}
 			syncProgressBar.Minimum = 0;
@@ -328,13 +335,14 @@ namespace myWorkSafe
 			if (_preparationWorker != null)
 			{
 				_status.Text = "Cancelling...";
-				_preparationWorker.RunWorkerCompleted +=new RunWorkerCompletedEventHandler((x,y)=>Application.Exit());
+				_preparationWorker.RunWorkerCompleted +=new RunWorkerCompletedEventHandler((x,y)=>CloseNow());
 				_preparationWorker.CancelAsync();
 			}
 			if(_backupWorker !=null)
 			{
 				_status.Text = "Cancelling...";
 				syncProgressBar.Visible = false;
+				_backupWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler((x, y) => CloseNow());
 				_backupWorker.CancelAsync();
 			}
 		}
@@ -371,8 +379,13 @@ namespace myWorkSafe
 
 		private void BackupControl_Load(object sender, EventArgs e)
 		{
-			CurrentState = State.Preparing;
-			_preparationWorker.RunWorkerAsync();
+			//if we start too soon, sometime the progress events are called before the window
+			//is created and ready to receive them.
+			_startGatheringInfo.Enabled = true;
+
+//			CurrentState = State.Preparing;
+//			_preparationWorker.RunWorkerAsync();
+
 		}
 
 		private void _probablyRemovedPhysicallyTimer_Tick(object sender, EventArgs e)
@@ -384,6 +397,14 @@ namespace myWorkSafe
 
 			CurrentState = State.ExpectingPhysicalRemoval;
 			_probablyRemovedPhysicallyTimer.Enabled = false;
+		}
+
+		private void _startGatheringInfo_Tick(object sender, EventArgs e)
+		{
+			_startGatheringInfo.Enabled = false;
+			CurrentState = State.Preparing;
+			_preparationWorker.RunWorkerAsync();
+
 		}
 	}
 }

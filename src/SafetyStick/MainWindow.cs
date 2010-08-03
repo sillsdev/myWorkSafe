@@ -36,6 +36,11 @@ namespace myWorkSafe
 			}
 		}
 
+		private void MainWindow_Load(object sender, System.EventArgs e)
+		{
+			BringToFront();
+		}
+
 
 	}
 }

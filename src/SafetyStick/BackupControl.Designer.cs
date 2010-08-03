@@ -16,6 +16,11 @@
 			if (disposing && (components != null))
 			{
 				components.Dispose();
+				if(_driveDetector !=null)
+				{
+					_driveDetector.Dispose();
+					_driveDetector = null;
+				}
 			}
 			base.Dispose(disposing);
 		}
@@ -53,6 +58,7 @@
 			this._status = new System.Windows.Forms.Label();
 			this._probablyRemovedPhysicallyTimer = new System.Windows.Forms.Timer(this.components);
 			this._mediaStatusIndicator = new myWorkSafe.MediaStatus();
+			this._startGatheringInfo = new System.Windows.Forms.Timer(this.components);
 			this.SuspendLayout();
 			// 
 			// _safeToRemoveLabel
@@ -185,6 +191,11 @@
 			this._mediaStatusIndicator.Size = new System.Drawing.Size(100, 323);
 			this._mediaStatusIndicator.TabIndex = 11;
 			// 
+			// _startGatheringInfo
+			// 
+			this._startGatheringInfo.Interval = 500;
+			this._startGatheringInfo.Tick += new System.EventHandler(this._startGatheringInfo_Tick);
+			// 
 			// BackupControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -219,5 +230,6 @@
 		private System.Windows.Forms.ProgressBar syncProgressBar;
 		private System.Windows.Forms.Label _status;
 		private System.Windows.Forms.Timer _probablyRemovedPhysicallyTimer;
+		private System.Windows.Forms.Timer _startGatheringInfo;
 	}
 }

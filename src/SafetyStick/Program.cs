@@ -43,6 +43,8 @@ namespace myWorkSafe
 
 				while (!_exitNow)
 				{
+					Application.DoEvents();//suport the context menu on the system tray
+
 					List<UsbDriveInfo> foundDrives = GetFoundDrives();
 					foreach (var info in foundDrives)
 					{

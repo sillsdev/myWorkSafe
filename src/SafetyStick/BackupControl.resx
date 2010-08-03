@@ -125,7 +125,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABO
-        BgAAAk1TRnQBSQFMAgEBAgEAAQgBAgEIAQIBEAEAARABAAT/ARkBAAj/AUIBTQE2BwABNgMAASgDAAFA
+        BgAAAk1TRnQBSQFMAgEBAgEAARABAgEQAQIBEAEAARABAAT/ARkBAAj/AUIBTQE2BwABNgMAASgDAAFA
         AwABEAMAAQEBAAEYBgABDBsAAaQBxwGkAQABbwIAAW8BAAFrAagBax4AA/8BywHQAe8BhwGOAdQC9wH5
         hwAB5gHtAeYBAgFxAQIBAAFxAgABcgIAAXMBAAHsAfEB7BsAAfkB+gH7AUYBXQHuARUBKQHFAY0BlAHV
         Av0B/hUAAvkB+wFNAVkBwwL3AfljAAP8ATQBiwE0AQABcgIAAXMCAAF1AgABdgEAAXsBtAF7GwAC+QH7
@@ -156,5 +156,8 @@
   </data>
   <metadata name="_probablyRemovedPhysicallyTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>198, 17</value>
+  </metadata>
+  <metadata name="_startGatheringInfo.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>438, 17</value>
   </metadata>
 </root>
