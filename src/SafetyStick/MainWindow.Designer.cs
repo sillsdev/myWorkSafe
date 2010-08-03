@@ -64,7 +64,7 @@
 			this._aboutPage.Location = new System.Drawing.Point(4, 4);
 			this._aboutPage.Name = "_aboutPage";
 			this._aboutPage.Padding = new System.Windows.Forms.Padding(3);
-			this._aboutPage.Size = new System.Drawing.Size(484, 352);
+			this._aboutPage.Size = new System.Drawing.Size(567, 388);
 			this._aboutPage.TabIndex = 1;
 			this._aboutPage.Text = "About";
 			this._aboutPage.UseVisualStyleBackColor = true;
@@ -81,6 +81,7 @@
 			this.MinimizeBox = false;
 			this.Name = "MainWindow";
 			this.Text = "myWorkSafe";
+			this.Load += new System.EventHandler(this.MainWindow_Load);
 			this.tabControl1.ResumeLayout(false);
 			this.ResumeLayout(false);
 

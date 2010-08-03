@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using myWorkSafe;
+using myWorkSafe.Groups;
 using NUnit.Framework;
 using Palaso.TestUtilities;
 using System.IO;
 
-namespace SafetypeStickTests
+namespace WorkSafe.Tests
 {
 	[TestFixture]
 	public class SynchronizerTests
@@ -20,8 +18,8 @@ namespace SafetypeStickTests
 			{
 				System.IO.File.WriteAllText(from.Combine("test1.txt"),"Blah blah");
 				System.IO.File.WriteAllText(from.Combine("test2.txt"), "Blah blah blah");
-				var source = new RawDirectorySource("1",from.Path,null,null);
-				var groups = new List<FileSource>(new[] {source});        
+				var source = new RawDirectoryGroup("1",from.Path,null,null);
+				var groups = new List<FileGroup>(new[] {source});        
 				var sync = new Synchronizer(to.Path, groups, 100);
 
 				sync.GatherInformation();
@@ -33,6 +31,41 @@ namespace SafetypeStickTests
 		}
 
 		[TestAttribute]
+		public void Syncronhize_FileLocked_OtherFileCopied()
+		{
+			using (var from = new TemporaryFolder("synctest_source"))
+			using (var to = new TemporaryFolder("synctest_dest"))
+			{
+				System.IO.File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
+				//System.IO.File.WriteAllText(from.Combine("test2.txt"), "Blah blah blah");
+				var source = new RawDirectoryGroup("1", from.Path, null, null);
+				var groups = new List<FileGroup>(new[] { source });
+				var sync = new Synchronizer(to.Path, groups, 100);
+
+				string path = to.Combine(sync.DestinationRootForThisUser, source.Name, "test2.txt");
+				using(var locked = File.OpenWrite(path))
+				{
+					sync.GatherInformation();
+					sync.DoSynchronization();
+				}
+				AssertFileExists(sync, source, to, "test1.txt");
+				//interestingly, the lock actually doesn't keep the sync framework from copying it
+				//AssertFileDoesNotExist(sync, source, to, "test2.txt");
+			}
+		}
+
+		private void AssertFileDoesNotExist(Synchronizer sync, RawDirectoryGroup source, TemporaryFolder destFolder, string fileName)
+		{
+			string path = destFolder.Combine(sync.DestinationRootForThisUser, source.Name, fileName);
+			Assert.IsFalse(File.Exists(path), path);
+		}
+		private void AssertFileExists(Synchronizer sync, RawDirectoryGroup source, TemporaryFolder destFolder, string fileName)
+		{
+			string path = destFolder.Combine(sync.DestinationRootForThisUser, source.Name, fileName);
+			Assert.IsTrue(File.Exists(path), path);
+		}
+
+		[TestAttribute]
 		public void GetInfo_FileExistsButHasChanged_WillBeReplaced()
 		{
 			using (var from = new TemporaryFolder("synctest_source"))
@@ -40,8 +73,8 @@ namespace SafetypeStickTests
 			{
 				System.IO.File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
 				System.IO.File.WriteAllText(from.Combine("test2.txt"), "dee dee dee");
-				var source = new RawDirectorySource("1", from.Path, null, null);
-				var groups = new List<FileSource>(new[] { source });
+				var source = new RawDirectoryGroup("1", from.Path, null, null);
+				var groups = new List<FileGroup>(new[] { source });
 				var sync = new Synchronizer(to.Path, groups, 100);
 				sync.GatherInformation();
 				sync.DoSynchronization();
@@ -63,8 +96,8 @@ namespace SafetypeStickTests
 			using (var to = new TemporaryFolder("synctest_dest"))
 			{
 				File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
-				var source = new RawDirectorySource("1", from.Path, null, null);
-				var groups = new List<FileSource>(new[] { source });
+				var source = new RawDirectoryGroup("1", from.Path, null, null);
+				var groups = new List<FileGroup>(new[] { source });
 				var sync = new Synchronizer(to.Path, groups, 100);
 				sync.GatherInformation();
 				sync.DoSynchronization();
@@ -91,8 +124,8 @@ namespace SafetypeStickTests
 			using (var to = new TemporaryFolder("synctest_dest"))
 			{
 				File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
-				var source = new RawDirectorySource("1", from.Path, null, null);
-				var groups = new List<FileSource>(new[] { source });
+				var source = new RawDirectoryGroup("1", from.Path, null, null);
+				var groups = new List<FileGroup>(new[] { source });
 				var sync = new Synchronizer(to.Path, groups, 100);
 				sync.GatherInformation();
 				sync.DoSynchronization();
@@ -124,9 +157,9 @@ namespace SafetypeStickTests
 			using (var to = new TemporaryFolder("synctest_dest"))
 			{
 				File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
-				var source1 = new RawDirectorySource("1",from.Path,null,null);
-				var source2 = new RawDirectorySource("2",from.Path,null,null);
-				var groups = new List<FileSource>(new[] { source1, source2 });
+				var source1 = new RawDirectoryGroup("1",from.Path,null,null);
+				var source2 = new RawDirectoryGroup("2",from.Path,null,null);
+				var groups = new List<FileGroup>(new[] { source1, source2 });
 				var sync = new Synchronizer(to.Path, groups, 100);
 				sync.GatherInformation();
 
@@ -150,8 +183,8 @@ namespace SafetypeStickTests
 			{
 				File.WriteAllText(from.Combine("text.txt"), "Blah blah");
 				File.WriteAllText(from.Combine("info.info"), "deedeedee");
-				var source1 = new RawDirectorySource("1", from.Path, new []{"*.info"}, null);
-				var groups = new List<FileSource>(new[] { source1 });
+				var source1 = new RawDirectoryGroup("1", from.Path, new []{"*.info"}, null);
+				var groups = new List<FileGroup>(new[] { source1 });
 				var sync = new Synchronizer(to.Path, groups, 100);
 				sync.GatherInformation();
 

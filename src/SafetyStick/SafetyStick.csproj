@@ -69,10 +69,22 @@
     <Compile Include="BackupControl.Designer.cs">
       <DependentUpon>BackupControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Groups\FileGroupFromIniSection.cs" />
+    <Compile Include="Groups\GroupIniFileReader.cs" />
+    <Compile Include="Groups\RawDirectoryGroup.cs" />
+    <Compile Include="ini\IniDocument.cs" />
+    <Compile Include="ini\IniException.cs" />
+    <Compile Include="ini\IniItem.cs" />
+    <Compile Include="ini\IniReader.cs" />
+    <Compile Include="ini\IniSection.cs" />
+    <Compile Include="ini\IniSectionCollection.cs" />
+    <Compile Include="ini\IniWriter.cs" />
+    <Compile Include="ini\OrderedList.cs" />
+    <Compile Include="ini\OrderedListEnumerator.cs" />
     <Compile Include="Usb\DriveDetector.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FileSource.cs" />
+    <Compile Include="Groups\FileGroup.cs" />
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
     </Compile>

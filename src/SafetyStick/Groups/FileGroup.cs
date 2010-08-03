@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Synchronization.Files;
-using Microsoft.Win32;
-using Palaso.Extensions;
 
-namespace myWorkSafe
+namespace myWorkSafe.Groups
 {
-	public abstract class FileSource
+	public abstract class FileGroup
 	{
-		public FileSource(string sourceGuid, string destGuid)
+		public FileGroup()
 		{
 			Filter = new FileSyncScopeFilter();
 			
@@ -19,10 +16,8 @@ namespace myWorkSafe
 			//to what we want for simple backup.  
 			SourceGuid = Guid.NewGuid();
 			DestGuid = Guid.NewGuid();
-			//	SourceGuid = new Guid(sourceGuid);
-			//	DestGuid = new Guid(destGuid);
+
 			Filter.AttributeExcludeMask = FileAttributes.Hidden | FileAttributes.Temporary | FileAttributes.System;
-			Filter.FileNameExcludes.Add("parent.lock");//a mozilla thing (e.g. thunderbird)
 		}
 
 		public enum DispositionChoice {Waiting=0, Calculating, WillBeBackedUp, NotEnoughRoom,
@@ -35,7 +30,7 @@ namespace myWorkSafe
 		public DispositionChoice Disposition;
 
 		public string Name;
-		public abstract string RootFolder{ get;}
+		public abstract string RootFolder { get; set; }
 
 
 		public FileSyncScopeFilter Filter;
@@ -94,8 +89,8 @@ namespace myWorkSafe
 		}
 	}
 
-
-	public class ParatextFiles :FileSource
+	/*
+	public class ParatextFiles :FileGroup
 	{
 
 		public ParatextFiles()
@@ -117,7 +112,7 @@ namespace myWorkSafe
 		}
 	}
 
-	public class WeSayFiles : FileSource
+	public class WeSayFiles : FileGroup
 	{
 		public WeSayFiles()
 			: base("472D2CAB-C4FE-4f80-A28E-F9ECA725F6C3", "E732ADF7-81F4-4aef-B664-BE910593288E")
@@ -135,31 +130,8 @@ namespace myWorkSafe
 		}
 	}
 
-	/*
-	 There doesn't appear to be a way to know where the backups go, nor identify them, as the
-	 * are simply zips.
-	public class TEBackupFiles : FileSource
-	{
-		public TEBackupFiles()
-			: base("472D2CAB-C4FE-4f80-A21E-F9ECA725F6C3", "E732ADF7-81F4-41ef-B664-BE910593288E")
-		{
-			Name = "TE Backup Files";
-			Filter.FileNameExcludes.Add("*.dll");
-			Filter.FileNameExcludes.Add("*.exe");
-		}
 
-		public override string RootFolder
-		{
-			get
-			{
-				return @"c:\dev\chorus";
-			}
-		}
-	}
-	*
-	 */
-
-	public class OtherFiles : FileSource
+	public class OtherFiles : FileGroup
 	{
 		public OtherFiles()
 			: base("98BCC0DE-C329-4bdd-9A03-ECEC16A588F8", "97BCC0DE-C329-4bdd-9A03-ECEC16A588F8")
@@ -185,7 +157,7 @@ namespace myWorkSafe
 		}
 	}
 
-	public class OtherDesktopFiles : FileSource
+	public class OtherDesktopFiles : FileGroup
 	{
 		public OtherDesktopFiles()
 			: base("9899C0DE-C329-4bdd-9A03-ECEC16A588F8", "97B990DE-C329-4bdd-9A03-ECEC16A588F8")
@@ -211,7 +183,7 @@ namespace myWorkSafe
 		}
 	}
 	
-	public class WindowsLiveMail : FileSource
+	public class WindowsLiveMail : FileGroup
 	{
 		public WindowsLiveMail()
 			: base("1239CDE9-3355-4d67-9826-1FC4376462EA", "1249CDE9-3355-4d67-9826-1FC4376462EA")
@@ -232,7 +204,7 @@ namespace myWorkSafe
 		}
 	}
 	
-	public class ThunderbirdMail : FileSource
+	public class ThunderbirdMail : FileGroup
 	{
 		public ThunderbirdMail()
 			: base("1239CDE9-3355-4d67-9826-1FC4376462EA", "1249CDE9-3355-4d67-9826-1FC4376462EA")
@@ -253,7 +225,7 @@ namespace myWorkSafe
 			}
 		}
 	}
-	public class MyPictures : FileSource
+	public class MyPictures : FileGroup
 	{
 		public MyPictures()
 			: base("2179CDE9-3355-4d67-9826-1FC4376462EA", "1119CDE9-3355-4d67-9826-1FC4376462EA")
@@ -271,7 +243,7 @@ namespace myWorkSafe
 		}
 	}
 
-	public class MyMusic : FileSource
+	public class MyMusic : FileGroup
 	{
 		public MyMusic()
 			: base("3339CDE9-3355-4d67-9826-1FC4376462EA", "4449CDE9-3355-4d67-9826-1FC4376462EA")
@@ -289,7 +261,7 @@ namespace myWorkSafe
 		}
 	}
 
-	public class MyVideos : FileSource
+	public class MyVideos : FileGroup
 	{
 		public MyVideos()
 			: base("5B32BBB0-1F19-4f5a-9F35-651DB56DA010", "5532BBB0-1F19-4f5a-9F35-651DB56DA010")
@@ -311,38 +283,5 @@ namespace myWorkSafe
 			}
 		}
 	}
-	public class RawDirectorySource : FileSource
-	{
-		private string _path;
-
-		public RawDirectorySource(string name, string rootFolder, 
-			IEnumerable<string> excludeFilePattern, IEnumerable<string> excludeDirectoryName)
-			:base(null,null)
-		{
-			_path = rootFolder;
-			Name = name;
-			if (null != excludeFilePattern)
-			{
-				foreach (var pattern in excludeFilePattern)
-				{
-					Filter.FileNameIncludes.Add(pattern);
-				}
-			}
-			if (null != excludeDirectoryName)
-			{
-				foreach (var dir in excludeDirectoryName)
-				{
-					Filter.SubdirectoryExcludes.Add(dir);
-				}
-			}
-		}
-
-		public override string RootFolder
-		{
-			get
-			{
-				return _path;
-			}
-		}
-	}
+	 */
 }

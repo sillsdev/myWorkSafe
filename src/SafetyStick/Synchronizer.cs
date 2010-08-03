@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Synchronization;
 using Microsoft.Synchronization.Files;
+using myWorkSafe.Groups;
 
 namespace myWorkSafe
 {
@@ -13,16 +14,16 @@ namespace myWorkSafe
 		private int _totalFilesThatWillBeBackedUp;
 		private int _files;
 		public string DestinationRootForThisUser;
-		private readonly IEnumerable<FileSource> _groups;
+		private readonly IEnumerable<FileGroup> _groups;
 		private readonly long _totalAvailableOnDeviceInKilobytes;
 		private SyncOrchestrator _agent;
-		private FileSource _currentSource;
+		private FileGroup _currentGroup;
 		private bool _cancelRequested;
 		public long ApprovedChangeInKB;
 		private HashSet<string> _alreadyAccountedFor;
 
 
-		public Synchronizer(string destinationDeviceRoot, IEnumerable<FileSource> groups, long totalAvailableOnDeviceInKilobytes)
+		public Synchronizer(string destinationDeviceRoot, IEnumerable<FileGroup> groups, long totalAvailableOnDeviceInKilobytes)
 		{
 			_groups = groups;
 			_totalAvailableOnDeviceInKilobytes = totalAvailableOnDeviceInKilobytes;
@@ -81,11 +82,11 @@ namespace myWorkSafe
 				{
 					break;
 				}
-				_currentSource = group;//used by callbacks
+				_currentGroup = group;//used by callbacks
 				group.ClearStatistics();
 				if (!group.GetIsRelevantOnThisMachine())
 				{
-					group.Disposition = FileSource.DispositionChoice.Hide;
+					group.Disposition = FileGroup.DispositionChoice.Hide;
 					continue;
 				}
 
@@ -95,11 +96,11 @@ namespace myWorkSafe
 					//NB: there might actually be enough room, if this group is smaller
 					//than the first one which was too big. Or algorithm doesn't try
 					//to fit it in.
-					group.Disposition = FileSource.DispositionChoice.NotEnoughRoom;
+					group.Disposition = FileGroup.DispositionChoice.NotEnoughRoom;
 					InvokeGroupProgress();
 					continue;
 				}
-				group.Disposition = FileSource.DispositionChoice.Calculating;
+				group.Disposition = FileGroup.DispositionChoice.Calculating;
 				InvokeGroupProgress();
 
 
@@ -140,12 +141,12 @@ namespace myWorkSafe
 				{
 					ApprovedChangeInKB = groupsChangeInKB;
 					_totalFilesThatWillBeBackedUp += group.UpdateFileCount + group.NewFileCount;
-					group.Disposition = FileSource.DispositionChoice.WillBeBackedUp;
+					group.Disposition = FileGroup.DispositionChoice.WillBeBackedUp;
 				}
 				else
 				{
 					limitHasBeenReached = true;	//nb: remove if/when we go to the system below of deleting
-					group.Disposition = FileSource.DispositionChoice.NotEnoughRoom;
+					group.Disposition = FileGroup.DispositionChoice.NotEnoughRoom;
 				} 
 			}
 			InvokeGroupProgress();		
@@ -190,12 +191,12 @@ namespace myWorkSafe
 					{
 						break;
 					}
-					_currentSource = group; //used by callbacks
-					if (group.Disposition == FileSource.DispositionChoice.NotEnoughRoom)
+					_currentGroup = group; //used by callbacks
+					if (group.Disposition == FileGroup.DispositionChoice.NotEnoughRoom)
 						continue;
 
 					group.ClearStatistics();
-					group.Disposition = FileSource.DispositionChoice.Synchronizing;
+					group.Disposition = FileGroup.DispositionChoice.Synchronizing;
 					InvokeGroupProgress();
 					string tempDirectory = Path.GetDirectoryName(group.SourceTempMetaFile);
 
@@ -218,7 +219,7 @@ namespace myWorkSafe
 						PreviewOrSynchronizeCore(destinationProvider, sourceProvider);
 					}
 
-					group.Disposition = FileSource.DispositionChoice.WasBackedUp;
+					group.Disposition = FileGroup.DispositionChoice.WasBackedUp;
 
 					if (GroupProgress != null)
 					{
@@ -261,25 +262,25 @@ namespace myWorkSafe
 			}
 			if(args.CurrentFileData !=null)
 			{
-				_currentSource.NetChangeInBytes -= args.CurrentFileData.Size;
+				_currentGroup.NetChangeInBytes -= args.CurrentFileData.Size;
 				//below, we'll add back the new size, giving us the correct net change
 			}
 			string rootDirectoryPath = ((FileSyncProvider)provider).RootDirectoryPath;
 			switch (args.ChangeType)
 			{
 				case ChangeType.Create:
-					_currentSource.NewFileCount++;
-					_currentSource.NetChangeInBytes += args.NewFileData.Size;
+					_currentGroup.NewFileCount++;
+					_currentGroup.NetChangeInBytes += args.NewFileData.Size;
 					_alreadyAccountedFor.Add(Path.Combine(rootDirectoryPath, args.NewFileData.RelativePath));
 					break;
 				case ChangeType.Update:
-					_currentSource.UpdateFileCount++;
-					_currentSource.NetChangeInBytes += args.NewFileData.Size;
+					_currentGroup.UpdateFileCount++;
+					_currentGroup.NetChangeInBytes += args.NewFileData.Size;
 					_alreadyAccountedFor.Add(Path.Combine(rootDirectoryPath, args.CurrentFileData.RelativePath));
 					break;
 				case ChangeType.Delete:
 					_alreadyAccountedFor.Add(Path.Combine(rootDirectoryPath, args.CurrentFileData.RelativePath));
-					_currentSource.DeleteFileCount++;
+					_currentGroup.DeleteFileCount++;
 					break;
 			}
 			InvokeProgress();
@@ -290,19 +291,19 @@ namespace myWorkSafe
 			//the built-in directory system is lame, you can't just specify the name of the directory
 			//this changes the behavior to do just that
 			if (args.NewFileData!=null && args.NewFileData.IsDirectory)
-				return _currentSource.ShouldSkipDirectory(args.NewFileData);
+				return _currentGroup.ShouldSkipDirectory(args.NewFileData);
 
 			if (args.CurrentFileData != null && args.CurrentFileData.IsDirectory)
-				return _currentSource.ShouldSkipDirectory(args.CurrentFileData);
+				return _currentGroup.ShouldSkipDirectory(args.CurrentFileData);
 
 			string rootDirectoryPath = provider.RootDirectoryPath; 
 			if (args.NewFileData != null)
 				return _alreadyAccountedFor.Contains(Path.Combine(rootDirectoryPath, args.NewFileData.RelativePath)) 
-						||_currentSource.ShouldSkip(args.NewFileData.RelativePath);
+						||_currentGroup.ShouldSkip(args.NewFileData.RelativePath);
 
 			if (args.CurrentFileData != null)
 				return _alreadyAccountedFor.Contains(Path.Combine(rootDirectoryPath, args.CurrentFileData.RelativePath)) 
-						|| _currentSource.ShouldSkip(args.CurrentFileData.RelativePath);
+						|| _currentGroup.ShouldSkip(args.CurrentFileData.RelativePath);
 
 			return false;
 		}

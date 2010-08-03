@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->
+<!-- will be used later on in this file.                                                                 -->
+<?define Property_ProductVersion = "0.1.0" ?>
+<!--this is replaced at build time by the msbuild 'package' target -->
+<?define Property_ProductCode = "*" ?>
+<!-- auto-generate a new guid each time -->
+<?define Property_UpgradeCode = "{697A028E-7B8C-4a37-BB7C-98722889EB17}" ?>
+<!--Don't even think of EVER changing this -->
+
+<!-- good intro to the component vs. file thing, and why each file here is a separate component:
+http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+
+  <Product Id="$(var.Property_ProductCode)" Name="myWorkSafe $(var.Property_ProductVersion)" Language="1033"
+             Version="$(var.Property_ProductVersion)" Manufacturer="SIL"
+             UpgradeCode="$(var.Property_UpgradeCode)">
+
+    <Package  Compressed="yes" InstallerVersion="200" />
+
+    <Upgrade Id ="$(var.Property_UpgradeCode)" >
+      <UpgradeVersion Minimum ="$(var.Property_ProductVersion)" OnlyDetect ="yes" Property ="NEWVERSIONDETECTED" />
+      <UpgradeVersion Minimum ="0.0.0" IncludeMinimum ="yes" Maximum ="$(var.Property_ProductVersion)" IncludeMaximum ="no" Property ="OLDERVERSIONBEINGUPGRADED" />
+    </Upgrade >
+
+    <!-- 
+    "from the list: Don't use Advertise="yes" Advertised shortcuts are designed to allow
+users to install just the shortcut for your app, then demand-install the
+rest of the app the first time the icon is run.  If this is not behavior you
+are trying to support, you're better off using non-advertised shortcuts. "-->
+
+    <PropertyRef Id="NETFRAMEWORK35" />
+    <Condition Message="Before myWorkSafe can install, you need to install Microsoft's free .NET Framework 3.5.  A full discussion of myWorkSafe's requirements can be found at myWorkSafe.org/wiki/Prerequisites.">
+      Installed OR NETFRAMEWORK35
+    </Condition>
+
+    <!--because of bug, this needs to be 1 -->
+    <Property Id ="ALLUSERS">1</Property>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+
+      
+      <Directory Id='ProgramMenuFolder' Name='Programs'>
+        <Directory Id='myWorkSafeShortcutDir' Name='myWorkSafe'>
+          <Component Id ='removeShortcutDir' Guid ="{15175741-8BE9-47cd-99F4-9917D8D72633}">
+            <RemoveFolder Id ="shortcutDirRemover" On ="uninstall"/>
+            <RegistryKey Id="keyPathForRemoveShortcutDir" Action ="createAndRemoveOnUninstall" Root="HKCU" Key="SOFTWARE\myWorkSafe\Components\myWorkSafeShortcutDir">
+              <RegistryValue Type ="string" Value =""  Action ="write" KeyPath ="yes"/>
+            </RegistryKey>
+          </Component>
+
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramFilesFolder" Name="PFiles">
+
+        <Directory Id="ProgramDir" Name="myWorkSafe">
+
+          <Component Id="myWorkSafe.exe" Guid="{3273590C-8E76-4c13-9D4D-DB7C5A8FD72E}">
+            <Registry Root="HKCU" Key="SOFTWARE\myWorkSafe\Components\myWorkSafe.exe" KeyPath="yes" />
+
+            <File Id="myWorkSafe.exe" Name="myWorkSafe.exe"  Source="..\..\output\release\myWorkSafe.exe" />
+   
+            <Shortcut Id="startmenuShortcut"  Directory="myWorkSafeShortcutDir" Name="myWorkSafe"
+                 WorkingDirectory="ProgramDir" Target="[!myWorkSafe.exe]"  Icon ="myWorkSafe.exe" />
+
+          </Component>
+
+           <Component Id="Palaso.dll" Guid="{5FE4352D-0FE2-495e-90DE-B60F8CD76CFF}">
+            <File Id="Palaso.dll" Name="Palaso.dll" KeyPath="yes" Source="..\..\output\release\Palaso.dll" />
+          </Component>
+<!--          <Component Id="PalasoUIWindowsForms.dll" Guid="{CD1AF43D-5800-4bf1-BA9A-B7C74D4780FA}">
+            <File Id="PalasoUIWindowsForms.dll" Name="PalasoUIWindowsForms.dll" KeyPath="yes" Source="..\..\output\release\PalasoUIWindowsForms.dll" />
+          </Component>
+          -->
+                  
+        </Directory>
+      </Directory>
+    </Directory>
+
+
+    <Feature Id="ProductFeature" Level="1" Title="Basic Stuff">
+      <ComponentRef Id ="removeShortcutDir"/>
+
+      <ComponentRef Id="Palaso.dll"/>
+      <!--   <ComponentRef Id="PalasoUIWindowsForms.dll"/>-->
+      <ComponentRef Id="myWorkSafe.exe" />
+
+      <ComponentGroupRef Id ="DistFiles"/>
+
+    </Feature>
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+    <Icon Id="myWorkSafe.exe" SourceFile ="..\..\output\release\myWorkSafe.exe" />
+    <Property Id="ARPPRODUCTICON" Value="myWorkSafe.exe" />
+    <!-- what you see in add/remove programs control panel -->
+
+
+
+    <CustomAction Id="LaunchmyWorkSafe"
+                  FileKey="myWorkSafe.exe"
+                  ExeCommand=""
+                  Return="asyncNoWait"/>
+    
+    <InstallExecuteSequence>
+      <RemoveExistingProducts After="InstallInitialize" />
+
+      <!--We need the condition here so that we only launch the executable when we make an installation but not when we remove the product-->
+          <Custom Action='LaunchmyWorkSafe' After="InstallFinalize">NOT Installed</Custom>
+        </InstallExecuteSequence>
+  </Product>
+</Wix>
+
