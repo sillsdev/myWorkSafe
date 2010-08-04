@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Win32;
@@ -15,8 +16,10 @@ namespace myWorkSafe.Groups
 			_path = path;
 		}
 
-		public IEnumerable<FileGroup> CreateGroups()
+		public List<FileGroup> CreateGroups()
 		{
+			var groups = new List<FileGroup>();
+
 			using (var reader = new ini.IniReader(_path))
 			{
 				reader.SetCommentDelimiters(new char[] { '#' });
@@ -34,6 +37,11 @@ namespace myWorkSafe.Groups
 								group.Name = reader.Value;
 								break;
 							case "rootFolder":
+								if(!string.IsNullOrEmpty(group.RootFolder))
+								{
+									if(Directory.Exists(group.RootFolder))
+										break; //we already have a good one
+								}
 								group.RootFolder = ProcessPath(reader.Value);
 								break;
 							case "excludeFile":
@@ -47,10 +55,11 @@ namespace myWorkSafe.Groups
 
 						}
 					}
-						yield return group;
+					groups.Add(group);
 				}
 
 			}
+			return groups;
 		}
 
 		public static string ProcessPath(string path)
@@ -73,9 +82,9 @@ namespace myWorkSafe.Groups
 		private static string ProcessPathWithRegistry(string path)
 		{
 			string[] parts = path.Split(new[]{','});
-			if(parts.Length != 2)
+			if(parts.Length == 1)
 			{
-				throw new ApplicationException("Expected a comma between the registry key and value in "+path);
+				return (string)Registry.GetValue(parts[0], null /*default*/,null);
 			}
 			return (string)Registry.GetValue(parts[0], parts[1],null);
 		}

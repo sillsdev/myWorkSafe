@@ -43,18 +43,6 @@ namespace myWorkSafe
 			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "groups.ini");
 			var reader = new GroupIniFileReader(path);
 			_groups = reader.CreateGroups();
-//			_groups = new List<FileGroup>(){
-//				new ParatextFiles(), 
-//				new WeSayFiles(), 
-//				new OtherFiles(), 
-//				new OtherDesktopFiles(),
-//				new WindowsLiveMail(),
-//				new ThunderbirdMail(),
-//				new MyPictures(),
-//				new MyMusic(),
-//				new MyVideos(),
-//			};
-
 
 			_driveDetector = new DriveDetector();
 
@@ -382,10 +370,6 @@ namespace myWorkSafe
 			//if we start too soon, sometime the progress events are called before the window
 			//is created and ready to receive them.
 			_startGatheringInfo.Enabled = true;
-
-//			CurrentState = State.Preparing;
-//			_preparationWorker.RunWorkerAsync();
-
 		}
 
 		private void _probablyRemovedPhysicallyTimer_Tick(object sender, EventArgs e)
