@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
+using Dolinay;
 using myWorkSafe.Properties;
 using Palaso.UsbDrive;
 
@@ -10,11 +10,8 @@ namespace myWorkSafe
 {
 	static class Program
 	{
-		private static bool _exitNow = false;
-	
-		/// <summary>
-		/// The main entry point for the application.
-		/// </summary>
+		private static string _pendingDriveArrival;
+
 		[STAThread]
 		static void Main()
 		{
@@ -26,58 +23,72 @@ namespace myWorkSafe
             var trayMenu = new ContextMenu();
             trayMenu.MenuItems.Add("Exit", OnExit);
 
+			using(var detector = new DriveDetector())
 			using (var trayIcon = new NotifyIcon())
 			{
 				trayIcon.Text = Application.ProductName;
 				trayIcon.Icon = Resources.application;
 				trayIcon.BalloonTipText = "myWorkSafe ready for usb memory stick.";
-
+                          
 				trayIcon.ContextMenu = trayMenu;
 				trayIcon.Visible = true;
+				trayIcon.MouseClick += new MouseEventHandler(trayIcon_MouseClick);
 
+				detector.DeviceArrived += new DriveDetectorEventHandler(OnDeviceArrived);
+				Application.Idle += new EventHandler(Application_Idle);
+				Application.Run();
+			}
+		}
 
-			//	DoTestRun();
+		static void trayIcon_MouseClick(object sender, MouseEventArgs e)
+		{
+			if(DialogResult.Abort == new InfoWindow().ShowDialog())
+				Application.Exit();
+		}
 
-				var preExistingDrives = new List<UsbDriveInfo>();
-				preExistingDrives.AddRange(UsbDriveInfo.GetDrives());
-
-				while (!_exitNow)
+		static void Application_Idle(object sender, EventArgs e)
+		{
+			if (_pendingDriveArrival != null)
+			{
+				try
 				{
-					Application.DoEvents();//suport the context menu on the system tray
-
-					List<UsbDriveInfo> foundDrives = GetFoundDrives();
-					foreach (var info in foundDrives)
-					{
-						if (GetIsADeviceWeShouldTryToBackupTo(preExistingDrives, info))
-						{
-							try
-							{
-								long totalSpaceInKilobytes = (long) (info.TotalSize/1024);
-								long freeSpaceInKilobytes = (long) (info.AvailableFreeSpace/1024);
-								string destinationDeviceRoot = info.RootDirectory.ToString();
-								var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes);
-								using (var form = new MainWindow(backupControl))
-								{
-									form.ShowDialog();
-									break;
-								}
-							}
-							catch (Exception error)
-							{
-								Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, something went wrong.");
-							}
-						}
-					}
-					preExistingDrives = foundDrives;
-					if (!_exitNow)
-						Thread.Sleep(500);
-					if (!_exitNow)
-						Thread.Sleep(500);
-					if (!_exitNow)
-						Thread.Sleep(500);
-					if (!_exitNow)
-						Thread.Sleep(500);					
+					var driveLetter = _pendingDriveArrival;
+					_pendingDriveArrival = null;
+					HandleDeviceArrived(driveLetter);
 				}
+				catch (Exception error)
+				{
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, something went wrong.");
+				}
+			}						
+		}
+
+		static void OnDeviceArrived(object sender, DriveDetectorEventArgs e)
+		{
+			///messes things up to handle it right now... wait and do it in our normal app loop
+			_pendingDriveArrival = e.Drive;			
+		}
+
+		static void HandleDeviceArrived(string driveLetter)
+		{
+			List<UsbDriveInfo> foundDrives = GetFoundDrives();
+			var drive = foundDrives.FirstOrDefault(d => d.RootDirectory.ToString() == driveLetter);
+			if (drive == null || !drive.IsReady)
+				return;
+			try
+			{
+				long totalSpaceInKilobytes = (long) (drive.TotalSize/1024);
+				long freeSpaceInKilobytes = (long) (drive.AvailableFreeSpace/1024);
+				string destinationDeviceRoot = drive.RootDirectory.ToString();
+				var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes);
+				using (var form = new MainWindow(backupControl))
+				{
+					form.ShowDialog();
+				}
+			}
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, something went wrong.");
 			}
 		}
 
@@ -96,26 +107,9 @@ namespace myWorkSafe
 		}
 
 
-		private static bool GetIsADeviceWeShouldTryToBackupTo(List<UsbDriveInfo> preExistingDrives, UsbDriveInfo info)
-		{
-			//some of these drives may not exist anymore (e.g., we just backed up and ejected one),
-			//which will give an error which we catch. But we soon regenerate this list, so it's not going
-			//to mean more than one exception
-			try
-			{
-				return preExistingDrives.All(d => d.RootDirectory.ToString() != info.RootDirectory.ToString())
-				       && info.IsReady;
-			}
-			catch (Exception error)
-			{
-				return false;
-			}
-		}
-
 		private static void OnExit(object sender, EventArgs e)
 	        {
-		 		//Application.Exit();
-		 		_exitNow = true;
+		 		Application.Exit();
 	        }
 
 		private static void DoTestRun()

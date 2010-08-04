@@ -72,6 +72,12 @@
     <Compile Include="Groups\FileGroupFromIniSection.cs" />
     <Compile Include="Groups\GroupIniFileReader.cs" />
     <Compile Include="Groups\RawDirectoryGroup.cs" />
+    <Compile Include="InfoWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InfoWindow.Designer.cs">
+      <DependentUpon>InfoWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="ini\IniDocument.cs" />
     <Compile Include="ini\IniException.cs" />
     <Compile Include="ini\IniItem.cs" />
@@ -101,6 +107,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="BackupControl.resx">
       <DependentUpon>BackupControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InfoWindow.resx">
+      <DependentUpon>InfoWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
