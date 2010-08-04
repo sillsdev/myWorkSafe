@@ -20,11 +20,10 @@ namespace myWorkSafe.Groups
 			Filter.AttributeExcludeMask = FileAttributes.Hidden | FileAttributes.Temporary | FileAttributes.System;
 		}
 
-		public enum DispositionChoice {Waiting=0, Calculating, WillBeBackedUp, NotEnoughRoom,
+		public enum DispositionChoice {Hide=0, Waiting, Calculating, WillBeBackedUp, NotEnoughRoom,
 			Synchronizing,
 			WasBackedUp,
-			WillBeDeleted,
-			Hide
+			WillBeDeleted
 		}
 
 		public DispositionChoice Disposition;
@@ -64,6 +63,10 @@ namespace myWorkSafe.Groups
 
 		public bool GetIsRelevantOnThisMachine()
 		{
+			//enhance... ideally we'd return false if the directory was there but no
+			//relevant files were there. E.g. if we had MyVideos, but the only
+			//thing in there was "Sample Videos", which are filtered out, we
+			//would like to not show this group.
 			return Directory.Exists(RootFolder);
 		}
 

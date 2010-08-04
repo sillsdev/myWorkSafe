@@ -1,21 +1,92 @@
 <html>
 <body>
 <img  src="image1.png"/>
-
-<p><font face="Segoe UI">John Hatton
-    <br /></font><font face="Segoe UI">SIL Papua N</font><font face="Segoe UI">ew Guinea
-    <br /></font><font face="Segoe UI"><a href="http://projects.palaso.org/projects/show/safetystick">Web Site</a></font></p>
-
 <font face="Segoe UI">
-<p>&nbsp; </p>
-<div>
-<h3>Release Notes</h3>
+<br /><a href="http://projects.palaso.org/projects/show/safetystick">myWorkSafe Web Site</a></p>
 
-<h5>Known limitations</h5>
+<p>by John Hatton 
+  <br /><a href="http://pnglanguages.org/">SIL Papua New Guinea</a>, <a href="http://palaso.org">Palaso</a>, &amp; <a href="http://sil.org">SIL International Software Development</a> </p>
+<font face="Segoe UI">
+  <p>&#160; </p>
 
-<ul>
-  <li><font face="Segoe UI">No files within a group are ever deleted (that might be good thing).</font></li>
-  <li><font face="Segoe UI">A lower-priority group will not be deleted to make room for a newly enlarged, high-priority group.</font></li>
-</ul></font>
-</div>
+  <h3>Why another backup program?</h3>
+
+  <div>myWorkSafe aims to provide a zero-configuration backup system for a particular kind of user. That user does best when things are simple.&#160; He is using computers primarily as an appliance for doing language development work.&#160;&#160; He may find the raw file system confusing, and may end up putting documents in various places, including the Desktop.&#160; He also collects videos, music, games, and installers, quickly overwhelming the USB flash drives which were intended to be used to backup his language development work. He may need reminding to backup, and perhaps prompting to cycle between different backup devices. Finally, he may be far from technical help, may not notice the early signs of hard drive failure, and may be subject to a high-risk of laptop theft.&#160; In short, he needs backup more than most of us, is less likely to be backing up, and each bit of friction makes it more likely his data will not be safe when disaster inevitable strikes.</div>
+
+  <p></p>
+
+  <h3>How it works</h3>
+
+  <div>Once installed, myWorkSafe is always running. It places a small icon in the Windows Task Bar.&#160; When you insert a USB flash drive, the application opens and begins comparing what is on the device with certain groups of files on your hard drive.&#160; </div>
+
+  <div>&#160;</div>
+
+  <div>The first unusual thing about myWorkSafe is that it knows about file types and the files that belong to certain tasks (e.g. translation or dictionary making). For example, it knows how to look in the registry and figure out where Paratext documents are stored.&#160; It knows that certain files in the folder are actually not user data, but rather program data, so they don’t need to be backed up (e.g. “TNE Notes Database”).&#160; It knows that Thunderbird has a very large index file which doesn’t need to be backed up, because it will be rebuilt if needed.&#160; And it knows that the target user often has program installers in their My Documents folder, and these should not be allowed to fill up the backup media.</div>
+
+  <div>&#160;</div>
+
+  <div>The second unusual thing about myWorkSafe is that it is <em>opinionated</em> about which are the most important things to backup.&#160; While we would ideally like to always preserve an exact snapshot of the computer, in practice we don’t have the room on the backup device. More advanced users can make decisions, then about what’s most important.&#160; For example, in most cases, translation work is more irreplaceable than music files. Likewise, dictionary work is more precious than old emails.&#160; myWorkSafe allows these prioritization decisions to be made ahead of time, so the user isn’t faced with that complexity at backup time.&#160; In fact, it comes with this prioritization built-in, so that no configuration is needed for the majority of cases.&#160; The program tells the users which groups it can backup, and which ones it cannot, depending on how much space is available on the external media.</div>
+
+  <div>&#160;</div>
+
+  <div>myWorkSafe is basically intended to have zero configuration.&#160; I, as an occasional supporter of language workers, do not have time to individually configure their backup programs. Instead, I want myWorkSafe to embody all the same decision I would make.&#160; However, the motivated computer support person can make different decisions, or just add to myWorkSafe’s smarts, by modifying a simple Ini file, “group.ini”, found in the folder where the application was installed.&#160; For example here are some entries which illustrate all the options:</div>
+
+  <div>&#160;</div>
+
+  <p><font size="2" face="Courier">[Paratext]
+      <br />rootFolder=HKEY_LOCAL_MACHINE\Software\ScrChecks\1.0,Settings_Directory
+
+      <br />excludeFolder=TNE Notes Database
+
+      <br />excludeFolder=cms </font></p>
+
+  <p><font size="2" face="Courier">[AdaptIt]
+      <br />rootFolder=$Documents$\AdaptIt Unicode Work
+
+      <br />#try this one if that one doesn't work
+
+      <br />rootFolder=$Documents$\AdaptIt Work </font></p>
+
+  <p><font size="2" face="Courier">[WeSay]
+      <br />rootFolder=$Documents$\WeSay
+
+      <br />excludeFile=*.pdf</font></p>
+
+  <p><font size="2" face="Courier">[MyPictures]
+      <br />name = My Pictures
+
+      <br />rootFolder = $MyPictures$
+
+      <br />excludeFolder=Sample Pictures</font></p>
+
+  <div>&#160;</div>
+
+  <div>Please send me your improvements so that I can incorporate them in future releases.</div>
+
+  <h3>Release Notes</h3>
+
+  <h5>Known limitations</h5>
+
+  <ul>
+    <li><font face="Segoe UI">No files within a group are ever deleted (that might be good thing).</font> </li>
+
+    <li><font face="Segoe UI">A lower-priority group will not be deleted to make room for a newly enlarged, high-priority group.</font> </li>
+
+    <li>Windows only, but a Linux version is very doable. </li>
+
+    <li>No historical backups are created, nothing is compressed.&#160; While not completely unimportant, the need for this has decreased as language applications (e.g. Paratext, <a href="http://WeSay.org">WeSay</a>, OurWord, OneStory) incorporate full historical repositories, internally. These repositories (i.e.&#160; “.hg” folders) are themselves part of the backup.&#160; </li>
+  </ul>
+
+  <h3>Future possibilities</h3>
+
+  <ul>
+    <li><font face="Segoe UI">Ideas welcome! (<a href="mailto:john_hatton@sil.org">john_hatton@sil.org</a>)</font> </li>
+
+    <li><font face="Segoe UI">Prompt the user to backup on some schedule (perhaps after noticing that data has been changed?).</font> </li>
+
+    <li><font face="Segoe UI">Prompt the user to insert particular, named USB flash drives. This might be done as part of a system where some devices are kept in another location, and retrieved occasionally.&#160; </font></li>
+
+    <li>Are you a c# programmer, or would like to be one, and would like to contribute or event take ownership of this project?&#160; Let’s hear from you.&#160; This is a VERY small program, and one I’d be quite happy to hand over. </li>
+  </ul>
+</font>
 </body></html>
