@@ -48,6 +48,7 @@
 			this._probablyRemovedPhysicallyTimer = new System.Windows.Forms.Timer(this.components);
 			this._mediaStatusIndicator = new myWorkSafe.MediaStatus();
 			this._startGatheringInfo = new System.Windows.Forms.Timer(this.components);
+			this.label1 = new System.Windows.Forms.Label();
 			this.SuspendLayout();
 			// 
 			// _safeToRemoveLabel
@@ -178,10 +179,22 @@
 			this._startGatheringInfo.Interval = 500;
 			this._startGatheringInfo.Tick += new System.EventHandler(this._startGatheringInfo_Tick);
 			// 
+			// label1
+			// 
+			this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.label1.AutoSize = true;
+			this.label1.ForeColor = System.Drawing.Color.DarkRed;
+			this.label1.Location = new System.Drawing.Point(361, 12);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(152, 13);
+			this.label1.TabIndex = 18;
+			this.label1.Text = "Do not rely on this test version.";
+			// 
 			// BackupControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.label1);
 			this.Controls.Add(this._safeToRemoveLabel);
 			this.Controls.Add(this.cancelButton);
 			this.Controls.Add(this._mediaStatusIndicator);
@@ -213,5 +226,6 @@
 		private System.Windows.Forms.Label _status;
 		private System.Windows.Forms.Timer _probablyRemovedPhysicallyTimer;
 		private System.Windows.Forms.Timer _startGatheringInfo;
+		private System.Windows.Forms.Label label1;
 	}
 }

@@ -39,31 +39,25 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
     <Property Id ="ALLUSERS">1</Property>
 
     <Directory Id="TARGETDIR" Name="SourceDir">
-
+      <!-- the following is required, even though knowledge fo where this really live is "built-in"-->
+      <Directory Id="StartupFolder"/>
       
-      <Directory Id='ProgramMenuFolder' Name='Programs'>
-        <Directory Id='myWorkSafeShortcutDir' Name='myWorkSafe'>
-          <Component Id ='removeShortcutDir' Guid ="{15175741-8BE9-47cd-99F4-9917D8D72633}">
-            <RemoveFolder Id ="shortcutDirRemover" On ="uninstall"/>
-            <RegistryKey Id="keyPathForRemoveShortcutDir" Action ="createAndRemoveOnUninstall" Root="HKCU" Key="SOFTWARE\myWorkSafe\Components\myWorkSafeShortcutDir">
+      
+ <!--           <Component Id ='removeShortcutDir' Guid ="{15175741-8BE9-47cd-99F4-9917D8D72633}">
+            <RemoveFile Id ="startmenuShortcut" Directory ="Startup" On ="uninstall"/>
+              <RegistryKey Id="keyPathForRemoveShortcutDir" Action ="createAndRemoveOnUninstall" Root="HKCU" Key="SOFTWARE\myWorkSafe\Components\myWorkSafeShortcutDir">
               <RegistryValue Type ="string" Value =""  Action ="write" KeyPath ="yes"/>
             </RegistryKey>
           </Component>
-
-        </Directory>
-      </Directory>
+-->
       <Directory Id="ProgramFilesFolder" Name="PFiles">
 
         <Directory Id="ProgramDir" Name="myWorkSafe">
 
           <Component Id="myWorkSafe.exe" Guid="{3273590C-8E76-4c13-9D4D-DB7C5A8FD72E}">
-            <Registry Root="HKCU" Key="SOFTWARE\myWorkSafe\Components\myWorkSafe.exe" KeyPath="yes" />
-
-            <File Id="myWorkSafe.exe" Name="myWorkSafe.exe"  Source="..\..\output\release\myWorkSafe.exe" />
-   
-            <Shortcut Id="startmenuShortcut"  Directory="myWorkSafeShortcutDir" Name="myWorkSafe"
-                 WorkingDirectory="ProgramDir" Target="[!myWorkSafe.exe]"  Icon ="myWorkSafe.exe" />
-
+            <File Id="myWorkSafe.exe" Name="myWorkSafe.exe" KeyPath ="yes"  Source="..\..\output\release\myWorkSafe.exe" />
+             <Shortcut Id="startmenuShortcut"  Directory="StartupFolder" Name="myWorkSafe"
+              WorkingDirectory="ProgramDir" Icon ="myWorkSafe.exe" Advertise="yes"/>
           </Component>
 
            <Component Id="Palaso.dll" Guid="{5FE4352D-0FE2-495e-90DE-B60F8CD76CFF}">
@@ -79,8 +73,9 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
     </Directory>
 
 
+
     <Feature Id="ProductFeature" Level="1" Title="Basic Stuff">
-      <ComponentRef Id ="removeShortcutDir"/>
+   <!--      <ComponentRef Id ="removeShortcutDir"/>-->
 
       <ComponentRef Id="Palaso.dll"/>
       <!--   <ComponentRef Id="PalasoUIWindowsForms.dll"/>-->
@@ -98,7 +93,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 
     <CustomAction Id="LaunchmyWorkSafe"
                   FileKey="myWorkSafe.exe"
-                  ExeCommand=""
+                  ExeCommand="afterInstall"
                   Return="asyncNoWait"/>
     
     <InstallExecuteSequence>

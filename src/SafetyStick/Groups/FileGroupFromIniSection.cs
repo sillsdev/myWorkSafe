@@ -10,13 +10,10 @@ namespace myWorkSafe.Groups
 		{
 		}
 
-		public override string RootFolder
-		{
-			get; set;
-		}
 
 		public void AddExcludeFilePattern(string pattern)
 		{
+			Filter.FileNameExcludes.Add(pattern.Trim());
 		}
 		public void AddExcludeFolder(string pattern)
 		{
@@ -32,7 +29,5 @@ namespace myWorkSafe.Groups
 				}
 			}
 		}
-
-
 	}
 }

@@ -84,11 +84,18 @@ namespace myWorkSafe
 				}
 				_currentGroup = group;//used by callbacks
 				group.ClearStatistics();
-				if (!group.GetIsRelevantOnThisMachine())
-				{
-					group.Disposition = FileGroup.DispositionChoice.Hide;
+//				if (!group.GetIsRelevantOnThisMachine())
+//				{
+//					group.Disposition = FileGroup.DispositionChoice.Hide;
+//					continue;
+//				}
+
+				if(group.Disposition == FileGroup.DispositionChoice.Hide)
 					continue;
-				}
+
+				Debug.Assert(!string.IsNullOrEmpty(group.RootFolder), "should have been weeded out already");
+				Debug.Assert(Directory.Exists(group.RootFolder), "should have been weeded out already");
+
 
 				if (limitHasBeenReached)
 				{
@@ -291,19 +298,19 @@ namespace myWorkSafe
 			//the built-in directory system is lame, you can't just specify the name of the directory
 			//this changes the behavior to do just that
 			if (args.NewFileData!=null && args.NewFileData.IsDirectory)
-				return _currentGroup.ShouldSkipDirectory(args.NewFileData);
+				return _currentGroup.ShouldSkipSubDirectory(args.NewFileData);
 
 			if (args.CurrentFileData != null && args.CurrentFileData.IsDirectory)
-				return _currentGroup.ShouldSkipDirectory(args.CurrentFileData);
+				return _currentGroup.ShouldSkipSubDirectory(args.CurrentFileData);
 
 			string rootDirectoryPath = provider.RootDirectoryPath; 
 			if (args.NewFileData != null)
 				return _alreadyAccountedFor.Contains(Path.Combine(rootDirectoryPath, args.NewFileData.RelativePath)) 
-						||_currentGroup.ShouldSkip(args.NewFileData.RelativePath);
+						||_currentGroup.ShouldSkipFile(args.NewFileData.RelativePath);
 
 			if (args.CurrentFileData != null)
 				return _alreadyAccountedFor.Contains(Path.Combine(rootDirectoryPath, args.CurrentFileData.RelativePath)) 
-						|| _currentGroup.ShouldSkip(args.CurrentFileData.RelativePath);
+						|| _currentGroup.ShouldSkipFile(args.CurrentFileData.RelativePath);
 
 			return false;
 		}

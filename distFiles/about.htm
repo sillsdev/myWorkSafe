@@ -2,20 +2,17 @@
 <body>
 <img  src="image1.png"/>
 <font face="Segoe UI">
-<br /><a href="http://projects.palaso.org/projects/show/safetystick">myWorkSafe Web Site</a></p>
+<br /><a href="http://projects.palaso.org/projects/show/safetystick">Web Site</a></p>
 
 <p>by John Hatton 
   <br /><a href="http://pnglanguages.org/">SIL Papua New Guinea</a>, <a href="http://palaso.org">Palaso</a>, &amp; <a href="http://sil.org">SIL International Software Development</a> </p>
 <font face="Segoe UI">
   <p>&#160; </p>
 
-  <h3>Why another backup program?</h3>
+   <h3>Why another backup program?</h3>
 
-  <div>myWorkSafe aims to provide a zero-configuration backup system for a particular kind of user. That user does best when things are simple.&#160; He is using computers primarily as an appliance for doing language development work.&#160;&#160; He may find the raw file system confusing, and may end up putting documents in various places, including the Desktop.&#160; He also collects videos, music, games, and installers, quickly overwhelming the USB flash drives which were intended to be used to backup his language development work. He may need reminding to backup, and perhaps prompting to cycle between different backup devices. Finally, he may be far from technical help, may not notice the early signs of hard drive failure, and may be subject to a high-risk of laptop theft.&#160; In short, he needs backup more than most of us, is less likely to be backing up, and each bit of friction makes it more likely his data will not be safe when disaster inevitable strikes.</div>
-
-  <p></p>
-
-  <h3>How it works</h3>
+  <div>myWorkSafe aims to provide a zero-configuration backup system for a particular kind of user. That user does best when things are simple.&#160; He is using computers primarily as an appliance for doing language development work.&#160;&#160; He may find the raw file system confusing, and may end up putting documents in various places, including the Desktop.&#160; He may collect videos, music, games, and installers, quickly overwhelming the USB flash drives which were intended to be used to backup his language development work. He may need reminding to backup, and perhaps prompting to cycle between different backup devices. Finally, he may be far from technical help, may not notice the early signs of hard drive failure, and may be subject to a high-risk of laptop theft.&#160; <h3>How it works</h3>
+  </div>
 
   <div>Once installed, myWorkSafe is always running. It places a small icon in the Windows Task Bar.&#160; When you insert a USB flash drive, the application opens and begins comparing what is on the device with certain groups of files on your hard drive.&#160; </div>
 
@@ -29,33 +26,42 @@
 
   <div>&#160;</div>
 
-  <div>myWorkSafe is basically intended to have zero configuration.&#160; I, as an occasional supporter of language workers, do not have time to individually configure their backup programs. Instead, I want myWorkSafe to embody all the same decision I would make.&#160; However, the motivated computer support person can make different decisions, or just add to myWorkSafe’s smarts, by modifying a simple Ini file, “group.ini”, found in the folder where the application was installed.&#160; For example here are some entries which illustrate all the options:</div>
+  <h3>Customization</h3>
+
+  <div> myWorkSafe is basically intended to have zero configuration.&#160; I, as an occasional supporter of language workers, do not have time to individually configure their backup programs. Instead, I want myWorkSafe to embody all the same decisions I would make.&#160; However, the motivated computer support person can make different decisions, or just add to myWorkSafe’s smarts, by modifying a simple Ini file, “group.ini”, found in the folder where the application was installed.&#160; For example here are some entries which illustrate all the options:</div>
 
   <div>&#160;</div>
 
   <p><font size="2" face="Courier">[Paratext]
-      <br />rootFolder=HKEY_LOCAL_MACHINE\Software\ScrChecks\1.0,Settings_Directory
+      <br />#on 32-bit Windows
 
-      <br />excludeFolder=TNE Notes Database
+      <br />rootFolder=HKEY_LOCAL_MACHINE\Software\ScrChecks\1.0\Settings_Directory </font></p>
 
-      <br />excludeFolder=cms </font></p>
+  <p><font size="2" face="Courier">#on 64 bit Windows
+      <br />rootFolder=HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ScrChecks\1.0\Settings_Directory </font></p>
 
-  <p><font size="2" face="Courier">[AdaptIt]
-      <br />rootFolder=$Documents$\AdaptIt Unicode Work
+  <p><font size="2" face="Courier">#in case that registry entry is missing
+      <br />rootFolder=c:\my paratext projects&#160;&#160;&#160; </font></p>
 
-      <br />#try this one if that one doesn't work
+  <p><font size="2" face="Courier">excludeFolder=TNE Notes Database
+      <br />excludeFolder=cms</font></p>
+
+  <p><font size="2" face="Courier">[AdaptIt] 
+      <br />rootFolder=$Documents$\AdaptIt Unicode Work 
+
+      <br />#try this one if that one doesn't work 
 
       <br />rootFolder=$Documents$\AdaptIt Work </font></p>
 
-  <p><font size="2" face="Courier">[WeSay]
-      <br />rootFolder=$Documents$\WeSay
+  <p><font size="2" face="Courier">[WeSay] 
+      <br />rootFolder=$MyDocuments$\WeSay 
 
       <br />excludeFile=*.pdf</font></p>
 
-  <p><font size="2" face="Courier">[MyPictures]
-      <br />name = My Pictures
+  <p><font size="2" face="Courier">[MyPictures] 
+      <br />name = My Pictures 
 
-      <br />rootFolder = $MyPictures$
+      <br />rootFolder = $MyPictures$ 
 
       <br />excludeFolder=Sample Pictures</font></p>
 
@@ -84,9 +90,11 @@
 
     <li><font face="Segoe UI">Prompt the user to backup on some schedule (perhaps after noticing that data has been changed?).</font> </li>
 
-    <li><font face="Segoe UI">Prompt the user to insert particular, named USB flash drives. This might be done as part of a system where some devices are kept in another location, and retrieved occasionally.&#160; </font></li>
+    <ul>
+      <li>Add a control which says something like “Remind me to backup to this USB stick on these days”. Different sticks could then have different days.</li>
 
-    <li>Are you a c# programmer, or would like to be one, and would like to contribute or event take ownership of this project?&#160; Let’s hear from you.&#160; This is a VERY small program, and one I’d be quite happy to hand over. </li>
+      <li><font face="Segoe UI">Then, on schedule, prompt the user to insert particular, named USB flash drive. This might be done as part of a system where some devices are kept in another location, and retrieved occasionally.&#160; </font></li>
+    </ul>
   </ul>
 </font>
 </body></html>

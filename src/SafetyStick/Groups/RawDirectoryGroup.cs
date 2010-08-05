@@ -25,10 +25,5 @@ namespace myWorkSafe.Groups
 			}
 		}
 
-		public override string RootFolder
-		{
-			get; set;
-
-		}
 	}
 }
