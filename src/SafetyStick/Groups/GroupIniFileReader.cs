@@ -16,25 +16,56 @@ namespace myWorkSafe.Groups
 			_path = path;
 		}
 
+		/// <summary>
+		/// For tests's convenience
+		/// </summary>
 		public List<FileGroup> CreateGroups()
 		{
 			var groups = new List<FileGroup>();
+			CreateGroups(groups);
+			return groups;
+		}
+
+		/// <summary>
+		/// UPdates the groups in the list (so it can be 
+		/// called multiple times with different ini's, and the last one wins)
+		/// </summary>
+		/// <param name="groups"></param>
+		public void CreateGroups(List<FileGroup> groups)
+		{
+			bool inSecondRun = groups.Count > 0;
+			int nextInsertLocation = 0;
 
 			using (var reader = new ini.IniReader(_path))
 			{
+				reader.AcceptNoAssignmentOperator = true;
 				reader.SetCommentDelimiters(new char[] { '#' });
 				reader.SetAssignDelimiters(new char[] { '=' });
-				while (reader.MoveToNextSection())
+				reader.MoveToNextSection();
+				while (reader.ReadState == ini.IniReadState.Interactive)
 				{
-					var group = new FileGroupFromIniSection();
-					group.Name = reader.Name;
+					FileGroupFromIniSection group = (FileGroupFromIniSection) groups.FirstOrDefault(g => g.SectionName == reader.Name);
+					if (group == null)
+					{
+						group = new FileGroupFromIniSection();
+						groups.Insert(nextInsertLocation, group);//this gives new groups in an override ini priority
+						nextInsertLocation++;
 
-					while (reader.MoveToNextKey())
+						group.SectionName = reader.Name;
+						group.Name = reader.Name;
+					}
+
+
+
+					while (reader.MoveToNextKey())//nb: unfortnately, this ini libary will move us to a new section as well
 					{
 						switch (reader.Name)
 						{
 							case "name":
 								group.Name = reader.Value;
+								break;
+							case "skip":
+								group.RootFolder = string.Empty;
 								break;
 							case "rootFolder":
 								if(!string.IsNullOrEmpty(group.RootFolder))
@@ -55,11 +86,9 @@ namespace myWorkSafe.Groups
 
 						}
 					}
-					groups.Add(group);
 				}
 
 			}
-			return groups;
 		}
 
 		public static string ProcessPath(string path)
@@ -76,7 +105,21 @@ namespace myWorkSafe.Groups
 			path = path.Replace("$MyMusic$", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic));
 			path = path.Replace("$MyPictures$", Environment.GetFolderPath(Environment.SpecialFolder.MyPictures));
 
+			if (path.Contains("$MyVideos"))
+			{              
+				path = path.Replace("$MyVideos$", GetVideosPath());
+			}
 			return path;
+		}
+
+		private static string GetVideosPath()
+		{
+			var win7 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "My Videos");
+			if (Directory.Exists(win7))
+				return win7;
+
+			var xp = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Videos");
+			return xp;
 		}
 
 		private static string ProcessPathWithRegistry(string path)

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using Dolinay;
 using myWorkSafe.Properties;
@@ -13,15 +16,35 @@ namespace myWorkSafe
 		private static string _pendingDriveArrival;
 
 		[STAThread]
-		static void Main()
+		static void Main(string[] args)
+		{
+			bool createdNew;
+			using (new Mutex(true, "myWorkSafe", out createdNew))
+			{
+				if (createdNew)
+				{
+					RunCore(args);
+				}
+			}
+
+		}
+
+		private static void RunCore(string[] args)
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
 			SetUpErrorHandling();
 
-            var trayMenu = new ContextMenu();
-            trayMenu.MenuItems.Add("Exit", OnExit);
+			var trayMenu = new ContextMenu();
+			trayMenu.MenuItems.Add("Exit", OnExit);
+
+			if(args.Length == 1 && args[0].Trim()=="afterInstall")
+			{
+				var info = new InfoWindow();
+				info.Text = "myWorkSafe Installed";
+				info.ShowDialog();
+			}
 
 			using(var detector = new DriveDetector())
 			using (var trayIcon = new NotifyIcon())
@@ -133,7 +156,5 @@ namespace myWorkSafe
 			Palaso.Reporting.ErrorReport.AddStandardProperties();
 			Palaso.Reporting.ExceptionHandler.Init();
 		}
-
-
 	}
 }

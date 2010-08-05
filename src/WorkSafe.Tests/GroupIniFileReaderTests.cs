@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using myWorkSafe;
 using myWorkSafe.Groups;
 using NUnit.Framework;
@@ -25,6 +26,22 @@ namespace WorkSafe.Tests
 			var reader = new GroupIniFileReader(path);
 			var groups = reader.CreateGroups().ToArray();
 			Assert.That(groups.Count(), Is.GreaterThan(5));
+		}
+
+		[Test]
+		public void CreateGroups_GroupsInDistFiles_SeesCertainGroups()
+		{
+			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "groups.ini");
+			var reader = new GroupIniFileReader(path);
+			var groups = reader.CreateGroups().ToArray();
+			//my documents
+			Assert.That(groups.Any(g => g.RootFolder == Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)));
+			//desktop
+			Assert.That(groups.Any(g => g.RootFolder == Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)));
+			//music
+			Assert.That(groups.Any(g => g.RootFolder == Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)));
+			//pictures
+			Assert.That(groups.Any(g => g.RootFolder == Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)));
 		}
 
 		[Test]
@@ -133,6 +150,42 @@ excludeFolder=  second folder # a last comment
 				Assert.That(groups.Count(), Is.EqualTo(1));
 				Assert.That(groups[0].Filter.SubdirectoryExcludes.Count(), Is.EqualTo(2));
 				Assert.That(groups[0].Filter.SubdirectoryExcludes.ToArray()[1], Is.EqualTo("second folder"));
+			}
+		}
+
+		[Test]
+		public void CreateGroups_OnSecondRun_SkipTagClearsRootFolder()
+		{
+			using (var first = FileFromContents(@"[docs]
+											rootFolder=$MyDocuments$"))
+			using (var second = FileFromContents(@"[docs]
+											skip"))
+			{
+				var reader = new GroupIniFileReader(first.Path);
+				var groups = reader.CreateGroups();
+				Assert.That(groups.First().RootFolder == Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+				reader = new GroupIniFileReader(second.Path);
+				reader.CreateGroups(groups);
+				Assert.That(string.IsNullOrEmpty(groups.First().RootFolder));
+
+				Assert.That(groups.Count(), Is.EqualTo(1));
+			}
+		}
+
+		[Test]
+		public void CreateGroups_OnSecondRun_LaterGroupsTakePriority()
+		{
+			using (var first = FileFromContents(@"[original]
+											rootFolder=$MyDocuments$"))
+			using (var second = FileFromContents(@"[priority]
+											rootFolder=$Desktop$"))
+			{
+				var reader = new GroupIniFileReader(first.Path);
+				var groups = reader.CreateGroups();
+				reader = new GroupIniFileReader(second.Path);
+				reader.CreateGroups(groups);
+				Assert.That(groups.ToArray()[0].Name, Is.EqualTo("priority"));
+				Assert.That(groups.ToArray()[1].Name, Is.EqualTo("original"));
 			}
 		}
 

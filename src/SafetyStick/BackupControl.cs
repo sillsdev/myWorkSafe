@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Media;
 using System.Reflection;
@@ -27,7 +28,7 @@ namespace myWorkSafe
 		Synchronizer _synchronizer;
 		private BackgroundWorker _preparationWorker;
 		private BackgroundWorker _backupWorker;
-		private IEnumerable<FileGroup> _groups;
+		private List<FileGroup> _groups;
 		private DriveDetector _driveDetector;
 
 		public BackupControl(string destinationDeviceRoot, long availableFreeSpaceInKilobytes, long totalSpaceOfDeviceInKilobytes)
@@ -40,9 +41,7 @@ namespace myWorkSafe
 			SetWindowText();
 			listView1.Visible = false;
 			backupNowButton.Visible = false;
-			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "groups.ini");
-			var reader = new GroupIniFileReader(path);
-			_groups = reader.CreateGroups();
+			ReadInGroups();
 
 			_driveDetector = new DriveDetector();
 
@@ -76,6 +75,33 @@ namespace myWorkSafe
 			_preparationWorker.DoWork+= OnPreparationWorker_DoWork;
 			_preparationWorker.WorkerSupportsCancellation = true;
 			_preparationWorker.RunWorkerCompleted += OnPreparationCompleted;
+		}
+
+		private void ReadInGroups()
+		{
+			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "groups.ini");
+			_groups = new List<FileGroup>();
+			var factoryGroupsReader = new GroupIniFileReader(path);
+			factoryGroupsReader.CreateGroups(_groups);
+
+			//look for a user-override file
+			var dir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+			dir = Path.Combine(dir, "myWorkSafe");
+			if(!Directory.Exists(dir))
+			{
+				Directory.CreateDirectory(dir);//so it's easier for people to find
+
+			}
+			var ini = Path.Combine(dir, "groups.ini");
+			if (File.Exists(ini))
+			{
+				var customGroupsReader = new GroupIniFileReader(ini);
+				customGroupsReader.CreateGroups(_groups);
+			}
+			else
+			{
+				File.WriteAllText(ini, "#Enter your own or modified groups here, to customize myWorkSafe behavior");
+			}
 		}
 
 
@@ -123,8 +149,9 @@ namespace myWorkSafe
 						item.SubItems.Add(group.UpdateFileCount + group.NewFileCount +" files to backup.");
 						break;
 					case FileGroup.DispositionChoice.NotEnoughRoom:
-						item.ImageIndex = 1;
+						//item.ImageIndex = 1;
 						item.SubItems.Add("Not enough room.");
+						item.ForeColor = Color.DarkRed;
 						break;
 					case FileGroup.DispositionChoice.WasBackedUp:
 						item.ImageIndex = 0;

@@ -29,7 +29,27 @@ namespace myWorkSafe.Groups
 		public DispositionChoice Disposition;
 
 		public string Name;
-		public abstract string RootFolder { get; set; }
+		public string RootFolder
+		{
+			get { return _rootFolder; }
+			set
+			{
+				_rootFolder = value;
+				if(string.IsNullOrEmpty(_rootFolder))
+				{
+					Disposition = DispositionChoice.Hide;
+				}
+				if(!Directory.Exists(_rootFolder))
+				{
+					Disposition = DispositionChoice.Hide;
+				}
+
+			//enhance... ideally we'd return hide if the directory was there but no
+			//relevant files were there. E.g. if we had MyVideos, but the only
+			//thing in there was "Sample Videos", which are filtered out, we
+			//would like to not show this group.
+			}
+		}
 
 
 		public FileSyncScopeFilter Filter;
@@ -41,6 +61,8 @@ namespace myWorkSafe.Groups
 		public Guid DestGuid;
 		public string SourceTempMetaFile;
 		public string DestTempMetaFile;
+		private string _rootFolder="??";
+		public string SectionName { get; set; }
 
 		public void ClearStatistics()
 		{
@@ -61,25 +83,17 @@ namespace myWorkSafe.Groups
 			return dir;
 		}
 
-		public bool GetIsRelevantOnThisMachine()
-		{
-			//enhance... ideally we'd return false if the directory was there but no
-			//relevant files were there. E.g. if we had MyVideos, but the only
-			//thing in there was "Sample Videos", which are filtered out, we
-			//would like to not show this group.
-			return Directory.Exists(RootFolder);
-		}
 
-		public bool ShouldSkipDirectory(FileData directoryData)
+		public bool ShouldSkipSubDirectory(FileData directoryData)
 		{
 			//we bracket with spaces so that we don't match substrings
 			string value = " "+directoryData.Name.ToLower()+" ";
 			if(Filter.SubdirectoryExcludes.Any(s => (" "+s.ToLower()+" ") ==value))
 				return true;
-			return ShouldSkip(directoryData.RelativePath);
+			return ShouldSkipFile(directoryData.RelativePath);
 		}
 
-		public bool ShouldSkip(string relativePath)
+		public bool ShouldSkipFile(string relativePath)
 		{
 			string value = "//"+relativePath.ToLower()+"//";
 			var parts = relativePath.Split(new char[] {Path.DirectorySeparatorChar});

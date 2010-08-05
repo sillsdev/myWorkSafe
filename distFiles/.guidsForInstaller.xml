@@ -3,4 +3,5 @@
 <InstallerMetadata>
   <File Id="about.htm" Guid="e19de804-2375-4eeb-83db-8cd216b94d1e" />
   <File Id="image1.png" Guid="6800f865-3ef2-480e-ac04-1daf4c2d7a21" />
+  <File Id="groups.ini" Guid="16579751-3dc7-4061-a181-1c07a406993c" />
 </InstallerMetadata>
