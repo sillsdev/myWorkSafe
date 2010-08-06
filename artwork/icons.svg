@@ -40,14 +40,14 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1280"
-     inkscape:window-height="1002"
+     inkscape:window-width="1453"
+     inkscape:window-height="1028"
      id="namedview65"
      showgrid="false"
-     inkscape:zoom="1"
-     inkscape:cx="-510.46728"
-     inkscape:cy="-7.1271994"
-     inkscape:window-x="1672"
+     inkscape:zoom="32"
+     inkscape:cx="-306.77195"
+     inkscape:cy="35.54457"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg3223" />
@@ -561,13 +561,20 @@
        x2="-123.70718"
        y2="63.196793"
        gradientUnits="userSpaceOnUse" />
+    <inkscape:perspective
+       id="perspective3082"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
   </defs>
   <rect
      style="fill:#666666;fill-opacity:1;stroke:none"
      id="rect4226"
      width="84.080795"
      height="101.80186"
-     x="-343.91342"
+     x="-414.41342"
      y="-58.171364" />
   <path
      style="fill:url(#linearGradient3332);fill-opacity:1;stroke:#ffffff;stroke-width:1.0571965;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
@@ -824,9 +831,9 @@
        id="path4224" />
   </g>
   <g
-     inkscape:export-ydpi="482.88177"
-     inkscape:export-xdpi="482.88177"
-     inkscape:export-filename="C:\dev\SafetyStick\artwork\icondark64x64.png"
+     inkscape:export-ydpi="241.17"
+     inkscape:export-xdpi="241.17"
+     inkscape:export-filename="C:\dev\myWorkSafe\artwork\icondark32x32.png"
      transform="matrix(0.75672743,0.65373053,-0.65373053,0.75672743,-101.59591,103.94208)"
      id="g4238"
      style="stroke:#000000;stroke-opacity:1">
@@ -839,4 +846,11 @@
        d="m -213.4712,54.241733 c -1.15612,0.346017 -0.46953,1.923978 -0.65449,2.772648 0.0533,2.379868 -0.10058,4.786108 0.0654,7.151768 0.55241,1.012511 2.03219,0.253969 2.93924,0.487891 1.24892,0.171765 1.0323,-1.444916 0.99364,-2.207409 -0.0541,-2.567832 0.10162,-5.164532 -0.0654,-7.717008 -0.54556,-1.023244 -2.03401,-0.25804 -2.93925,-0.49384 -0.11266,0.01055 -0.22676,-0.01079 -0.33914,0.006 z"
        style="fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:0.75;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
   </g>
+  <image
+     y="70.750008"
+     x="-471.3125"
+     id="image3084"
+     height="33"
+     width="40"
+     xlink:href="file:///C:/dev/artwork/inkscape_pasted_image_20100804_145723.png" />
 </svg>

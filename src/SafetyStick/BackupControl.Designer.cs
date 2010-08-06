@@ -47,7 +47,7 @@
 			this._status = new System.Windows.Forms.Label();
 			this._probablyRemovedPhysicallyTimer = new System.Windows.Forms.Timer(this.components);
 			this._mediaStatusIndicator = new myWorkSafe.MediaStatus();
-			this._startGatheringInfo = new System.Windows.Forms.Timer(this.components);
+			this._startTimer = new System.Windows.Forms.Timer(this.components);
 			this.label1 = new System.Windows.Forms.Label();
 			this.SuspendLayout();
 			// 
@@ -176,8 +176,8 @@
 			// 
 			// _startGatheringInfo
 			// 
-			this._startGatheringInfo.Interval = 500;
-			this._startGatheringInfo.Tick += new System.EventHandler(this._startGatheringInfo_Tick);
+			this._startTimer.Interval = 500;
+			this._startTimer.Tick += new System.EventHandler(this.OnStartTick);
 			// 
 			// label1
 			// 
@@ -225,7 +225,7 @@
 		private System.Windows.Forms.ProgressBar syncProgressBar;
 		private System.Windows.Forms.Label _status;
 		private System.Windows.Forms.Timer _probablyRemovedPhysicallyTimer;
-		private System.Windows.Forms.Timer _startGatheringInfo;
+		private System.Windows.Forms.Timer _startTimer;
 		private System.Windows.Forms.Label label1;
 	}
 }

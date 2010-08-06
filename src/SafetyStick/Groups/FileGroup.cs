@@ -39,7 +39,11 @@ namespace myWorkSafe.Groups
 				{
 					Disposition = DispositionChoice.Hide;
 				}
-				if(!Directory.Exists(_rootFolder))
+				else if(Directory.Exists(_rootFolder))
+				{
+					Disposition = DispositionChoice.Waiting;
+				}
+				else
 				{
 					Disposition = DispositionChoice.Hide;
 				}
@@ -59,18 +63,45 @@ namespace myWorkSafe.Groups
 		public int DeleteFileCount;
 		public Guid SourceGuid;
 		public Guid DestGuid;
-		public string SourceTempMetaFile;
-		public string DestTempMetaFile;
+
 		private string _rootFolder="??";
+		private string _sourceTempMetaFile;
+		private string _destTempMetaFile;
 		public string SectionName { get; set; }
 
 		public void ClearStatistics()
 		{
-			Disposition = DispositionChoice.Waiting;
+			if (Disposition == DispositionChoice.WillBeBackedUp)
+			{
+				Disposition = DispositionChoice.Waiting;
+			}
 			NetChangeInBytes = 0;
 			NewFileCount = 0;
 			DeleteFileCount = 0;
 			UpdateFileCount = 0;
+
+		}
+
+		public string SourceTempMetaFile
+		{
+			get {
+				if(_sourceTempMetaFile==null)
+				{
+					_sourceTempMetaFile = Path.GetTempFileName();
+				}
+				return _sourceTempMetaFile;
+			}
+		}
+		public string DestTempMetaFile
+		{
+			get
+			{
+				if (_destTempMetaFile == null)
+				{
+					_destTempMetaFile = Path.GetTempFileName();
+				}
+				return _destTempMetaFile;
+			}
 		}
 
 		public string GetDestinationSubFolder(string destinationRoot)

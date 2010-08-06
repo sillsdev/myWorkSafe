@@ -58,7 +58,7 @@ namespace myWorkSafe
 			}
 		}
 
-		public void GatherInformation()
+		public void GatherPreview()
 		{
 			/* enhance: we could try to deal with the situation where a lower-priority group
 			 * is hogging space from a newly enlarged higher-priority group. We'd have to
@@ -84,11 +84,6 @@ namespace myWorkSafe
 				}
 				_currentGroup = group;//used by callbacks
 				group.ClearStatistics();
-//				if (!group.GetIsRelevantOnThisMachine())
-//				{
-//					group.Disposition = FileGroup.DispositionChoice.Hide;
-//					continue;
-//				}
 
 				if(group.Disposition == FileGroup.DispositionChoice.Hide)
 					continue;
@@ -119,8 +114,6 @@ namespace myWorkSafe
 				//have seen it cause things to not be copied over (in circumnstances which might make
 				//sense in some syncing contexts).
 
-				group.SourceTempMetaFile = Path.GetTempFileName();
-				group.DestTempMetaFile = Path.GetTempFileName();
 				string tempDirectory = Path.GetDirectoryName(group.SourceTempMetaFile);
 				using (var sourceProvider = new FileSyncProvider(group.SourceGuid, group.RootFolder, group.Filter, options,
 					tempDirectory,
@@ -199,6 +192,11 @@ namespace myWorkSafe
 						break;
 					}
 					_currentGroup = group; //used by callbacks
+
+					if (group.Disposition == FileGroup.DispositionChoice.Hide)
+						continue;
+
+
 					if (group.Disposition == FileGroup.DispositionChoice.NotEnoughRoom)
 						continue;
 
