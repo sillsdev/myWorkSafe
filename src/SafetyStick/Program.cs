@@ -57,6 +57,11 @@ namespace myWorkSafe
 				trayIcon.Visible = true;
 				trayIcon.MouseClick += new MouseEventHandler(trayIcon_MouseClick);
 
+
+				DoTestRun();
+
+
+
 				detector.DeviceArrived += new DriveDetectorEventHandler(OnDeviceArrived);
 				Application.Idle += new EventHandler(Application_Idle);
 				Application.Run();
@@ -147,6 +152,9 @@ namespace myWorkSafe
 			var totalSpaceInKilobytes = 900 * 1024;// (int)(100.0 * info.AvailableFreeSpace / info.TotalSize);
 			var freeSpaceInKilobytes = 800*1024;
 			var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes);
+			backupControl.DoPreview = false;
+			backupControl.AutoStart = true;
+
 			new MainWindow(backupControl).ShowDialog();
 		}
 

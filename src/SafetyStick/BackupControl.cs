@@ -18,7 +18,9 @@ namespace myWorkSafe
 {
 	public partial class BackupControl : UserControl
 	{
-		enum State {Preparing, BackingUp, CouldNotEject, SafelyEjected, ExpectingPhysicalRemoval}
+		enum State {Preparing, BackingUp, CouldNotEject, SafelyEjected, ExpectingPhysicalRemoval,
+			ReadyToBackup
+		}
 
 		private State CurrentState;
 
@@ -43,6 +45,8 @@ namespace myWorkSafe
 			backupNowButton.Visible = false;
 			ReadInGroups();
 
+			syncProgressBar.Style = ProgressBarStyle.Marquee; //until we have an estimate
+
 			_driveDetector = new DriveDetector();
 
 			//TODO: use this instead of polling in the main program
@@ -66,16 +70,19 @@ namespace myWorkSafe
 
 			closeButton.Visible = false;
 			cancelButton.Visible = true;
-
+			_status.Text = "";
 			listView1.Visible = true;
 			Cursor = Cursors.WaitCursor;
 
-			_status.Text = "Looking at what files have changed...";
 			_preparationWorker = new BackgroundWorker();
-			_preparationWorker.DoWork+= OnPreparationWorker_DoWork;
+			_preparationWorker.DoWork += OnPreparationWorker_DoWork;
 			_preparationWorker.WorkerSupportsCancellation = true;
 			_preparationWorker.RunWorkerCompleted += OnPreparationCompleted;
 		}
+
+		public bool DoPreview { get; set; }
+
+		public bool AutoStart { get; set; }
 
 		private void ReadInGroups()
 		{
@@ -162,12 +169,44 @@ namespace myWorkSafe
 			}
 		}
 
+		void ChangeState(State state)
+		{
+			CurrentState = state;
+			switch(CurrentState)
+			{
+				case State.Preparing:
+					_status.Text = "Looking at what files have changed...";
+					backupNowButton.Visible = false;
+					syncProgressBar.Visible = false;
+					cancelButton.Visible = true;
+					break;
+				case State.BackingUp:
+					_status.Text = "Copying files...";
+					backupNowButton.Visible = false;
+					syncProgressBar.Visible = true;
+					cancelButton.Visible = true;
+					break;
+				case State.CouldNotEject:
+					break;
+				case State.SafelyEjected:
+					break;
+				case State.ExpectingPhysicalRemoval:
+					break;
+				case State.ReadyToBackup:
+					cancelButton.Visible = false;
+					Cursor = Cursors.Default;
+					listView1.Visible = true;
+					backupNowButton.Visible = true;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
 		void OnPreparationCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
-			cancelButton.Visible = false;
-			Cursor = Cursors.Default;
-			listView1.Visible = true;
-			backupNowButton.Visible = true;
+			syncProgressBar.Style = ProgressBarStyle.Blocks;//now that we have an estimate
+			ChangeState(State.ReadyToBackup);
 			syncProgressBar.Maximum = 0;
 			foreach (var group in _groups)
 			{
@@ -197,7 +236,7 @@ namespace myWorkSafe
 		void OnPreparationWorker_DoWork(object sender, DoWorkEventArgs e)
 		{
 			_synchronizer.FileProgress += GetIsCancellationPending;
-			_synchronizer.GatherInformation();
+			_synchronizer.GatherPreview();
 			_synchronizer.FileProgress -= GetIsCancellationPending;
 		
 		}
@@ -237,17 +276,18 @@ namespace myWorkSafe
 
 		private void backupNowButton_Click(object sender, EventArgs e)
 		{
-			_status.Text = "Copying files...";
-			backupNowButton.Visible = false;
-			syncProgressBar.Visible = true;
-			cancelButton.Visible = true;
+			StartBackup();
+		}
+
+		private void StartBackup()
+		{
+			ChangeState(State.BackingUp);
 			_synchronizer.FileProgress += OnFileProgress;
 			_backupWorker = new BackgroundWorker();
 			_backupWorker.DoWork += new DoWorkEventHandler(_backupWorker_DoWork);
 			_backupWorker.WorkerSupportsCancellation = true;
-			_backupWorker.RunWorkerAsync();
 			_backupWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(OnBackupWorkerCompleted);
-
+			_backupWorker.RunWorkerAsync();
 		}
 
 		void OnBackupWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -283,7 +323,7 @@ namespace myWorkSafe
 				{
 					player.Play();
 				}
-				CurrentState = State.SafelyEjected;
+				ChangeState(State.SafelyEjected);
 				//ok, now wait a second. 
 				_probablyRemovedPhysicallyTimer.Enabled = true;
 				//then, next time a usb device is removed, we'll assume
@@ -292,7 +332,7 @@ namespace myWorkSafe
 			}
 			else
 			{
-				CurrentState = State.CouldNotEject;
+				ChangeState(State.CouldNotEject);
 			}
 		}
 
@@ -341,7 +381,6 @@ namespace myWorkSafe
 
 		void _backupWorker_DoWork(object sender, DoWorkEventArgs e)
 		{
-			CurrentState = State.BackingUp;
 			_synchronizer.DoSynchronization();		
 		}
 
@@ -396,7 +435,7 @@ namespace myWorkSafe
 		{
 			//if we start too soon, sometime the progress events are called before the window
 			//is created and ready to receive them.
-			_startGatheringInfo.Enabled = true;
+			_startTimer.Enabled = true;
 		}
 
 		private void _probablyRemovedPhysicallyTimer_Tick(object sender, EventArgs e)
@@ -406,16 +445,29 @@ namespace myWorkSafe
 			//it was this the device we were backing up to, and quit. (it might be possible to get more firm info, 
 			//but this device level is a murky world...
 
-			CurrentState = State.ExpectingPhysicalRemoval;
+			ChangeState(State.ExpectingPhysicalRemoval);
 			_probablyRemovedPhysicallyTimer.Enabled = false;
 		}
 
-		private void _startGatheringInfo_Tick(object sender, EventArgs e)
+		private void OnStartTick(object sender, EventArgs e)
 		{
-			_startGatheringInfo.Enabled = false;
-			CurrentState = State.Preparing;
-			_preparationWorker.RunWorkerAsync();
-
+			_startTimer.Enabled = false;
+			if (DoPreview)
+			{
+				ChangeState(State.Preparing);
+				_preparationWorker.RunWorkerAsync();
+			}
+			else
+			{
+				if(AutoStart)
+				{
+					StartBackup();
+				}
+				else
+				{
+					ChangeState(State.ReadyToBackup);
+				}
+			}
 		}
 	}
 }

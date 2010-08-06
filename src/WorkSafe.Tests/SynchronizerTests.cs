@@ -22,7 +22,7 @@ namespace WorkSafe.Tests
 				var groups = new List<FileGroup>(new[] {source});        
 				var sync = new Synchronizer(to.Path, groups, 100);
 
-				sync.GatherInformation();
+				sync.GatherPreview();
 				Assert.AreEqual(0, source.UpdateFileCount);
 				Assert.AreEqual(0, source.DeleteFileCount);
 				Assert.AreEqual(2, source.NewFileCount);
@@ -45,7 +45,7 @@ namespace WorkSafe.Tests
 				string path = to.Combine(sync.DestinationRootForThisUser, source.Name, "test2.txt");
 				using(var locked = File.OpenWrite(path))
 				{
-					sync.GatherInformation();
+					sync.GatherPreview();
 					sync.DoSynchronization();
 				}
 				AssertFileExists(sync, source, to, "test1.txt");
@@ -76,11 +76,11 @@ namespace WorkSafe.Tests
 				var source = new RawDirectoryGroup("1", from.Path, null, null);
 				var groups = new List<FileGroup>(new[] { source });
 				var sync = new Synchronizer(to.Path, groups, 100);
-				sync.GatherInformation();
+				sync.GatherPreview();
 				sync.DoSynchronization();
 				System.IO.File.WriteAllText(from.Combine("test1.txt"), "Blah blah Blah Blah Blah");
 				sync = new Synchronizer(to.Path, groups, 100);
-				sync.GatherInformation();
+				sync.GatherPreview();
 
 				Assert.AreEqual(1, source.UpdateFileCount);
 				Assert.AreEqual(0, source.DeleteFileCount);
@@ -99,14 +99,14 @@ namespace WorkSafe.Tests
 				var source = new RawDirectoryGroup("1", from.Path, null, null);
 				var groups = new List<FileGroup>(new[] { source });
 				var sync = new Synchronizer(to.Path, groups, 100);
-				sync.GatherInformation();
+				sync.GatherPreview();
 				sync.DoSynchronization();
 				File.Delete(from.Combine("test1.txt"));
 				
 				//simulate a new run (which will have a new metadata file, else the framework
 				//decides not to delete.
 				sync = new Synchronizer(to.Path, groups, 100);
-				sync.GatherInformation();
+				sync.GatherPreview();
 
 				Assert.AreEqual(0, source.NewFileCount);
 				Assert.AreEqual(0, source.UpdateFileCount);
@@ -127,7 +127,7 @@ namespace WorkSafe.Tests
 				var source = new RawDirectoryGroup("1", from.Path, null, null);
 				var groups = new List<FileGroup>(new[] { source });
 				var sync = new Synchronizer(to.Path, groups, 100);
-				sync.GatherInformation();
+				sync.GatherPreview();
 				sync.DoSynchronization();
 				string destFile = to.Combine(sync.DestinationRootForThisUser, source.Name, "test1.txt");
 				Assert.IsTrue(File.Exists(destFile));
@@ -135,7 +135,7 @@ namespace WorkSafe.Tests
 
 
 				sync = new Synchronizer(to.Path, groups, 100);
-				sync.GatherInformation();
+				sync.GatherPreview();
 				Assert.IsTrue(File.Exists(destFile));
 				sync.DoSynchronization();
 
@@ -161,7 +161,7 @@ namespace WorkSafe.Tests
 				var source2 = new RawDirectoryGroup("2",from.Path,null,null);
 				var groups = new List<FileGroup>(new[] { source1, source2 });
 				var sync = new Synchronizer(to.Path, groups, 100);
-				sync.GatherInformation();
+				sync.GatherPreview();
 
 				Assert.AreEqual(1, source1.NewFileCount);
 				Assert.AreEqual(0, source1.UpdateFileCount);
@@ -186,7 +186,7 @@ namespace WorkSafe.Tests
 				var source1 = new RawDirectoryGroup("1", from.Path, new []{"*.info"}, null);
 				var groups = new List<FileGroup>(new[] { source1 });
 				var sync = new Synchronizer(to.Path, groups, 100);
-				sync.GatherInformation();
+				sync.GatherPreview();
 
 				Assert.AreEqual(1, source1.NewFileCount);
 				Assert.AreEqual(0, source1.UpdateFileCount);
