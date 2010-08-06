@@ -117,6 +117,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <metadata name="imageList1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>166, 17</value>
+  </metadata>
+  <data name="imageList1.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
+        LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABu
+        AwAAAk1TRnQBSQFMAwEBAAEIAQABCAEAARABAAEQAQAE/wEZAQAI/wFCAU0BNgcAATYDAAEoAwABQAMA
+        ARADAAEBAQABGAYAAQwSAAOBAVQB1AH+AU4B0gH9AUgB0AH8AUIBzgH7ATwBzAH7ATYBygH6ATABxwH5
+        ASsBxQH4ASUBwwH3AR8BwQH2ARkBvwH1ARMBvQH0AQ0BugH0AQcBuAHzAQIBswHukwABVwHWAf8BAAHU
+        Ae0BAAHUAe0BAAHUAe0BAAHUAe0BAAHUAe0BAAHRAekEAAHUAe0BAAHUAe0BAAHUAe0BAAHUAe0BAAHU
+        Ae0BAAHUAe0DM5MAAzMBAAHUAe0BAAHUAe0BAAHUAe0BAAHUAe0BAAHUAe0KAAHUAe0BAAHUAe0BAAHU
+        Ae0BAAHUAe0BDAG9AfQD9pYAAVcB1gH/AQAB1AHtAQAB1AHtAQAB1AHtAQAB1AHtAQAB1AHtAQABFQEY
+        AQAB1AHtAQAB1AHtAQAB1AHtAQAB1AHtAQAB1AHtAzOZAAMzAQAB1AHtAQAB1AHtAQAB1AHtAQAB1AHt
+        AQAB1AHtBAAB1AHtAQAB1AHtAQAB1AHtAQAB1AHtARoBvwH1A/mcAAFXAdYB/wEAAdQB7QEAAdQB7QEA
+        AdQB7QcAAdQB7QEAAdQB7QEAAdQB7QEAAdQB7QMznwADMwEAAdQB7QEAAdQB7QEAAdQB7QcAAdQB7QEA
+        AdQB7QEAAdQB7QEmAcQB9wP6ogABVwHWAf8BAAHUAe0BAAHUAe0HAAHUAe0BAAHUAe0BAAHUAe0DM6UA
+        AzMBAAHUAe0BAAHUAe0HAAHAAdcBAAHUAe0BMgHIAfkD+qgAAVcB1gH/AQAB1AHtBwABQgFKAQAB1AHt
+        AzOrAAMzAQAB1AHtBwABEQESAT4BzQT7rgABVwHWAf8HAAHUAe0DM7EAAzMBAAHUAe0BAAHUAe0BSwHR
+        BP20AAFXAdUB/gEAAdQB7QMztwADMwFXAdYB/wP9ugADpaUAAUIBTQE+BwABPgMAASgDAAFAAwABEAMA
+        AQEBAAEBBQABgBcAA/8JAAGABwABgAcAAcABAQYAAcABAQYAAeABAwYAAeABAwYAAfABBwYAAfABBwYA
+        AfgBDwYAAfgBDwYAAfwBHwYAAfwBHwYAAf4BPwYAAf4BPwYAAf8BfwYACw==
+</value>
+  </data>
+  <metadata name="_errorWatchTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

@@ -79,6 +79,13 @@ namespace myWorkSafe.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap menuButton {
+            get {
+                object obj = ResourceManager.GetObject("menuButton", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap usbstick {
             get {
                 object obj = ResourceManager.GetObject("usbstick", resourceCulture);

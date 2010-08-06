@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Drawing;
+using System.Reflection;
 using System.Windows.Forms;
 using myWorkSafe.Usb;
 using Palaso.IO;
@@ -7,7 +8,7 @@ namespace myWorkSafe
 {
 	public partial class MainWindow : Form
 	{
-		public MainWindow(BackupControl backupControl)
+		public MainWindow(BackupControl backupControl, MultiProgress progress)
 		{
 			//Font = SystemFonts.MessageBoxFont;
 			InitializeComponent();
@@ -15,6 +16,7 @@ namespace myWorkSafe
 			backupControl.Dock = DockStyle.Fill;
 			backupControl.CloseNow += () => Close();
 			_backupPage.Controls.Add(backupControl);
+			progress.Add(_logBox);
 		}
 
 		private void SetWindowText()
@@ -22,7 +24,8 @@ namespace myWorkSafe
 			var ver = Assembly.GetExecutingAssembly().GetName().Version;
 			Text = string.Format("{0}, build {1}.{2}.{3}", Assembly.GetExecutingAssembly().GetName().Name, ver.Major, ver.Minor, ver.Build);
 		}
-
+		
+		
 		private void tabControl1_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
 			//we delay making one of these until we have to
@@ -40,6 +43,17 @@ namespace myWorkSafe
 		{
 			//BringToFront();
 			Activate();
+		}
+
+		private void _errorWatchTimer_Tick(object sender, System.EventArgs e)
+		{
+			if(_logBox.ErrorEncountered )
+			{
+				_errorWatchTimer.Enabled = false;
+				_logPage.Text = "Error Log";
+				_logPage.ImageIndex = 0;
+
+			}
 		}
 
 

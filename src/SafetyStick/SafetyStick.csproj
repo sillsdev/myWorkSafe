@@ -87,6 +87,13 @@
     <Compile Include="ini\IniWriter.cs" />
     <Compile Include="ini\OrderedList.cs" />
     <Compile Include="ini\OrderedListEnumerator.cs" />
+    <Compile Include="LogBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="LogBox.designer.cs">
+      <DependentUpon>LogBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Progress.cs" />
     <Compile Include="Usb\DriveDetector.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -110,6 +117,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="InfoWindow.resx">
       <DependentUpon>InfoWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LogBox.resx">
+      <DependentUpon>LogBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
@@ -162,6 +172,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\warning.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\menuButton.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

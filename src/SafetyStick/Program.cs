@@ -58,7 +58,7 @@ namespace myWorkSafe
 				trayIcon.MouseClick += new MouseEventHandler(trayIcon_MouseClick);
 
 
-				DoTestRun();
+			//	DoTestRun();
 
 
 
@@ -99,6 +99,7 @@ namespace myWorkSafe
 
 		static void HandleDeviceArrived(string driveLetter)
 		{
+			MultiProgress progress= new MultiProgress(new IProgress[]{});
 			List<UsbDriveInfo> foundDrives = GetFoundDrives();
 			var drive = foundDrives.FirstOrDefault(d => d.RootDirectory.ToString() == driveLetter);
 			if (drive == null || !drive.IsReady)
@@ -108,8 +109,8 @@ namespace myWorkSafe
 				long totalSpaceInKilobytes = (long) (drive.TotalSize/1024);
 				long freeSpaceInKilobytes = (long) (drive.AvailableFreeSpace/1024);
 				string destinationDeviceRoot = drive.RootDirectory.ToString();
-				var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes);
-				using (var form = new MainWindow(backupControl))
+				var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes, progress);
+				using (var form = new MainWindow(backupControl, progress))
 				{
 					form.ShowDialog();
 				}
@@ -142,6 +143,7 @@ namespace myWorkSafe
 
 		private static void DoTestRun()
 		{
+			MultiProgress progress = new MultiProgress(new IProgress[] { });
 			var destinationDeviceRoot = @"c:\dev\temp\SafetyStick";
 
 //			if (Directory.Exists(path))
@@ -151,11 +153,11 @@ namespace myWorkSafe
 
 			var totalSpaceInKilobytes = 900 * 1024;// (int)(100.0 * info.AvailableFreeSpace / info.TotalSize);
 			var freeSpaceInKilobytes = 800*1024;
-			var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes);
+			var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes, progress);
 			backupControl.DoPreview = false;
 			backupControl.AutoStart = true;
 
-			new MainWindow(backupControl).ShowDialog();
+			new MainWindow(backupControl, progress).ShowDialog();
 		}
 
 		private static void SetUpErrorHandling()

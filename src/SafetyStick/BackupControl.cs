@@ -19,7 +19,9 @@ namespace myWorkSafe
 	public partial class BackupControl : UserControl
 	{
 		enum State {Preparing, BackingUp, CouldNotEject, SafelyEjected, ExpectingPhysicalRemoval,
-			ReadyToBackup
+			ReadyToBackup,
+			Succeeded,
+			ErrorEncountered
 		}
 
 		private State CurrentState;
@@ -33,8 +35,9 @@ namespace myWorkSafe
 		private List<FileGroup> _groups;
 		private DriveDetector _driveDetector;
 
-		public BackupControl(string destinationDeviceRoot, long availableFreeSpaceInKilobytes, long totalSpaceOfDeviceInKilobytes)
+		public BackupControl(string destinationDeviceRoot, long availableFreeSpaceInKilobytes, long totalSpaceOfDeviceInKilobytes, MultiProgress progress)
 		{
+			Progress = progress;
 			//Font = SystemFonts.MessageBoxFont;
 			_destinationDeviceRoot = destinationDeviceRoot;
 			_availableFreeSpaceInKilobytes = availableFreeSpaceInKilobytes;
@@ -57,7 +60,7 @@ namespace myWorkSafe
 			_driveDetector.DeviceSomethingHappened += new DriveDetectorEventHandler(OnDriveSomething);
 			//driveDetector.QueryRemove += new DriveDetectorEventHandler(OnQueryRemove);
 
-			_synchronizer = new Synchronizer(destinationDeviceRoot, _groups, availableFreeSpaceInKilobytes);
+			_synchronizer = new Synchronizer(destinationDeviceRoot, _groups, availableFreeSpaceInKilobytes, Progress);
 			_synchronizer.GroupProgress +=new Action(OnSynchronizer_GroupProgress);
 
 			_mediaStatusIndicator.DriveLabel = destinationDeviceRoot;
@@ -83,6 +86,8 @@ namespace myWorkSafe
 		public bool DoPreview { get; set; }
 
 		public bool AutoStart { get; set; }
+
+		public IProgress Progress { get; set; }
 
 		private void ReadInGroups()
 		{
@@ -174,6 +179,28 @@ namespace myWorkSafe
 			CurrentState = state;
 			switch(CurrentState)
 			{
+				case State.Succeeded:
+					_status.Text = "Finished";
+					syncProgressBar.Visible = false;
+					closeButton.Visible = true;
+					cancelButton.Visible = false;
+					closeButton.Focus();
+					Cursor = Cursors.Default;
+					break;
+				case State.ErrorEncountered:
+					_status.Text = "See the Log for error information.";
+					_status.ForeColor = Color.Red;
+					
+					syncProgressBar.Visible = false;
+					closeButton.Visible = true;
+					cancelButton.Visible = false;
+					closeButton.Focus();
+					Cursor = Cursors.Default;
+					using (var player = new SoundPlayer(Properties.Resources.error))
+					{
+						player.Play();
+					}
+					break;
 				case State.Preparing:
 					_status.Text = "Looking at what files have changed...";
 					backupNowButton.Visible = false;
@@ -241,7 +268,7 @@ namespace myWorkSafe
 		
 		}
 
-		bool GetIsCancellationPending()
+		bool GetIsCancellationPending(string pathUnused)
 		{
 			return _preparationWorker.CancellationPending || (_backupWorker!=null &&_backupWorker.CancellationPending);
 				
@@ -251,15 +278,16 @@ namespace myWorkSafe
 		/// returns true if we want to cancel
 		/// </summary>
 		/// <returns></returns>
-		public bool OnFileProgress()
+		public bool OnFileProgress(string path)
 		{
 			InvokeIfRequired(()=>
 			                 	{
 									if (_synchronizer.FilesCopiedThusFar >= syncProgressBar.Minimum
 										&& _synchronizer.FilesCopiedThusFar <= syncProgressBar.Maximum)
 										syncProgressBar.Value = _synchronizer.FilesCopiedThusFar;
+			                 		Progress.WriteVerbose(path);
 								});
-			return GetIsCancellationPending();
+			return GetIsCancellationPending(path);
 		}
 
 		public void InvokeIfRequired(Action action)
@@ -292,15 +320,15 @@ namespace myWorkSafe
 
 		void OnBackupWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
-			_status.Text = "Finished";
-			syncProgressBar.Visible = false;
-			cancelButton.Visible = false;
-			closeButton.Visible = true;
-			cancelButton.Visible = false;
-			closeButton.Focus();
-			Cursor = Cursors.Default;
-
-			AttemptEjectInAMoment();
+			if (Progress.ErrorEncountered)
+			{
+				ChangeState(State.ErrorEncountered);
+			}
+			else
+			{
+				ChangeState(State.Succeeded);
+				AttemptEjectInAMoment();
+			}
 		}
 
 		private void AttemptEjectInAMoment()
