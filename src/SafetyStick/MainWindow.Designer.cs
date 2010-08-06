@@ -28,19 +28,27 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this._backupPage = new System.Windows.Forms.TabPage();
+			this._logPage = new System.Windows.Forms.TabPage();
 			this._aboutPage = new System.Windows.Forms.TabPage();
+			this._errorWatchTimer = new System.Windows.Forms.Timer(this.components);
+			this._logBox = new myWorkSafe.LogBox();
+			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
 			this.tabControl1.SuspendLayout();
+			this._logPage.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl1
 			// 
 			this.tabControl1.Alignment = System.Windows.Forms.TabAlignment.Bottom;
 			this.tabControl1.Controls.Add(this._backupPage);
+			this.tabControl1.Controls.Add(this._logPage);
 			this.tabControl1.Controls.Add(this._aboutPage);
 			this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.tabControl1.ImageList = this.imageList1;
 			this.tabControl1.Location = new System.Drawing.Point(0, 0);
 			this.tabControl1.Multiline = true;
 			this.tabControl1.Name = "tabControl1";
@@ -59,6 +67,17 @@
 			this._backupPage.Text = "Backup";
 			this._backupPage.UseVisualStyleBackColor = true;
 			// 
+			// _logPage
+			// 
+			this._logPage.Controls.Add(this._logBox);
+			this._logPage.Location = new System.Drawing.Point(4, 4);
+			this._logPage.Name = "_logPage";
+			this._logPage.Padding = new System.Windows.Forms.Padding(3);
+			this._logPage.Size = new System.Drawing.Size(567, 388);
+			this._logPage.TabIndex = 2;
+			this._logPage.Text = "Log";
+			this._logPage.UseVisualStyleBackColor = true;
+			// 
 			// _aboutPage
 			// 
 			this._aboutPage.Location = new System.Drawing.Point(4, 4);
@@ -68,6 +87,30 @@
 			this._aboutPage.TabIndex = 1;
 			this._aboutPage.Text = "About";
 			this._aboutPage.UseVisualStyleBackColor = true;
+			// 
+			// _errorWatchTimer
+			// 
+			this._errorWatchTimer.Enabled = true;
+			this._errorWatchTimer.Interval = 300;
+			this._errorWatchTimer.Tick += new System.EventHandler(this._errorWatchTimer_Tick);
+			// 
+			// _logBox
+			// 
+			this._logBox.BackColor = System.Drawing.Color.Transparent;
+			this._logBox.CancelRequested = false;
+			this._logBox.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._logBox.ErrorEncountered = false;
+			this._logBox.GetDiagnosticsMethod = null;
+			this._logBox.Location = new System.Drawing.Point(3, 3);
+			this._logBox.Name = "_logBox";
+			this._logBox.Size = new System.Drawing.Size(561, 382);
+			this._logBox.TabIndex = 0;
+			// 
+			// imageList1
+			// 
+			this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
+			this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
+			this.imageList1.Images.SetKeyName(0, "warning.png");
 			// 
 			// MainWindow
 			// 
@@ -83,6 +126,7 @@
 			this.Text = "myWorkSafe";
 			this.Load += new System.EventHandler(this.MainWindow_Load);
 			this.tabControl1.ResumeLayout(false);
+			this._logPage.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -92,6 +136,10 @@
 		private System.Windows.Forms.TabControl tabControl1;
 		private System.Windows.Forms.TabPage _backupPage;
 		private System.Windows.Forms.TabPage _aboutPage;
+		private System.Windows.Forms.TabPage _logPage;
+		private LogBox _logBox;
+		private System.Windows.Forms.Timer _errorWatchTimer;
+		private System.Windows.Forms.ImageList imageList1;
 
 	}
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Synchronization;
 using Microsoft.Synchronization.Files;
 using myWorkSafe.Groups;
+using Palaso.Code;
 
 namespace myWorkSafe
 {
@@ -16,17 +17,22 @@ namespace myWorkSafe
 		public string DestinationRootForThisUser;
 		private readonly IEnumerable<FileGroup> _groups;
 		private readonly long _totalAvailableOnDeviceInKilobytes;
+		private readonly IProgress _progress;
 		private SyncOrchestrator _agent;
 		private FileGroup _currentGroup;
 		private bool _cancelRequested;
 		public long ApprovedChangeInKB;
 		private HashSet<string> _alreadyAccountedFor;
+		private int _errorCount;
+		private const int MaxErrorsBeforeAbort=10;
 
 
-		public Synchronizer(string destinationDeviceRoot, IEnumerable<FileGroup> groups, long totalAvailableOnDeviceInKilobytes)
+		public Synchronizer(string destinationDeviceRoot, IEnumerable<FileGroup> groups, long totalAvailableOnDeviceInKilobytes, IProgress progress)
 		{
 			_groups = groups;
 			_totalAvailableOnDeviceInKilobytes = totalAvailableOnDeviceInKilobytes;
+			Guard.AgainstNull(progress,"progress");
+			_progress = progress;
 			SetDestinationFolderPath(destinationDeviceRoot);
 			_agent = new SyncOrchestrator();
 		}
@@ -130,7 +136,7 @@ namespace myWorkSafe
 					destinationProvider.PreviewMode = true;
 					destinationProvider.ApplyingChange += (OnDestinationPreviewChange);
 
-					sourceProvider.DetectingChanges += (x, y) => InvokeProgress();//just to detect cancel
+					sourceProvider.DetectingChanges += (x, y) => InvokeProgress(y);//just to detect cancel
 
 					PreviewOrSynchronizeCore(destinationProvider, sourceProvider);
 				}
@@ -220,6 +226,7 @@ namespace myWorkSafe
 																	   tempDirectory))
 					{
 						destinationProvider.PreviewMode = false;
+						destinationProvider.SkippedChange += new EventHandler<SkippedChangeEventArgs>(destinationProvider_SkippedChange);
 						destinationProvider.ApplyingChange += (OnDestinationChange);
 						PreviewOrSynchronizeCore(destinationProvider, sourceProvider);
 					}
@@ -240,6 +247,37 @@ namespace myWorkSafe
 			finally
 			{
 				CleanupTempFiles();
+			}
+		}
+
+		void destinationProvider_SkippedChange(object sender, SkippedChangeEventArgs e)
+		{
+			//ConflictLoserWriteError. This reason will be raised if a change is skipped because an attempt to recycle a losing file fails.
+//			var path = e.CurrentFilePath == null ? e.NewFilePath : e.CurrentFilePath;
+			try
+			{
+				_progress.WriteError("File Skipped ['{0}'/'{1}']. Reason={2}. Exception Follows:", e.NewFilePath ?? "", e.CurrentFilePath ?? "", e.SkipReason);
+				if(e.Exception !=null)
+					_progress.WriteException(e.Exception);
+
+				_errorCount++;
+				if(_errorCount > MaxErrorsBeforeAbort)
+				{
+					_progress.WriteError("Error count exceeded limit. Will abort.");
+					_cancelRequested = true;
+					_agent.Cancel();
+				}
+			}
+			catch (Exception error)
+			{
+				try
+				{
+					_progress.WriteException(error);
+				}
+				catch (Exception progressException)
+				{ 
+					Palaso.Reporting.ErrorReport.ReportFatalException(progressException);
+				}
 			}
 		}
 
@@ -288,7 +326,7 @@ namespace myWorkSafe
 					_currentGroup.DeleteFileCount++;
 					break;
 			}
-			InvokeProgress();
+			InvokeProgress(args);
 		}
 
 		private bool ShouldSkip(FileSyncProvider provider,ApplyingChangeEventArgs args)
@@ -315,6 +353,9 @@ namespace myWorkSafe
 
 		private void OnDestinationChange(object provider, ApplyingChangeEventArgs args)
 		{
+			if(args.NewFileData != null)
+				Debug.WriteLine(args.NewFileData.RelativePath+"  "+args.NewFileData.Name);
+
 			if (ShouldSkip((FileSyncProvider)provider, args))
 			{
 				args.SkipChange = true;
@@ -324,7 +365,7 @@ namespace myWorkSafe
 			Debug.Assert(args == null || args.NewFileData == null || !args.NewFileData.Name.Contains("extensions"));
 
 			_files++;
-			InvokeProgress();
+			InvokeProgress(args);
 
 			switch (args.ChangeType)
 			{
@@ -340,16 +381,36 @@ namespace myWorkSafe
 		/// <summary>
 		/// Return true if you want to cancel
 		/// </summary>
-		public event Func<bool> FileProgress;
+		public event Func<string, bool> FileProgress;
 
 		public event Action GroupProgress;
 
-		public void InvokeProgress()
+		public void InvokeProgress(EventArgs args)
 		{
-			Func<bool> handler = FileProgress;
-			if (handler != null)
+			//TODO this needs work!
+			if (FileProgress != null)
 			{
-				if(handler())
+				FileData newFileData=null;
+				FileData currentFileData=null;
+				ApplyingChangeEventArgs a = args as ApplyingChangeEventArgs;
+				if(a!=null)
+				{
+					newFileData = a.NewFileData;
+					currentFileData = a.CurrentFileData;
+				}
+
+				string path=string.Empty;
+				if(newFileData !=null)
+				{
+					path = Path.Combine(newFileData.RelativePath, newFileData.Name);
+					Debug.Assert(currentFileData ==null);//test this assumption
+				}
+				else if (currentFileData != null)
+				{
+					path = Path.Combine(currentFileData.RelativePath, currentFileData.Name);
+				}
+
+				if(FileProgress(path))
 				{
 					_cancelRequested = true;
 					_agent.Cancel();

@@ -20,7 +20,7 @@ namespace WorkSafe.Tests
 				System.IO.File.WriteAllText(from.Combine("test2.txt"), "Blah blah blah");
 				var source = new RawDirectoryGroup("1",from.Path,null,null);
 				var groups = new List<FileGroup>(new[] {source});        
-				var sync = new Synchronizer(to.Path, groups, 100);
+				var sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
 
 				sync.GatherPreview();
 				Assert.AreEqual(0, source.UpdateFileCount);
@@ -40,7 +40,7 @@ namespace WorkSafe.Tests
 				//System.IO.File.WriteAllText(from.Combine("test2.txt"), "Blah blah blah");
 				var source = new RawDirectoryGroup("1", from.Path, null, null);
 				var groups = new List<FileGroup>(new[] { source });
-				var sync = new Synchronizer(to.Path, groups, 100);
+				var sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
 
 				string path = to.Combine(sync.DestinationRootForThisUser, source.Name, "test2.txt");
 				using(var locked = File.OpenWrite(path))
@@ -75,11 +75,11 @@ namespace WorkSafe.Tests
 				System.IO.File.WriteAllText(from.Combine("test2.txt"), "dee dee dee");
 				var source = new RawDirectoryGroup("1", from.Path, null, null);
 				var groups = new List<FileGroup>(new[] { source });
-				var sync = new Synchronizer(to.Path, groups, 100);
+				var sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
 				sync.GatherPreview();
 				sync.DoSynchronization();
 				System.IO.File.WriteAllText(from.Combine("test1.txt"), "Blah blah Blah Blah Blah");
-				sync = new Synchronizer(to.Path, groups, 100);
+				sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
 				sync.GatherPreview();
 
 				Assert.AreEqual(1, source.UpdateFileCount);
@@ -98,14 +98,14 @@ namespace WorkSafe.Tests
 				File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
 				var source = new RawDirectoryGroup("1", from.Path, null, null);
 				var groups = new List<FileGroup>(new[] { source });
-				var sync = new Synchronizer(to.Path, groups, 100);
+				var sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
 				sync.GatherPreview();
 				sync.DoSynchronization();
 				File.Delete(from.Combine("test1.txt"));
 				
 				//simulate a new run (which will have a new metadata file, else the framework
 				//decides not to delete.
-				sync = new Synchronizer(to.Path, groups, 100);
+				sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
 				sync.GatherPreview();
 
 				Assert.AreEqual(0, source.NewFileCount);
@@ -126,7 +126,7 @@ namespace WorkSafe.Tests
 				File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
 				var source = new RawDirectoryGroup("1", from.Path, null, null);
 				var groups = new List<FileGroup>(new[] { source });
-				var sync = new Synchronizer(to.Path, groups, 100);
+				var sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
 				sync.GatherPreview();
 				sync.DoSynchronization();
 				string destFile = to.Combine(sync.DestinationRootForThisUser, source.Name, "test1.txt");
@@ -134,7 +134,7 @@ namespace WorkSafe.Tests
 				File.Delete(from.Combine("test1.txt"));
 
 
-				sync = new Synchronizer(to.Path, groups, 100);
+				sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
 				sync.GatherPreview();
 				Assert.IsTrue(File.Exists(destFile));
 				sync.DoSynchronization();
@@ -160,7 +160,7 @@ namespace WorkSafe.Tests
 				var source1 = new RawDirectoryGroup("1",from.Path,null,null);
 				var source2 = new RawDirectoryGroup("2",from.Path,null,null);
 				var groups = new List<FileGroup>(new[] { source1, source2 });
-				var sync = new Synchronizer(to.Path, groups, 100);
+				var sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
 				sync.GatherPreview();
 
 				Assert.AreEqual(1, source1.NewFileCount);
@@ -185,7 +185,7 @@ namespace WorkSafe.Tests
 				File.WriteAllText(from.Combine("info.info"), "deedeedee");
 				var source1 = new RawDirectoryGroup("1", from.Path, new []{"*.info"}, null);
 				var groups = new List<FileGroup>(new[] { source1 });
-				var sync = new Synchronizer(to.Path, groups, 100);
+				var sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
 				sync.GatherPreview();
 
 				Assert.AreEqual(1, source1.NewFileCount);
