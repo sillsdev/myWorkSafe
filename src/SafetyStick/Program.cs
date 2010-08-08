@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -106,19 +107,35 @@ namespace myWorkSafe
 				return;
 			try
 			{
-				long totalSpaceInKilobytes = (long) (drive.TotalSize/1024);
-				long freeSpaceInKilobytes = (long) (drive.AvailableFreeSpace/1024);
-				string destinationDeviceRoot = drive.RootDirectory.ToString();
-				var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes, progress);
-				using (var form = new MainWindow(backupControl, progress))
+				if (!IsAKnownBackupDrive(drive))
 				{
-					form.ShowDialog();
+					if(DialogResult.Yes == new NewDrivePopup().ShowDialog())
+					{
+						Directory.CreateDirectory(BackupControl.GetDestinationFolderPath(drive.RootDirectory.ToString()));
+					}
+				}
+				//based on that popup, it might now pass this test:
+				if (IsAKnownBackupDrive(drive))
+				{
+					long totalSpaceInKilobytes = (long) (drive.TotalSize/1024);
+					long freeSpaceInKilobytes = (long) (drive.AvailableFreeSpace/1024);
+					string destinationDeviceRoot = drive.RootDirectory.ToString();
+					var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes, progress);
+					using (var form = new MainWindow(backupControl, progress))
+					{
+						form.ShowDialog();
+					}
 				}
 			}
 			catch (Exception error)
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, something went wrong.");
 			}
+		}
+
+		private static bool IsAKnownBackupDrive(UsbDriveInfo drive)
+		{
+			return Directory.Exists(BackupControl.GetDestinationFolderPath(drive.RootDirectory.ToString()));
 		}
 
 		private static List<UsbDriveInfo> GetFoundDrives()

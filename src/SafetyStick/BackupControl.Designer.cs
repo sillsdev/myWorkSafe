@@ -49,6 +49,7 @@
 			this._mediaStatusIndicator = new myWorkSafe.MediaStatus();
 			this._startTimer = new System.Windows.Forms.Timer(this.components);
 			this.label1 = new System.Windows.Forms.Label();
+			this._updateMediaStatusTimer = new System.Windows.Forms.Timer(this.components);
 			this.SuspendLayout();
 			// 
 			// _safeToRemoveLabel
@@ -174,7 +175,7 @@
 			this._mediaStatusIndicator.Size = new System.Drawing.Size(100, 323);
 			this._mediaStatusIndicator.TabIndex = 11;
 			// 
-			// _startGatheringInfo
+			// _startTimer
 			// 
 			this._startTimer.Interval = 500;
 			this._startTimer.Tick += new System.EventHandler(this.OnStartTick);
@@ -189,6 +190,11 @@
 			this.label1.Size = new System.Drawing.Size(152, 13);
 			this.label1.TabIndex = 18;
 			this.label1.Text = "Do not rely on this test version.";
+			// 
+			// _updateMediaStatusTimer
+			// 
+			this._updateMediaStatusTimer.Interval = 3000;
+			this._updateMediaStatusTimer.Tick += new System.EventHandler(this._updateMediaStatusTimer_Tick);
 			// 
 			// BackupControl
 			// 
@@ -227,5 +233,6 @@
 		private System.Windows.Forms.Timer _probablyRemovedPhysicallyTimer;
 		private System.Windows.Forms.Timer _startTimer;
 		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.Timer _updateMediaStatusTimer;
 	}
 }

@@ -82,6 +82,8 @@ namespace myWorkSafe.Groups
 								group.AddExcludeFolder(reader.Value);
 								break;
 							default:
+								Palaso.Reporting.ErrorReport.NotifyUserOfProblem("The program doesn't understand this '{0}', in the file {1}",
+								                                                 reader.Name, _path);
 								break;
 
 						}

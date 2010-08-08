@@ -79,6 +79,13 @@ namespace myWorkSafe.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap image1 {
+            get {
+                object obj = ResourceManager.GetObject("image1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap menuButton {
             get {
                 object obj = ResourceManager.GetObject("menuButton", resourceCulture);

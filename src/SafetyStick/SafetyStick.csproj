@@ -93,6 +93,12 @@
     <Compile Include="LogBox.designer.cs">
       <DependentUpon>LogBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="NewDrivePopup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewDrivePopup.Designer.cs">
+      <DependentUpon>NewDrivePopup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Progress.cs" />
     <Compile Include="Usb\DriveDetector.cs">
       <SubType>Form</SubType>
@@ -126,6 +132,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MediaStatus.resx">
       <DependentUpon>MediaStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewDrivePopup.resx">
+      <DependentUpon>NewDrivePopup.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -175,6 +184,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\menuButton.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\logo.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
