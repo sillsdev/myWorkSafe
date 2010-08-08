@@ -23,33 +23,21 @@ namespace myWorkSafe
 		private bool _cancelRequested;
 		public long ApprovedChangeInKB;
 		private HashSet<string> _alreadyAccountedFor;
-		private int _errorCount;
+		private int _errorCountSinceLastSuccess;
+		private bool _gotIOExceptionProbablyDiskFull;
 		private const int MaxErrorsBeforeAbort=10;
 
 
-		public Synchronizer(string destinationDeviceRoot, IEnumerable<FileGroup> groups, long totalAvailableOnDeviceInKilobytes, IProgress progress)
+		public Synchronizer(string destinationFolderPath, IEnumerable<FileGroup> groups, long totalAvailableOnDeviceInKilobytes, IProgress progress)
 		{
 			_groups = groups;
 			_totalAvailableOnDeviceInKilobytes = totalAvailableOnDeviceInKilobytes;
 			Guard.AgainstNull(progress,"progress");
 			_progress = progress;
-			SetDestinationFolderPath(destinationDeviceRoot);
 			_agent = new SyncOrchestrator();
+			DestinationRootForThisUser = destinationFolderPath;
 		}
 
-		/// <summary>
-		/// We want to name the root of the backup in a way that allows multiple
-		/// team members to use the same key if necessary, and to help support
-		/// staff identify whose backup they are looking at. Ideally, the computer
-		/// name would have the language name.
-		/// </summary>
-		private void SetDestinationFolderPath(string destinationDeviceRoot)
-		{
-			var id = string.Format("{0}-{1}", System.Environment.UserName,  System.Environment.MachineName);           
-			DestinationRootForThisUser = Path.Combine(destinationDeviceRoot, id);
-			if (!Directory.Exists(DestinationRootForThisUser))
-				Directory.CreateDirectory(DestinationRootForThisUser);
-		}
 
 		public int FilesCopiedThusFar	
 		{
@@ -92,7 +80,11 @@ namespace myWorkSafe
 				group.ClearStatistics();
 
 				if(group.Disposition == FileGroup.DispositionChoice.Hide)
+				{
+					_progress.WriteMessage("Skipping preview of group {0}", group.Name);
 					continue;
+				}
+				_progress.WriteMessage("Beginning preview of group {0}", group.Name);
 
 				Debug.Assert(!string.IsNullOrEmpty(group.RootFolder), "should have been weeded out already");
 				Debug.Assert(Directory.Exists(group.RootFolder), "should have been weeded out already");
@@ -186,7 +178,14 @@ namespace myWorkSafe
 		public void DoSynchronization()
 		{
 			_cancelRequested = false;
-			var options = FileSyncOptions.RecycleDeletedFiles;
+			//nb: a value of FileSyncOptions.RecycleDeletedFiles is implicated in a ton of 
+			//ConflictLoserWriteError + "PathTooLong" errors I was getting on a flash drive 
+			//	(even though it wasn't full)
+			//until I reformated it.  Since small Flash drives don't have a recycle bin, I don't
+			//know what the semantics are for this anyhow
+			//var options = FileSyncOptions.RecycleDeletedFiles;
+			var options = FileSyncOptions.None ;
+
 			_alreadyAccountedFor = new HashSet<string>();
 
 			try
@@ -200,7 +199,17 @@ namespace myWorkSafe
 					_currentGroup = group; //used by callbacks
 
 					if (group.Disposition == FileGroup.DispositionChoice.Hide)
+					{
+						_progress.WriteMessage("Skipping group {0}", group.Name);
 						continue;
+					}
+					if(_gotIOExceptionProbablyDiskFull)
+					{
+						group.Disposition = FileGroup.DispositionChoice.NotEnoughRoom;
+						continue;
+					}
+
+					_progress.WriteMessage("Beginning group {0}", group.Name);
 
 
 					if (group.Disposition == FileGroup.DispositionChoice.NotEnoughRoom)
@@ -211,27 +220,44 @@ namespace myWorkSafe
 					InvokeGroupProgress();
 					string tempDirectory = Path.GetDirectoryName(group.SourceTempMetaFile);
 
-					using (var sourceProvider = new FileSyncProvider(group.SourceGuid, group.RootFolder, group.Filter, options,
-																	 tempDirectory,
-																	 Path.GetFileName(group.SourceTempMetaFile),
-																	 tempDirectory,
-																	 tempDirectory))
-					using (
-						var destinationProvider = new FileSyncProvider(group.DestGuid,
-																	   group.GetDestinationSubFolder(DestinationRootForThisUser),
-																	   group.Filter, options,
-																	   tempDirectory,
-																	   Path.GetFileName(group.SourceTempMetaFile),
-																	   tempDirectory,
-																	   tempDirectory))
+					try
 					{
-						destinationProvider.PreviewMode = false;
-						destinationProvider.SkippedChange += new EventHandler<SkippedChangeEventArgs>(destinationProvider_SkippedChange);
-						destinationProvider.ApplyingChange += (OnDestinationChange);
-						PreviewOrSynchronizeCore(destinationProvider, sourceProvider);
-					}
+						using (var sourceProvider = new FileSyncProvider(group.SourceGuid, group.RootFolder, group.Filter, options,
+																		 tempDirectory,
+																		 Path.GetFileName(group.SourceTempMetaFile),
+																		 tempDirectory,
+																		 tempDirectory))
+						{
+							string destinationSubFolder = group.GetDestinationSubFolder(DestinationRootForThisUser);
+							using (
+								var destinationProvider = new FileSyncProvider(group.DestGuid,
+																			   destinationSubFolder,
+																			   group.Filter, options,
+																			   tempDirectory,
+																			   Path.GetFileName(group.SourceTempMetaFile),
+																			   tempDirectory,
+																			   tempDirectory))
+							{
+								_progress.WriteVerbose("[{0}] Source={1}", group.Name, group.RootFolder);
+								_progress.WriteVerbose("[{0}] Destination={1}", group.Name, destinationSubFolder);
 
-					group.Disposition = FileGroup.DispositionChoice.WasBackedUp;
+								destinationProvider.PreviewMode = false;
+								destinationProvider.SkippedChange += OnDestinationSkippedChange;
+								destinationProvider.ApplyingChange += OnDestinationApplyingChange;
+
+								PreviewOrSynchronizeCore(destinationProvider, sourceProvider);
+							}
+
+						}
+						group.Disposition = FileGroup.DispositionChoice.WasBackedUp;
+					}
+					catch (IOException error)
+					{
+						_gotIOExceptionProbablyDiskFull = true;
+						//enhance: we could clarify that it was partially backed up
+						_currentGroup.Disposition = FileGroup.DispositionChoice.NotEnoughRoom;
+						_progress.WriteWarning(error.Message);
+					}
 
 					if (GroupProgress != null)
 					{
@@ -250,8 +276,24 @@ namespace myWorkSafe
 			}
 		}
 
-		void destinationProvider_SkippedChange(object sender, SkippedChangeEventArgs e)
+		void OnDestinationSkippedChange(object sender, SkippedChangeEventArgs e)
 		{
+			if(e.SkipReason == SkipReason.ApplicationRequest)
+			{
+				_progress.WriteMessage("Skipping '{0}  {1}'", e.NewFilePath ?? "", e.CurrentFilePath ?? "");
+				return;
+			}
+
+			if(e.Exception.Message.Contains("space")
+				|| e.Exception.Message.Contains("full")
+				|| e.Exception.GetType() == typeof(System.IO.IOException))
+			{
+				_progress.WriteError(e.SkipReason.ToString());
+				_progress.WriteError(e.Exception.Message);
+				_gotIOExceptionProbablyDiskFull = true;
+				_agent.Cancel();//will just end this group, not close the window
+				return;
+			}
 			//ConflictLoserWriteError. This reason will be raised if a change is skipped because an attempt to recycle a losing file fails.
 //			var path = e.CurrentFilePath == null ? e.NewFilePath : e.CurrentFilePath;
 			try
@@ -260,8 +302,8 @@ namespace myWorkSafe
 				if(e.Exception !=null)
 					_progress.WriteException(e.Exception);
 
-				_errorCount++;
-				if(_errorCount > MaxErrorsBeforeAbort)
+				_errorCountSinceLastSuccess++;
+				if(_errorCountSinceLastSuccess > MaxErrorsBeforeAbort)
 				{
 					_progress.WriteError("Error count exceeded limit. Will abort.");
 					_cancelRequested = true;
@@ -296,9 +338,11 @@ namespace myWorkSafe
 			}
 		}
 
+
+
 		private void OnDestinationPreviewChange(object provider, ApplyingChangeEventArgs args)
 		{
-			if(ShouldSkip((FileSyncProvider)provider,args))
+			if(ShouldSkip("Preview", (FileSyncProvider)provider,args))
 			{
 				args.SkipChange = true;
 				return;
@@ -312,51 +356,88 @@ namespace myWorkSafe
 			switch (args.ChangeType)
 			{
 				case ChangeType.Create:
+					_progress.WriteVerbose("[{0}] Preview Create {1}", _currentGroup.Name, GetPathFromArgs(args));
 					_currentGroup.NewFileCount++;
 					_currentGroup.NetChangeInBytes += args.NewFileData.Size;
-					_alreadyAccountedFor.Add(Path.Combine(rootDirectoryPath, args.NewFileData.RelativePath));
+					_alreadyAccountedFor.Add(args.NewFileData.RelativePath);
 					break;
 				case ChangeType.Update:
+					_progress.WriteVerbose("[{0}] Preview Update {1}", _currentGroup.Name, GetPathFromArgs(args));
 					_currentGroup.UpdateFileCount++;
 					_currentGroup.NetChangeInBytes += args.NewFileData.Size;
-					_alreadyAccountedFor.Add(Path.Combine(rootDirectoryPath, args.CurrentFileData.RelativePath));
+					_alreadyAccountedFor.Add(args.CurrentFileData.RelativePath);
 					break;
 				case ChangeType.Delete:
-					_alreadyAccountedFor.Add(Path.Combine(rootDirectoryPath, args.CurrentFileData.RelativePath));
+					_progress.WriteVerbose("[{0}] Preview Delete {1}", _currentGroup.Name, GetPathFromArgs(args));
+					_alreadyAccountedFor.Add(args.CurrentFileData.RelativePath);
 					_currentGroup.DeleteFileCount++;
 					break;
 			}
 			InvokeProgress(args);
 		}
 
-		private bool ShouldSkip(FileSyncProvider provider,ApplyingChangeEventArgs args)
+		private bool ShouldSkip(string mode, FileSyncProvider provider,ApplyingChangeEventArgs args)
 		{
 			//the built-in directory system is lame, you can't just specify the name of the directory
 			//this changes the behavior to do just that
 			if (args.NewFileData!=null && args.NewFileData.IsDirectory)
-				return _currentGroup.ShouldSkipSubDirectory(args.NewFileData);
+			{
+				if(_currentGroup.ShouldSkipSubDirectory(args.NewFileData))
+				{
+					_progress.WriteVerbose("{0} [{1}] Skipping Folder {2}",mode, _currentGroup.Name, GetPathFromArgs(args));
+					return true;
+				}
+				return false;
+			}
 
 			if (args.CurrentFileData != null && args.CurrentFileData.IsDirectory)
-				return _currentGroup.ShouldSkipSubDirectory(args.CurrentFileData);
+			{
+				if (_currentGroup.ShouldSkipSubDirectory(args.CurrentFileData))
+				{
+					_progress.WriteVerbose("{0} [{1}] Skipping Folder {2}",mode, _currentGroup.Name, GetPathFromArgs(args));
+					return true;
+				}
+				return false;
+			}
 
-			string rootDirectoryPath = provider.RootDirectoryPath; 
 			if (args.NewFileData != null)
-				return _alreadyAccountedFor.Contains(Path.Combine(rootDirectoryPath, args.NewFileData.RelativePath)) 
-						||_currentGroup.ShouldSkipFile(args.NewFileData.RelativePath);
+			{
+				if (_alreadyAccountedFor.Contains(args.NewFileData.RelativePath))
+				{
+					_progress.WriteVerbose("[{0}] Skipping new file because it was already backed up by a previous group:  {1}", _currentGroup.NewFileCount, GetPathFromArgs(args));
+					return true;
+				}
+				if( _currentGroup.ShouldSkipFile(args.NewFileData.RelativePath))
+				{
+					_progress.WriteVerbose("[{0}] Skipping new file: {1}", _currentGroup.Name,GetPathFromArgs(args));
+					return true;
+				}
+				return false;
+			}
 
 			if (args.CurrentFileData != null)
-				return _alreadyAccountedFor.Contains(Path.Combine(rootDirectoryPath, args.CurrentFileData.RelativePath)) 
-						|| _currentGroup.ShouldSkipFile(args.CurrentFileData.RelativePath);
+			{
+				if(_alreadyAccountedFor.Contains(args.CurrentFileData.RelativePath) )
+				{
+					_progress.WriteVerbose("Skipping current file because it was already backed up by a previous group: " + args.CurrentFileData.RelativePath + "  " +
+					                       args.CurrentFileData.Name);
+					return true;
+					
+				}
+				if(_currentGroup.ShouldSkipFile(args.CurrentFileData.RelativePath))
+				{
+					_progress.WriteVerbose("Skipping current file: " + args.CurrentFileData.RelativePath + "  " +
+					                       args.CurrentFileData.Name);
+					return true;
+				}
+			}
 
 			return false;
 		}
 
-		private void OnDestinationChange(object provider, ApplyingChangeEventArgs args)
+		private void OnDestinationApplyingChange(object provider, ApplyingChangeEventArgs args)
 		{
-			if(args.NewFileData != null)
-				Debug.WriteLine(args.NewFileData.RelativePath+"  "+args.NewFileData.Name);
-
-			if (ShouldSkip((FileSyncProvider)provider, args))
+			if (ShouldSkip("Backup", (FileSyncProvider)provider, args))
 			{
 				args.SkipChange = true;
 				return;
@@ -370,12 +451,18 @@ namespace myWorkSafe
 			switch (args.ChangeType)
 			{
 				case ChangeType.Create:
+					_progress.WriteVerbose("[{0}] Creating {1}",_currentGroup.Name, GetPathFromArgs(args)); 
 					break;
 				case ChangeType.Update:
+					_progress.WriteVerbose("[{0}] Updating {1}", _currentGroup.Name, GetPathFromArgs(args));
 					break;
 				case ChangeType.Delete:
+					_progress.WriteVerbose("[{0}] Deleting {1}", _currentGroup.Name, GetPathFromArgs(args));
 					break;
 			}
+
+			//review: does this really mean success?
+			_errorCountSinceLastSuccess = 0;
 		}
 
 		/// <summary>
@@ -390,32 +477,38 @@ namespace myWorkSafe
 			//TODO this needs work!
 			if (FileProgress != null)
 			{
-				FileData newFileData=null;
-				FileData currentFileData=null;
-				ApplyingChangeEventArgs a = args as ApplyingChangeEventArgs;
-				if(a!=null)
-				{
-					newFileData = a.NewFileData;
-					currentFileData = a.CurrentFileData;
-				}
-
-				string path=string.Empty;
-				if(newFileData !=null)
-				{
-					path = Path.Combine(newFileData.RelativePath, newFileData.Name);
-					Debug.Assert(currentFileData ==null);//test this assumption
-				}
-				else if (currentFileData != null)
-				{
-					path = Path.Combine(currentFileData.RelativePath, currentFileData.Name);
-				}
-
-				if(FileProgress(path))
+				if(FileProgress(GetPathFromArgs(args)))
 				{
 					_cancelRequested = true;
 					_agent.Cancel();
 				}
 			}
+		}
+
+		private string GetPathFromArgs(EventArgs args)
+		{
+			FileData newFileData=null;
+			FileData currentFileData=null;
+			ApplyingChangeEventArgs a = args as ApplyingChangeEventArgs;
+			if(a!=null)
+			{
+				newFileData = a.NewFileData;
+				currentFileData = a.CurrentFileData;
+			}
+
+			//enhance: when updating a file, both new and current have the same file path contents
+			//this algorithm my by simpler: if current isn't null, use it, else new.
+
+			string path=string.Empty;
+			if(newFileData !=null)
+			{
+				path = newFileData.RelativePath;
+			}
+			else if (currentFileData != null)
+			{
+				path = currentFileData.RelativePath;
+			}
+			return path;
 		}
 	}
 }

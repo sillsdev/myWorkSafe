@@ -465,6 +465,14 @@ namespace myWorkSafe
         }
     }
 
+	public static class SafeFormatString
+	{
+		public static string EscapeThingsThatLookLikeArguments(this string format, params object[] args)
+		{
+			return format.Replace("{", @"\{");
+		}
+	}
+
     public abstract class GenericProgress : IProgress
     {
         public int indent = 0;
@@ -487,14 +495,17 @@ namespace myWorkSafe
             WriteMessage("Warning: " + message, args);
         }
 
+	
         public virtual void WriteException(Exception error)
         {
             WriteError(error.Message);
+			ErrorEncountered = true;
         }
 
         public void WriteError(string message, params object[] args)
         {
             WriteMessage("Error:" + message, args);
+        	ErrorEncountered = true;
         }
 
         public void WriteVerbose(string message, params object[] args)

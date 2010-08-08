@@ -48,6 +48,9 @@ namespace myWorkSafe
 			backupNowButton.Visible = false;
 			ReadInGroups();
 
+			DoPreview = false;
+			AutoStart = true;
+
 			syncProgressBar.Style = ProgressBarStyle.Marquee; //until we have an estimate
 
 			_driveDetector = new DriveDetector();
@@ -60,15 +63,19 @@ namespace myWorkSafe
 			_driveDetector.DeviceSomethingHappened += new DriveDetectorEventHandler(OnDriveSomething);
 			//driveDetector.QueryRemove += new DriveDetectorEventHandler(OnQueryRemove);
 
-			_synchronizer = new Synchronizer(destinationDeviceRoot, _groups, availableFreeSpaceInKilobytes, Progress);
+			string destinationFolderPath = GetDestinationFolderPath(destinationDeviceRoot);
+			if (!Directory.Exists(destinationFolderPath))
+				Directory.CreateDirectory(destinationFolderPath);
+
+			_synchronizer = new Synchronizer(destinationFolderPath, _groups, availableFreeSpaceInKilobytes, Progress);
 			_synchronizer.GroupProgress +=new Action(OnSynchronizer_GroupProgress);
 
 			_mediaStatusIndicator.DriveLabel = destinationDeviceRoot;
 
-			_mediaStatusIndicator.ExistingFillPercentage = (int)(100.0*availableFreeSpaceInKilobytes / totalSpaceOfDeviceInKilobytes);
+			_mediaStatusIndicator.ExistingFillPercentage = 100-(int)(100.0*availableFreeSpaceInKilobytes / totalSpaceOfDeviceInKilobytes);
 			
 			//until we know how much we're going to fill up
-			_mediaStatusIndicator.PendingFillPercentage = _mediaStatusIndicator.ExistingFillPercentage;
+			_mediaStatusIndicator.PendingFillPercentage = _mediaStatusIndicator.UnknownFillPercentage;
 			_mediaStatusIndicator.DeviceSizeInKiloBytes = totalSpaceOfDeviceInKilobytes;
 
 			closeButton.Visible = false;
@@ -81,6 +88,19 @@ namespace myWorkSafe
 			_preparationWorker.DoWork += OnPreparationWorker_DoWork;
 			_preparationWorker.WorkerSupportsCancellation = true;
 			_preparationWorker.RunWorkerCompleted += OnPreparationCompleted;
+		}
+
+		/// <summary>
+		/// We want to name the root of the backup in a way that allows multiple
+		/// team members to use the same key if necessary, and to help support
+		/// staff identify whose backup they are looking at. Ideally, the computer
+		/// name would have the language name.
+		/// </summary>
+		public static string GetDestinationFolderPath(string destinationDeviceRoot)
+		{
+			var id = string.Format("{0}-{1}", System.Environment.UserName, System.Environment.MachineName);
+			var path = Path.Combine(destinationDeviceRoot, id);
+			return path;
 		}
 
 		public bool DoPreview { get; set; }
@@ -119,7 +139,9 @@ namespace myWorkSafe
 
 		private void OnDriveSomething(object sender, DriveDetectorEventArgs e)
 		{
-
+/*	I sorta had this working, but I'm disabling it because it started closing when I wasn't ready
+ * (hadn't actually removed the USB drive)
+ 
 			//we can't actually get the info for what the drive used to be... ///if (e.Drive == _destinationDeviceRoot)
 			
 			//if we previously ejected, then this message means it was pulled out, so we can close
@@ -129,7 +151,7 @@ namespace myWorkSafe
 				CloseNow();
 
 			}
-		}
+*/		}
 
 		private void SetWindowText()
 		{
@@ -179,8 +201,28 @@ namespace myWorkSafe
 			CurrentState = state;
 			switch(CurrentState)
 			{
+				case State.Preparing:
+					_status.Text = "Looking at what files have changed...";
+					backupNowButton.Visible = false;
+					syncProgressBar.Visible = false;
+					cancelButton.Visible = true;
+					break;
+				case State.ReadyToBackup:
+					cancelButton.Visible = false;
+					Cursor = Cursors.Default;
+					listView1.Visible = true;
+					backupNowButton.Visible = true;
+					break;
+				case State.BackingUp:
+					_status.Text = "Copying files...";
+					_updateMediaStatusTimer.Enabled = true;
+					backupNowButton.Visible = false;
+					syncProgressBar.Visible = true;
+					cancelButton.Visible = true;
+					break;
 				case State.Succeeded:
 					_status.Text = "Finished";
+					_updateMediaStatusTimer.Enabled = false;
 					syncProgressBar.Visible = false;
 					closeButton.Visible = true;
 					cancelButton.Visible = false;
@@ -190,7 +232,7 @@ namespace myWorkSafe
 				case State.ErrorEncountered:
 					_status.Text = "See the Log for error information.";
 					_status.ForeColor = Color.Red;
-					
+					_updateMediaStatusTimer.Enabled = false;
 					syncProgressBar.Visible = false;
 					closeButton.Visible = true;
 					cancelButton.Visible = false;
@@ -201,29 +243,12 @@ namespace myWorkSafe
 						player.Play();
 					}
 					break;
-				case State.Preparing:
-					_status.Text = "Looking at what files have changed...";
-					backupNowButton.Visible = false;
-					syncProgressBar.Visible = false;
-					cancelButton.Visible = true;
-					break;
-				case State.BackingUp:
-					_status.Text = "Copying files...";
-					backupNowButton.Visible = false;
-					syncProgressBar.Visible = true;
-					cancelButton.Visible = true;
-					break;
+		
 				case State.CouldNotEject:
 					break;
 				case State.SafelyEjected:
 					break;
 				case State.ExpectingPhysicalRemoval:
-					break;
-				case State.ReadyToBackup:
-					cancelButton.Visible = false;
-					Cursor = Cursors.Default;
-					listView1.Visible = true;
-					backupNowButton.Visible = true;
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -285,7 +310,6 @@ namespace myWorkSafe
 									if (_synchronizer.FilesCopiedThusFar >= syncProgressBar.Minimum
 										&& _synchronizer.FilesCopiedThusFar <= syncProgressBar.Maximum)
 										syncProgressBar.Value = _synchronizer.FilesCopiedThusFar;
-			                 		Progress.WriteVerbose(path);
 								});
 			return GetIsCancellationPending(path);
 		}
@@ -496,6 +520,14 @@ namespace myWorkSafe
 					ChangeState(State.ReadyToBackup);
 				}
 			}
+		}
+
+		private void _updateMediaStatusTimer_Tick(object sender, EventArgs e)
+		{
+			var info =DriveInfo.GetDrives().FirstOrDefault(d => d.RootDirectory.Name == _destinationDeviceRoot);
+			if (info == null)
+				return;
+			_mediaStatusIndicator.ExistingFillPercentage = 100-(int)(100.0 * info.AvailableFreeSpace / info.TotalSize);
 		}
 	}
 }
