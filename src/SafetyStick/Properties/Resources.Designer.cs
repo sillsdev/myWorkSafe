@@ -93,6 +93,13 @@ namespace myWorkSafe.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap smallVertcalLogo {
+            get {
+                object obj = ResourceManager.GetObject("smallVertcalLogo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap usbstick {
             get {
                 object obj = ResourceManager.GetObject("usbstick", resourceCulture);
