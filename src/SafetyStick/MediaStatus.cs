@@ -28,9 +28,20 @@ namespace myWorkSafe
 		}
 
 		public long DeviceSizeInKiloBytes { get; set; }
-		public int ExistingFillPercentage { get; set; }
+		private int _existingFillPercentage;
+		public int ExistingFillPercentage
+		{
+			get { return _existingFillPercentage; }
+			set
+			{
+				_existingFillPercentage = value;
+				Invalidate();
+			}
+		}
 
 		private int _pendingFillPercentage;
+		public int UnknownFillPercentage= -1;
+
 		public int PendingFillPercentage
 		{
 			get { return _pendingFillPercentage; }
@@ -49,12 +60,22 @@ namespace myWorkSafe
 
 			_deviceSizeLabel.Text = GetStringForStorageSize(DeviceSizeInKiloBytes);
 			e.Graphics.DrawImage(pictureBox1.Image, pictureBox1.Bounds);
-			var freeSpaceHeight =(ExistingFillPercentage/100.0)* (pictureBox1.Image.Height-(connectorHeight+95));
-			e.Graphics.FillRectangle(Brushes.LightBlue, pictureBox1.Left+6, pictureBox1.Top + connectorHeight, stickWidth-10, (int) freeSpaceHeight);
+			double freeFraction = (1.0 - (ExistingFillPercentage/100.0));
+			var freeSpaceHeight = freeFraction*(pictureBox1.Image.Height - (connectorHeight + 95));
+			if (PendingFillPercentage == UnknownFillPercentage)
+			{
+				e.Graphics.FillRectangle(Brushes.White, pictureBox1.Left + 6, pictureBox1.Top + connectorHeight, stickWidth - 10,
+										 (int)freeSpaceHeight);
+			}
+			else
+			{
+				e.Graphics.FillRectangle(Brushes.LightBlue, pictureBox1.Left + 6, pictureBox1.Top + connectorHeight, stickWidth - 10,
+				                         (int) freeSpaceHeight);
 
-			var newSpaceHeight = (PendingFillPercentage / 100.0) * (pictureBox1.Image.Height - (connectorHeight + 95));
-			e.Graphics.FillRectangle(Brushes.White, pictureBox1.Left + 6, pictureBox1.Top + connectorHeight, stickWidth - 10, (int)newSpaceHeight);
-
+				var newSpaceHeight = (PendingFillPercentage/100.0)*(pictureBox1.Image.Height - (connectorHeight + 95));
+				e.Graphics.FillRectangle(Brushes.White, pictureBox1.Left + 6, pictureBox1.Top + connectorHeight, stickWidth - 10,
+				                         (int) newSpaceHeight);
+			}
 		}
 
 		public static string GetStringForStorageSize(long kiloBytes)
