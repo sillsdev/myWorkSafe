@@ -31,26 +31,44 @@ namespace WorkSafe.Tests
 		}
 
 		[TestAttribute]
+		public void Synchronize_EmptyDest_SingleFileIsBeCopied()
+		{
+			using (var from = new TemporaryFolder("synctest_source"))
+			using (var to = new TemporaryFolder("synctest_dest"))
+			{
+				System.IO.File.WriteAllText(from.Combine("1.txt"), "Blah blah");
+				var source = new RawDirectoryGroup("1", from.Path, null, null);
+				var groups = new List<FileGroup>(new[] { source });
+				var progress = new StringBuilderProgress() {ShowVerbose = true};
+
+				var sync = new Synchronizer(to.Path, groups, 100, progress);
+
+				sync.DoSynchronization();
+				AssertFileExists(sync, source, to, "1.txt");
+			}
+		}
+
+		[TestAttribute]
 		public void Syncronhize_FileLocked_OtherFileCopied()
 		{
 			using (var from = new TemporaryFolder("synctest_source"))
 			using (var to = new TemporaryFolder("synctest_dest"))
 			{
 				System.IO.File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
-				//System.IO.File.WriteAllText(from.Combine("test2.txt"), "Blah blah blah");
+				System.IO.File.WriteAllText(from.Combine("test2.txt"), "Blah blah blah");
 				var source = new RawDirectoryGroup("1", from.Path, null, null);
 				var groups = new List<FileGroup>(new[] { source });
-				var sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
+				var progress = new StringBuilderProgress(){ShowVerbose=true};
+				var sync = new Synchronizer(to.Path, groups, 100, progress);
 
-				string path = to.Combine(sync.DestinationRootForThisUser, source.Name, "test2.txt");
-				using(var locked = File.OpenWrite(path))
+				using(File.OpenWrite(from.Combine("test2.txt")))//lock it up
 				{
 					sync.GatherPreview();
 					sync.DoSynchronization();
 				}
 				AssertFileExists(sync, source, to, "test1.txt");
-				//interestingly, the lock actually doesn't keep the sync framework from copying it
-				//AssertFileDoesNotExist(sync, source, to, "test2.txt");
+				AssertFileDoesNotExist(sync, source, to, "test2.txt");
+				Assert.That(progress.ErrorEncountered);
 			}
 		}
 
@@ -160,7 +178,8 @@ namespace WorkSafe.Tests
 				var source1 = new RawDirectoryGroup("1",from.Path,null,null);
 				var source2 = new RawDirectoryGroup("2",from.Path,null,null);
 				var groups = new List<FileGroup>(new[] { source1, source2 });
-				var sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
+				var progress = new StringBuilderProgress(){ShowVerbose=true};
+				var sync = new Synchronizer(to.Path, groups, 100, progress);
 				sync.GatherPreview();
 
 				Assert.AreEqual(1, source1.NewFileCount);
@@ -172,6 +191,52 @@ namespace WorkSafe.Tests
 				Assert.AreEqual(0, source2.UpdateFileCount);
 				Assert.AreEqual(0, source2.DeleteFileCount);
 				Assert.AreEqual(0, source2.NetChangeInBytes);
+			}
+		}
+
+		[TestAttribute]
+		public void GetInfo_FolderExcluded_WillBeSkipped()
+		{
+			using (var from = new TemporaryFolder("synctest_source"))
+			using (var to = new TemporaryFolder("synctest_dest"))
+			{
+				Directory.CreateDirectory(from.Combine("sub"));
+				File.WriteAllText(from.Combine("sub", "one.txt"), "Blah blah");
+				var source = new RawDirectoryGroup("1", from.Path, null, null);
+				source.Filter.SubdirectoryExcludes.Add("sub");
+
+				var groups = new List<FileGroup>(new[] { source});
+				var progress = new StringBuilderProgress() { ShowVerbose = true };
+				var sync = new Synchronizer(to.Path, groups, 100, progress);
+				sync.GatherPreview();
+
+			// we don't get this progress yet	Assert.That(progress.Text.ToLower().Contains("skip"));
+				Assert.AreEqual(0, source.NewFileCount);
+				Assert.AreEqual(0, source.UpdateFileCount);
+				Assert.AreEqual(0, source.DeleteFileCount);
+			}
+		}
+
+		[TestAttribute]
+		public void Synchronize_FolderExcluded_IsSkipped()
+		{
+			using (var from = new TemporaryFolder("synctest_source"))
+			using (var to = new TemporaryFolder("synctest_dest"))
+			{
+				Directory.CreateDirectory(from.Combine("sub"));
+				File.WriteAllText(from.Combine("sub", "one.txt"), "Blah blah");
+				var source = new RawDirectoryGroup("1", from.Path, null, null);
+				source.Filter.SubdirectoryExcludes.Add("sub");
+
+				var groups = new List<FileGroup>(new[] { source });
+				var progress = new StringBuilderProgress() { ShowVerbose = true };
+				var sync = new Synchronizer(to.Path, groups, 100, progress);
+				sync.DoSynchronization();
+
+				// we don't get this progress yet Assert.That(progress.Text.ToLower().Contains("skip"));
+				Assert.AreEqual(0, source.NewFileCount);
+				Assert.AreEqual(0, source.UpdateFileCount);
+				Assert.AreEqual(0, source.DeleteFileCount);
 			}
 		}
 
