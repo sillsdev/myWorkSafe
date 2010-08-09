@@ -22,7 +22,7 @@ namespace WorkSafe.Tests
 		[Test]
 		public void CreateGroups_GroupsInDistFiles_CanReadAll()
 		{
-			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "groups.ini");
+			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "myWorkSafe.ini");
 			var reader = new GroupIniFileReader(path);
 			var groups = reader.CreateGroups().ToArray();
 			Assert.That(groups.Count(), Is.GreaterThan(5));
@@ -31,7 +31,7 @@ namespace WorkSafe.Tests
 		[Test]
 		public void CreateGroups_GroupsInDistFiles_SeesCertainGroups()
 		{
-			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "groups.ini");
+			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "myWorkSafe.ini");
 			var reader = new GroupIniFileReader(path);
 			var groups = reader.CreateGroups().ToArray();
 			//my documents

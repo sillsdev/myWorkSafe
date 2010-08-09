@@ -27,7 +27,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -44,15 +44,20 @@
      inkscape:window-height="1028"
      id="namedview65"
      showgrid="false"
-     inkscape:zoom="1"
-     inkscape:cx="7.4261503"
-     inkscape:cy="-25.051871"
+     inkscape:zoom="0.9983453"
+     inkscape:cx="132.18311"
+     inkscape:cy="-142.4689"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g2941-1"
+     inkscape:current-layer="svg3223"
      showguides="true"
-     inkscape:guide-bbox="true" />
+     inkscape:guide-bbox="true">
+    <sodipodi:guide
+       orientation="0,1"
+       position="-166.17009,-217.61211"
+       id="guide3767" />
+  </sodipodi:namedview>
   <defs
      id="defs3225">
     <linearGradient
@@ -768,26 +773,7 @@
          x="-226.60339"
          y="117.75313" /></flowRegion><flowPara
        id="flowPara4176"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lucida Sans;-inkscape-font-specification:Lucida Sans">WorkSafe</flowPara></flowRoot>  <flowRoot
-     style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
-     id="flowRoot4192"
-     xml:space="preserve"
-     transform="translate(-2.9327135,138.37075)"><flowRegion
-       id="flowRegion4194"><rect
-         y="117.75313"
-         x="-226.60339"
-         height="45.999359"
-         width="197.57101"
-         id="rect4196" /></flowRegion><flowPara
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Trebuchet MS;-inkscape-font-specification:Trebuchet MS"
-       id="flowPara4198">Work</flowPara></flowRoot>  <rect
-     style="fill:#ffffff;fill-opacity:1;stroke:none"
-     id="rect4216"
-     width="13.730431"
-     height="9.1980572"
-     x="-206.42303"
-     y="264.55423" />
-  <g
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lucida Sans;-inkscape-font-specification:Lucida Sans">WorkSafe</flowPara></flowRoot>  <g
      style="stroke:none"
      id="g4234"
      transform="matrix(0.75672743,0.65373053,-0.65373053,0.75672743,-121.59591,155.44208)">
@@ -836,39 +822,123 @@
   </g>
   <g
      transform="translate(-1.622611,41.120316)"
-     id="g2941-1">
+     id="g2941-1" />
+  <g
+     id="g3771">
+    <flowRoot
+       transform="translate(-2.9327135,138.37075)"
+       xml:space="preserve"
+       id="flowRoot4192"
+       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"><flowRegion
+         id="flowRegion4194"><rect
+           id="rect4196"
+           width="197.57101"
+           height="45.999359"
+           x="-226.60339"
+           y="117.75313" /></flowRegion><flowPara
+         id="flowPara4198"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Trebuchet MS;-inkscape-font-specification:Trebuchet MS">Work</flowPara></flowRoot>    <rect
+       y="264.55423"
+       x="-206.42303"
+       height="9.1980572"
+       width="13.730431"
+       id="rect4216"
+       style="fill:#ffffff;fill-opacity:1;stroke:none" />
     <path
+       style="fill:#b3b3b3;fill-opacity:1;stroke:#ffffff;stroke-width:0.37007925000000003;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m -197.15435,224.61436 c -0.52971,2.21217 -1.96721,5.69621 -1.3034,7.3897 1.24093,-0.32121 3.28798,2.31236 3.98257,-1.08215 0.44997,-2.31287 2.13958,-6.68545 -0.17426,-6.08964 -0.83774,7.9e-4 -1.6107,-0.75812 -2.50491,-0.21791 z"
        id="path4186-7"
+       transform="translate(-1.622611,41.120316)" />
+    <path
+       sodipodi:nodetypes="ccccccccc"
+       style="fill:#ff0000;fill-opacity:1;stroke:none"
+       d="m -198.26814,228.70628 c -1.80495,0.42792 -2.02177,4.5563 -2.88379,6.57419 -1.64798,5.86758 -3.59377,11.72426 -5.07993,17.59809 0.0113,2.68987 0.69351,1.4885 4.74961,1.4885 1.37882,0 1.46023,-2.21255 1.95921,-4.10037 1.78271,-6.32977 3.69185,-12.83057 5.31158,-19.16385 0.005,-2.71375 -2.54915,-1.37716 -3.59626,-2.28729 -0.15913,-0.0154 -0.29719,-0.10937 -0.46043,-0.10924 l 1e-5,-3e-5 z"
+       id="path4188-4"
+       transform="translate(-1.622611,41.120316)" />
+    <flowRoot
+       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       id="flowRoot2973"
+       xml:space="preserve"
+       transform="translate(86.536956,138.11866)"><flowRegion
+         id="flowRegion2975"><rect
+           y="117.75313"
+           x="-226.60339"
+           height="45.999359"
+           width="197.57101"
+           id="rect2977" /></flowRegion><flowPara
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ff0000;font-family:Trebuchet MS;-inkscape-font-specification:Trebuchet MS"
+         id="flowPara2979">Safe</flowPara></flowRoot>    <flowRoot
+       transform="translate(-30.195277,154.13852)"
+       xml:space="preserve"
+       id="flowRoot3753"
+       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"><flowRegion
+         id="flowRegion3755"><rect
+           id="rect3757"
+           width="197.57101"
+           height="45.999359"
+           x="-226.60339"
+           y="117.75313" /></flowRegion><flowPara
+         id="flowPara3759"
+         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ff0000;font-family:Trebuchet MS;-inkscape-font-specification:Trebuchet MS">my</flowPara></flowRoot>  </g>
+  <g
+     id="g3788"
+     transform="matrix(0,-0.58653861,0.58653861,0,53.183366,266.9721)"
+     inkscape:export-filename="C:\dev\myWorkSafe\artwork\smallVertcalLogo.png"
+     inkscape:export-xdpi="71.612999"
+     inkscape:export-ydpi="71.612999">
+    <flowRoot
+       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       id="flowRoot3790"
+       xml:space="preserve"
+       transform="translate(-2.9327135,138.37075)"><flowRegion
+         id="flowRegion3792"><rect
+           y="117.75313"
+           x="-226.60339"
+           height="45.999359"
+           width="197.57101"
+           id="rect3794" /></flowRegion><flowPara
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Trebuchet MS;-inkscape-font-specification:Trebuchet MS"
+         id="flowPara3796">Work</flowPara></flowRoot>    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:none"
+       id="rect3798"
+       width="13.730431"
+       height="9.1980572"
+       x="-206.42303"
+       y="264.55423" />
+    <path
+       transform="translate(-1.622611,41.120316)"
+       id="path3800"
        d="m -197.15435,224.61436 c -0.52971,2.21217 -1.96721,5.69621 -1.3034,7.3897 1.24093,-0.32121 3.28798,2.31236 3.98257,-1.08215 0.44997,-2.31287 2.13958,-6.68545 -0.17426,-6.08964 -0.83774,7.9e-4 -1.6107,-0.75812 -2.50491,-0.21791 z"
        style="fill:#b3b3b3;fill-opacity:1;stroke:#ffffff;stroke-width:0.37007925;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline" />
     <path
-       id="path4188-4"
+       transform="translate(-1.622611,41.120316)"
+       id="path3802"
        d="m -198.26814,228.70628 c -1.80495,0.42792 -2.02177,4.5563 -2.88379,6.57419 -1.64798,5.86758 -3.59377,11.72426 -5.07993,17.59809 0.0113,2.68987 0.69351,1.4885 4.74961,1.4885 1.37882,0 1.46023,-2.21255 1.95921,-4.10037 1.78271,-6.32977 3.69185,-12.83057 5.31158,-19.16385 0.005,-2.71375 -2.54915,-1.37716 -3.59626,-2.28729 -0.15913,-0.0154 -0.29719,-0.10937 -0.46043,-0.10924 l 1e-5,-3e-5 z"
        style="fill:#ff0000;fill-opacity:1;stroke:none"
        sodipodi:nodetypes="ccccccccc" />
-  </g>
-  <flowRoot
-     transform="translate(86.536956,138.11866)"
-     xml:space="preserve"
-     id="flowRoot2973"
-     style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"><flowRegion
-       id="flowRegion2975"><rect
-         id="rect2977"
-         width="197.57101"
-         height="45.999359"
-         x="-226.60339"
-         y="117.75313" /></flowRegion><flowPara
-       id="flowPara2979"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ff0000;font-family:Trebuchet MS;-inkscape-font-specification:Trebuchet MS">Safe</flowPara></flowRoot>  <flowRoot
-     style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
-     id="flowRoot3753"
-     xml:space="preserve"
-     transform="translate(-30.195277,154.13852)"><flowRegion
-       id="flowRegion3755"><rect
-         y="117.75313"
-         x="-226.60339"
-         height="45.999359"
-         width="197.57101"
-         id="rect3757" /></flowRegion><flowPara
-       style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ff0000;font-family:Trebuchet MS;-inkscape-font-specification:Trebuchet MS"
-       id="flowPara3759">my</flowPara></flowRoot></svg>
+    <flowRoot
+       transform="translate(86.536956,138.11866)"
+       xml:space="preserve"
+       id="flowRoot3804"
+       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"><flowRegion
+         id="flowRegion3806"><rect
+           id="rect3808"
+           width="197.57101"
+           height="45.999359"
+           x="-226.60339"
+           y="117.75313" /></flowRegion><flowPara
+         id="flowPara3810"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ff0000;font-family:Trebuchet MS;-inkscape-font-specification:Trebuchet MS">Safe</flowPara></flowRoot>    <flowRoot
+       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       id="flowRoot3812"
+       xml:space="preserve"
+       transform="translate(-30.195277,154.13852)"><flowRegion
+         id="flowRegion3814"><rect
+           y="117.75313"
+           x="-226.60339"
+           height="45.999359"
+           width="197.57101"
+           id="rect3816" /></flowRegion><flowPara
+         style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ff0000;font-family:Trebuchet MS;-inkscape-font-specification:Trebuchet MS"
+         id="flowPara3818">my</flowPara></flowRoot>  </g>
+</svg>
