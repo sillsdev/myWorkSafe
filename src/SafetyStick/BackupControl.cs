@@ -46,7 +46,12 @@ namespace myWorkSafe
 			SetWindowText();
 			listView1.Visible = false;
 			backupNowButton.Visible = false;
-			ReadInGroups();
+	
+			string destinationFolderPath = GetDestinationFolderPath(destinationDeviceRoot);
+			if (!Directory.Exists(destinationFolderPath))
+				Directory.CreateDirectory(destinationFolderPath);
+
+			ReadInGroups(destinationFolderPath);
 
 			DoPreview = false;
 			AutoStart = true;
@@ -63,9 +68,6 @@ namespace myWorkSafe
 			_driveDetector.DeviceSomethingHappened += new DriveDetectorEventHandler(OnDriveSomething);
 			//driveDetector.QueryRemove += new DriveDetectorEventHandler(OnQueryRemove);
 
-			string destinationFolderPath = GetDestinationFolderPath(destinationDeviceRoot);
-			if (!Directory.Exists(destinationFolderPath))
-				Directory.CreateDirectory(destinationFolderPath);
 
 			_synchronizer = new Synchronizer(destinationFolderPath, _groups, availableFreeSpaceInKilobytes, Progress);
 			_synchronizer.GroupProgress +=new Action(OnSynchronizer_GroupProgress);
@@ -98,7 +100,7 @@ namespace myWorkSafe
 		/// </summary>
 		public static string GetDestinationFolderPath(string destinationDeviceRoot)
 		{
-			var id = string.Format("{0}-{1}", System.Environment.UserName, System.Environment.MachineName);
+			var id = string.Format("myWorkSafe-{0}-{1}", System.Environment.UserName, System.Environment.MachineName);
 			var path = Path.Combine(destinationDeviceRoot, id);
 			return path;
 		}
@@ -109,9 +111,9 @@ namespace myWorkSafe
 
 		public IProgress Progress { get; set; }
 
-		private void ReadInGroups()
+		private void ReadInGroups(string destinationFolderPath)
 		{
-			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "groups.ini");
+			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "myWorkSafe.ini");
 			_groups = new List<FileGroup>();
 			var factoryGroupsReader = new GroupIniFileReader(path);
 			factoryGroupsReader.CreateGroups(_groups);
@@ -124,9 +126,10 @@ namespace myWorkSafe
 				Directory.CreateDirectory(dir);//so it's easier for people to find
 
 			}
-			var ini = Path.Combine(dir, "groups.ini");
+			var ini = Path.Combine(dir, "myWorkSafe.ini");
 			if (File.Exists(ini))
 			{
+				Progress.WriteMessage("Found settings override in users's application data.");
 				var customGroupsReader = new GroupIniFileReader(ini);
 				customGroupsReader.CreateGroups(_groups);
 			}
@@ -134,24 +137,41 @@ namespace myWorkSafe
 			{
 				File.WriteAllText(ini, "#Enter your own or modified groups here, to customize myWorkSafe behavior");
 			}
+
+			//look for override file on the drive itself
+			var iniPath = Path.Combine(destinationFolderPath, "myWorkSafe.ini");
+			if (File.Exists(iniPath))
+			{
+				Progress.WriteMessage("Found settings override on USB device.");
+				var customGroupsReader = new GroupIniFileReader(iniPath);
+				customGroupsReader.CreateGroups(_groups);
+			}
 		}
 
 
 		private void OnDriveSomething(object sender, DriveDetectorEventArgs e)
 		{
-/*	I sorta had this working, but I'm disabling it because it started closing when I wasn't ready
- * (hadn't actually removed the USB drive)
- 
 			//we can't actually get the info for what the drive used to be... ///if (e.Drive == _destinationDeviceRoot)
-			
-			//if we previously ejected, then this message means it was pulled out, so we can close
-			if(CurrentState== State.ExpectingPhysicalRemoval && !Directory.Exists(_destinationDeviceRoot))
-			{
-				OnCancelClick(this, null);
-				CloseNow();
 
+			switch (CurrentState)
+			{
+				case State.Preparing:
+				case State.BackingUp:
+					OnCancelClick(this, null);
+					CloseNow();
+					break;
+				case State.CouldNotEject:
+				case State.SafelyEjected:
+				case State.ExpectingPhysicalRemoval:
+				case State.ReadyToBackup:
+				case State.Succeeded:
+				case State.ErrorEncountered:
+					CloseNow();
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
 			}
-*/		}
+		}
 
 		private void SetWindowText()
 		{
@@ -351,7 +371,7 @@ namespace myWorkSafe
 			else
 			{
 				ChangeState(State.Succeeded);
-				AttemptEjectInAMoment();
+				//AttemptEjectInAMoment();
 			}
 		}
 

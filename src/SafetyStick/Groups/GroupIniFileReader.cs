@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Win32;
+using myWorkSafe.ini;
 
 namespace myWorkSafe.Groups
 {
@@ -41,9 +42,20 @@ namespace myWorkSafe.Groups
 				reader.AcceptNoAssignmentOperator = true;
 				reader.SetCommentDelimiters(new char[] { '#' });
 				reader.SetAssignDelimiters(new char[] { '=' });
+				reader.AcceptCommentAfterKey = true;//todo: doesn't work
 				reader.MoveToNextSection();
 				while (reader.ReadState == ini.IniReadState.Interactive)
 				{
+					if(reader.Name=="Settings")
+					{
+						if(nextInsertLocation >0)
+						{
+							Palaso.Reporting.ErrorReport.NotifyUserOfProblem("The [Settings] section needs to be at the top of the file in '{0}'.",
+												 _path);
+						}
+						ReadSettingsSection(reader, groups);
+						continue;
+					}
 					FileGroupFromIniSection group = (FileGroupFromIniSection) groups.FirstOrDefault(g => g.SectionName == reader.Name);
 					if (group == null)
 					{
@@ -90,6 +102,24 @@ namespace myWorkSafe.Groups
 					}
 				}
 
+			}
+		}
+
+		private void ReadSettingsSection(IniReader reader, List<FileGroup> groups)
+		{
+			while (reader.MoveToNextKey())//nb: unfortnately, this ini libary will move us to a new section as well
+			{
+				switch (reader.Name)
+				{
+					case "clearAllPreviousSettings":
+						groups.Clear();
+						break;
+					default:
+						Palaso.Reporting.ErrorReport.NotifyUserOfProblem("The program doesn't understand this '{0}', in the Settings section of file {1}",
+																		 reader.Name, _path);
+						break;
+
+				}
 			}
 		}
 
