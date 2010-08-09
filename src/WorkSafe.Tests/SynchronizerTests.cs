@@ -107,8 +107,8 @@ namespace WorkSafe.Tests
 			}
 		}
 
-		[TestAttribute, Ignore("Deletion works, but is not part of the preview")]
-		public void GetInfo_FileRemoved_WillBeDeleted()
+		[Test, Ignore("Deletion isn't working")]
+		public void DoSynchronization_GroupHasDoDeletePolicy_DeletionIsPropagated()
 		{
 			using (var from = new TemporaryFolder("synctest_source"))
 			using (var to = new TemporaryFolder("synctest_dest"))
@@ -117,47 +117,70 @@ namespace WorkSafe.Tests
 				var source = new RawDirectoryGroup("1", from.Path, null, null);
 				var groups = new List<FileGroup>(new[] { source });
 				var sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
-				sync.GatherPreview();
 				sync.DoSynchronization();
-				File.Delete(from.Combine("test1.txt"));
-				
-				//simulate a new run (which will have a new metadata file, else the framework
-				//decides not to delete.
-				sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
-				sync.GatherPreview();
 
-				Assert.AreEqual(0, source.NewFileCount);
-				Assert.AreEqual(0, source.UpdateFileCount);
-				Assert.AreEqual(1, source.DeleteFileCount);
-				Assert.AreEqual(-9, source.NetChangeInBytes);
+				//should be there at the destination
+				AssertFileExists(sync, source, to, "test1.txt");
+				File.Delete(from.Combine("test1.txt"));
+
+				File.WriteAllText(from.Combine("test2.txt"), "Blah blah");
+				sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
+				sync.DoSynchronization();
+
+				AssertFileDoesNotExist(sync, source, to, "test1.txt");
 			}
 		}
 
-
 		[Test]
-		public void DoSynchronization_FileRemoved_FileGetsDeletedFromDest()
+		public void DoSynchronization_FileRemovedAndGroupHasDefaultDeletePolicy_FileIsDeletedFromDest()
 		{
-
 			using (var from = new TemporaryFolder("synctest_source"))
 			using (var to = new TemporaryFolder("synctest_dest"))
 			{
 				File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
 				var source = new RawDirectoryGroup("1", from.Path, null, null);
+				
+				//ensure this is the defualt
+				Assert.IsFalse(source.NormallyPropogateDeletions);
+
 				var groups = new List<FileGroup>(new[] { source });
 				var sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
-				sync.GatherPreview();
 				sync.DoSynchronization();
 				string destFile = to.Combine(sync.DestinationRootForThisUser, source.Name, "test1.txt");
 				Assert.IsTrue(File.Exists(destFile));
 				File.Delete(from.Combine("test1.txt"));
 
-
 				sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
-				sync.GatherPreview();
 				Assert.IsTrue(File.Exists(destFile));
 				sync.DoSynchronization();
 
 				Assert.IsFalse(File.Exists(to.Combine("test1.txt")));
+			}
+		}
+
+		[Test]
+		public void DoSynchronization_FileInMercurialFolderRemoved_FileGetsDeletedFromDest()
+		{
+			using (var from = new TemporaryFolder("synctest_source"))
+			using (var to = new TemporaryFolder("synctest_dest"))
+			{
+				Directory.CreateDirectory(from.Combine(".hg"));
+				File.WriteAllText(from.Combine(".hg","test1.txt"), "Blah blah");
+				var source = new RawDirectoryGroup("1", from.Path, null, null);
+				//the key here is that even though the group calls for NO deletion,
+				//we do it anyways inside of the mercurial folder (.hg)
+				source.NormallyPropogateDeletions = false;
+
+				var groups = new List<FileGroup>(new[] { source });
+				var sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
+				sync.DoSynchronization();
+				AssertFileExists(sync, source, to, Path.Combine(".hg", "test1.txt"));
+
+				File.Delete(from.Combine("test1.txt"));
+				sync = new Synchronizer(to.Path, groups, 100, new NullProgress());
+				sync.DoSynchronization();
+
+				AssertFileDoesNotExist(sync,source,to, Path.Combine(".hg", "test1.txt"));
 			}
 		}
 

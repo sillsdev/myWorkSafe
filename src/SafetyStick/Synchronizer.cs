@@ -368,9 +368,16 @@ namespace myWorkSafe
 					_alreadyAccountedFor.Add(args.CurrentFileData.RelativePath);
 					break;
 				case ChangeType.Delete:
-					_progress.WriteVerbose("[{0}] Preview Delete {1}", _currentGroup.Name, GetPathFromArgs(args));
-					_alreadyAccountedFor.Add(args.CurrentFileData.RelativePath);
-					_currentGroup.DeleteFileCount++;
+					if (!_currentGroup.NormallyPropogateDeletions)
+					{
+						args.SkipChange = true;
+						_progress.WriteVerbose("[{0}] Because of group policy, would not propagate deletion of {1}", _currentGroup.Name, GetPathFromArgs(args));
+					}
+					else
+					{
+						_progress.WriteVerbose("[{0}] Preview Delete {1}", _currentGroup.Name, GetPathFromArgs(args));
+						_currentGroup.DeleteFileCount++;
+					}
 					break;
 			}
 			InvokeProgress(args);
@@ -451,13 +458,27 @@ namespace myWorkSafe
 			switch (args.ChangeType)
 			{
 				case ChangeType.Create:
-					_progress.WriteVerbose("[{0}] Creating {1}",_currentGroup.Name, GetPathFromArgs(args)); 
+					_progress.WriteVerbose("[{0}] Creating {1}",_currentGroup.Name, GetPathFromArgs(args));
+					_alreadyAccountedFor.Add(GetPathFromArgs(args));
 					break;
 				case ChangeType.Update:
 					_progress.WriteVerbose("[{0}] Updating {1}", _currentGroup.Name, GetPathFromArgs(args));
+					_alreadyAccountedFor.Add(GetPathFromArgs(args));
 					break;
+
+				//NB: the following doesn't work, as it's never called
 				case ChangeType.Delete:
-					_progress.WriteVerbose("[{0}] Deleting {1}", _currentGroup.Name, GetPathFromArgs(args));
+					Debug.Fail("A miracle!");
+					if (!_currentGroup.NormallyPropogateDeletions
+						&& !GetPathFromArgs(args).Contains(".hg")) //always propogate deletions inside the mercurial folder
+					{
+						args.SkipChange = true;
+						_progress.WriteVerbose("[{0}] Because of group policy, will not propagate deletion of {1}", _currentGroup.Name, GetPathFromArgs(args));
+					}
+					else
+					{
+						_progress.WriteVerbose("[{0}] Deleting {1}", _currentGroup.Name, GetPathFromArgs(args));
+					}
 					break;
 			}
 
