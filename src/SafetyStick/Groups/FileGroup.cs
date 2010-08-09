@@ -82,6 +82,11 @@ namespace myWorkSafe.Groups
 
 		}
 
+		/// <summary>
+		/// When a file disappears from the source, should the backup also remove it?
+		/// </summary>
+		public bool NormallyPropogateDeletions { get; set; }
+
 		public string SourceTempMetaFile
 		{
 			get {
