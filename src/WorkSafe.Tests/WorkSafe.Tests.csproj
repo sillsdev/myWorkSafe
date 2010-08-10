@@ -71,9 +71,9 @@
     <Compile Include="SynchronizerTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SafetyStick\SafetyStick.csproj">
+    <ProjectReference Include="..\myWorkSafe\myWorkSafe.csproj">
       <Project>{C573DDE1-9BC6-4358-8671-3F5BC17462F1}</Project>
-      <Name>SafetyStick</Name>
+      <Name>myWorkSafe</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
