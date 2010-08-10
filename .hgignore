@@ -2,3 +2,11 @@ glob:_ReSharper*
 glob:*/obj/*
 glob:*/bin/*
 glob:output/*
+glob:build/bootstraper/dotNetInstaller 1.10/Bin/other/
+glob:build/bootstraper/dotNetInstaller 1.10/Samples/
+glob:build/bootstraper/dotNetInstaller 1.10/Doc/
+glob:build/bootstraper/dotNetInstaller 1.10/WhatsNew.html
+glob:*.pdb
+glob:myWorkSafe.suo
+glob:*ReSharper.*
+glob:*.cache
