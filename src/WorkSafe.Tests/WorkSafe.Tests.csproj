@@ -66,6 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ControllerTests.cs" />
     <Compile Include="MirrorMakerTests.cs" />
     <Compile Include="ScannerTests.cs" />
     <Compile Include="GroupIniFileReaderTests.cs" />

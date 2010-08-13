@@ -59,8 +59,8 @@ namespace myWorkSafe
 				trayIcon.MouseClick += new MouseEventHandler(trayIcon_MouseClick);
 
 
-			//	DoTestRun();
-
+				DoTestRun();
+				return;
 
 
 				detector.DeviceArrived += new DriveDetectorEventHandler(OnDeviceArrived);

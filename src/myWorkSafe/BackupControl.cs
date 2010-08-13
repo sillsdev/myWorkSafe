@@ -29,7 +29,7 @@ namespace myWorkSafe
 		private readonly string _destinationDeviceRoot;
 		private readonly long _availableFreeSpaceInKilobytes;
 		private readonly long _totalSpaceOfDeviceInKilobytes;
-		Synchronizer _synchronizer;
+		MirrorController _controller;
 		private BackgroundWorker _preparationWorker;
 		private BackgroundWorker _backupWorker;
 		private List<FileGroup> _groups;
@@ -69,8 +69,9 @@ namespace myWorkSafe
 			//driveDetector.QueryRemove += new DriveDetectorEventHandler(OnQueryRemove);
 
 
-			_synchronizer = new Synchronizer(destinationFolderPath, _groups, availableFreeSpaceInKilobytes, Progress);
-			_synchronizer.GroupProgress +=new Action(OnSynchronizer_GroupProgress);
+			//_controller = new Synchronizer(destinationFolderPath, _groups, availableFreeSpaceInKilobytes, Progress);
+			_controller = new MirrorController(destinationFolderPath, _groups, availableFreeSpaceInKilobytes, Progress);
+			_controller.GroupProgress +=new Action(OnSynchronizer_GroupProgress);
 
 			_mediaStatusIndicator.DriveLabel = destinationDeviceRoot;
 
@@ -287,11 +288,11 @@ namespace myWorkSafe
 			}
 			syncProgressBar.Minimum = 0;
 
-			if (_synchronizer.TotalFilesThatWillBeBackedUpThatWillBeCopied > 0)
+			if (_controller.TotalFilesThatWillBeBackedUpThatWillBeCopied > 0)
 			{
 				_status.Text = string.Format("Will back up {0} files ({1})",
-				                             _synchronizer.TotalFilesThatWillBeBackedUpThatWillBeCopied,
-				                             MediaStatus.GetStringForStorageSize(_synchronizer.ApprovedChangeInKB));
+				                             _controller.TotalFilesThatWillBeBackedUpThatWillBeCopied,
+				                             MediaStatus.GetStringForStorageSize(_controller.ApprovedChangeInKB));
 			}
 			else
 			{
@@ -300,16 +301,16 @@ namespace myWorkSafe
 				backupNowButton.Visible = false;
 			}
 
-			_mediaStatusIndicator.PendingFillPercentage = (int)(100.0 * (_availableFreeSpaceInKilobytes - _synchronizer.ApprovedChangeInKB) / _totalSpaceOfDeviceInKilobytes);
+			_mediaStatusIndicator.PendingFillPercentage = (int)(100.0 * (_availableFreeSpaceInKilobytes - _controller.ApprovedChangeInKB) / _totalSpaceOfDeviceInKilobytes);
 		}
 
 
 
 		void OnPreparationWorker_DoWork(object sender, DoWorkEventArgs e)
 		{
-			_synchronizer.FileProgress += GetIsCancellationPending;
-			_synchronizer.GatherPreview();
-			_synchronizer.FileProgress -= GetIsCancellationPending;
+			_controller.FileProgress += GetIsCancellationPending;
+			_controller.GatherPreview();
+			_controller.FileProgress -= GetIsCancellationPending;
 		
 		}
 
@@ -327,9 +328,9 @@ namespace myWorkSafe
 		{
 			InvokeIfRequired(()=>
 			                 	{
-									if (_synchronizer.FilesCopiedThusFar >= syncProgressBar.Minimum
-										&& _synchronizer.FilesCopiedThusFar <= syncProgressBar.Maximum)
-										syncProgressBar.Value = _synchronizer.FilesCopiedThusFar;
+									if (_controller.FilesCopiedThusFar >= syncProgressBar.Minimum
+										&& _controller.FilesCopiedThusFar <= syncProgressBar.Maximum)
+										syncProgressBar.Value = _controller.FilesCopiedThusFar;
 								});
 			return GetIsCancellationPending(path);
 		}
@@ -354,7 +355,7 @@ namespace myWorkSafe
 		private void StartBackup()
 		{
 			ChangeState(State.BackingUp);
-			_synchronizer.FileProgress += OnFileProgress;
+			_controller.FileProgress += OnFileProgress;
 			_backupWorker = new BackgroundWorker();
 			_backupWorker.DoWork += new DoWorkEventHandler(_backupWorker_DoWork);
 			_backupWorker.WorkerSupportsCancellation = true;
@@ -453,7 +454,7 @@ namespace myWorkSafe
 
 		void _backupWorker_DoWork(object sender, DoWorkEventArgs e)
 		{
-			_synchronizer.DoSynchronization();		
+			_controller.DoSynchronization();		
 		}
 
 		private void OnCancelClick(object sender, EventArgs e)

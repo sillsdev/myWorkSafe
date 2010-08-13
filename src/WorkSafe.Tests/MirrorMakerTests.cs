@@ -159,7 +159,7 @@ namespace WorkSafe.Tests
 			_maker.StartingFile += ((o, args) =>
 								{
 									if (args.Situation == MirrorSituation.FileOnDestinationButNotSource)
-										args.PendingAction = MirrorAction.Remove;
+										args.PendingAction = MirrorAction.Delete;
 								});
 			_maker.Run();
 			AssertCorrespondingFileDoesNotExist(path);
@@ -175,7 +175,7 @@ namespace WorkSafe.Tests
 			_maker.StartingFile += ((o, args) =>
 								{
 									if (args.Situation == MirrorSituation.DirectoryOnDestinationButNotSource)
-										args.PendingAction = MirrorAction.Remove;
+										args.PendingAction = MirrorAction.Delete;
 								});
 			_maker.Run();
 			AssertCorrespondingDirectoryDoesNotExist(_sourceTempFolder.Combine("fruit"));
