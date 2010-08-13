@@ -69,6 +69,7 @@
     <Compile Include="BackupControl.Designer.cs">
       <DependentUpon>BackupControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="MirrorController.cs" />
     <Compile Include="DirectoryScanner.cs" />
     <Compile Include="Groups\FileGroupFromIniSection.cs" />
     <Compile Include="Groups\GroupIniFileReader.cs" />

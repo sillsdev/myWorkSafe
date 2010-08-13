@@ -129,6 +129,13 @@ namespace myWorkSafe.Groups
 			return ShouldSkipFile(directoryData.RelativePath);
 		}
 
+		public bool ShouldSkipSubDirectory(string path)
+		{
+			//we bracket with spaces so that we don't match substrings
+			string value = " " + path.ToLower() + " ";
+			return Filter.SubdirectoryExcludes.Any(s => (" " + s.ToLower() + " ") == value);
+		}
+
 		public bool ShouldSkipFile(string relativePath)
 		{
 			string value = "//"+relativePath.ToLower()+"//";
