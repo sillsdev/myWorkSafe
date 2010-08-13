@@ -15,6 +15,7 @@ namespace myWorkSafe
 		private readonly string _sourceRootPath;
 		private readonly string _parentOfDestinationRootPath;
 		List<string> _skippedOrRemovedDirectories;
+		private List<FileOrDirectory> _remainingDestItems;
 
 		public MirrorMaker(string sourceRootPath, string parentOfDestinationRootPath)
 		{
@@ -26,43 +27,99 @@ namespace myWorkSafe
 		public void Run()
 		{
 			var scanner = new DirectoryScanner();
-			var items =scanner.Scan(_sourceRootPath);
+			var sourceItems =scanner.Scan(_sourceRootPath);
+			_remainingDestItems = new List<FileOrDirectory>();
+			if (Directory.Exists(_parentOfDestinationRootPath))
+			{
+				_remainingDestItems.AddRange(scanner.Scan(_parentOfDestinationRootPath));
+			}
 
 			//nb: this relies on the directories being order from parent-to-children
-			foreach (var sourceDirectory in items.Where(i => i.Type == FileOrDirectory.FileOrDirectoryType.Directory))
+			foreach (var sourceDirectory in sourceItems.Where(i => i.Type == FileOrDirectory.FileOrDirectoryType.Directory))
 			{
+				string destination = GetDestination(sourceDirectory.Path);
 				if(ShouldCreateDirectory(sourceDirectory))
 				{
 					Directory.CreateDirectory(GetDestination(sourceDirectory.Path));
 				}
+				RemoveDestinationItemFromRemainingList(destination);
 			}
-			foreach (var sourceFile in items.Where(i => i.Type == FileOrDirectory.FileOrDirectoryType.File))
+			foreach (var sourceFile in sourceItems.Where(i => i.Type == FileOrDirectory.FileOrDirectoryType.File))
 			{
-				var dest = GetDestination(sourceFile.Path);
-				switch (ShouldCreateOrUpdateFile(sourceFile))
+				string destination = GetDestination(sourceFile.Path);
+				HandleFile(sourceFile.Path, destination);
+				RemoveDestinationItemFromRemainingList(destination);
+			}
+			
+			HandleRemainingDestinationDirectories();
+			HandleRemainingDestinationFiles();
+		}
+
+		private void RemoveDestinationItemFromRemainingList(string destination)
+		{
+			var existing = _remainingDestItems.Find(f => f.Path == destination);
+			if(existing !=null)
+			{
+				_remainingDestItems.Remove(existing);
+			}
+		}
+
+		private void HandleRemainingDestinationFiles()
+		{
+			foreach (var file in _remainingDestItems.Where(i => i.Type == FileOrDirectory.FileOrDirectoryType.File))
+			{
+				var action = GetFileActionFromClient(file.Path, 
+								MirrorSituation.FileOnDestinationButNotSource, 
+								MirrorAction.DoNothing);
+				if(action == MirrorAction.Remove)
 				{
-					case MirrorAction.Remove:
-						if (File.Exists(dest))
-						{
-							File.Delete(dest);
-						}
-						break;
-					case MirrorAction.DoNothing:
-					case MirrorAction.Skip:
-						break;
-					case MirrorAction.Create:
-					case MirrorAction.Update:
-						if (File.Exists(dest))
-						{
-							File.Delete(dest);
-						}
-						File.Copy(sourceFile.Path, dest);
-						break;
-					default:
-						ThrowProgramError("Unexpected enumeration in switch: {0}", sourceFile.Path);
-						break;
+					File.Delete(file.Path);
 				}
 			}
+		}
+
+		private void HandleRemainingDestinationDirectories()
+		{
+			foreach (var directory in _remainingDestItems.Where(i => i.Type == FileOrDirectory.FileOrDirectoryType.Directory))
+			{
+				var action = GetFileActionFromClient(directory.Path, 
+								MirrorSituation.DirectoryOnDestinationButNotSource, 
+								MirrorAction.DoNothing);
+				if(action == MirrorAction.Remove)
+				{
+					Directory.Delete(directory.Path, true);
+					_skippedOrRemovedDirectories.Add(directory.Path);
+				}
+				
+			}
+		}
+
+		private void HandleFile(string source, string dest)
+		{
+			switch (ShouldCreateOrUpdateFile(source))
+			{
+				case MirrorAction.Remove:
+					if (File.Exists(dest))
+					{
+						File.Delete(dest);
+					}
+					break;
+				case MirrorAction.DoNothing:
+				case MirrorAction.Skip:
+					break;
+				case MirrorAction.Create:
+				case MirrorAction.Update:
+					if (File.Exists(dest))
+					{
+						File.Delete(dest);
+					}
+					File.Copy(source, dest);
+					break;
+				default:
+					ThrowProgramError("Unexpected enumeration in switch: {0}", source);
+					break;
+			}
+			
 		}
 
 		private void ThrowProgramError(params string[] parts)
@@ -88,9 +145,9 @@ namespace myWorkSafe
 			return action == MirrorAction.Create;
 		}
 
-		private MirrorAction ShouldCreateOrUpdateFile(FileOrDirectory sourceFile)
+		private MirrorAction ShouldCreateOrUpdateFile(string source)
 		{
-			var dest = GetDestination(sourceFile.Path);
+			var dest = GetDestination(source);
 			var situation = MirrorSituation.FileIsSame;
 			var defaultAction = MirrorAction.DoNothing;
 			if (!File.Exists(dest))
@@ -100,7 +157,7 @@ namespace myWorkSafe
 			}
 			else
 			{
-				DateTime sourceWriteTime = File.GetLastWriteTimeUtc(sourceFile.Path);
+				DateTime sourceWriteTime = File.GetLastWriteTimeUtc(source);
 				DateTime destWriteTime = File.GetLastWriteTimeUtc(dest);
 				if(sourceWriteTime > destWriteTime)
 				{
@@ -118,7 +175,7 @@ namespace myWorkSafe
 				}
 			}
 
-			var action = GetFileActionFromClient(sourceFile, situation, defaultAction);
+			var action = GetFileActionFromClient(source, situation, defaultAction);
 			Guard.Against(situation == MirrorSituation.FileIsSame && action == MirrorAction.Create, "Told to create an existing file");
 			Guard.Against(situation == MirrorSituation.FileMissing && action == MirrorAction.Remove, "Told to remove an non-existant file");
 			Guard.Against(situation == MirrorSituation.FileMissing && action == MirrorAction.Update, "Told to update an non-existant file");
@@ -151,17 +208,17 @@ namespace myWorkSafe
 			return args.PendingAction;
 		}
 
-		private MirrorAction GetFileActionFromClient(FileOrDirectory file, MirrorSituation situation, MirrorAction action)
+		private MirrorAction GetFileActionFromClient(string path, MirrorSituation situation, MirrorAction action)
 		{
 			//note... this is needed only because we don't currently have a 
 			//hierarchical list of things to walk, such that we trim in a more
 			//effecient way
-			if(_skippedOrRemovedDirectories.Any(d=> file.Path.StartsWith(d)))
+			if(_skippedOrRemovedDirectories.Any(d=> path.StartsWith(d)))
 			{
 				return MirrorAction.Skip;
 			}
 
-			var args = new CancellableEventArgs(file.Path, situation, action);
+			var args = new CancellableEventArgs(path, situation, action);
 			EventHandler<CancellableEventArgs> handler = StartingFile;
 			if (handler != null)
 			{
@@ -186,15 +243,18 @@ namespace myWorkSafe
 	}
 	public enum MirrorSituation { DirectoryMissing, FileMissing, SourceFileOlder, SourceFileNewer,
 		DirectoryExists,
-		FileIsSame
+		FileIsSame,
+		FileOnDestinationButNotSource,
+		DirectoryOnDestinationButNotSource
 	}
 
 	public class CancellableEventArgs : EventArgs
 	{
 		/// <summary>
-		/// The path to the file or directory on the source side of the mirror
+		/// The path to the file or directory on the source side of the mirror, unless
+		/// the situation indicates that we're talking about a destination file which is missing from the source
 		/// </summary>
-		public string SourcePath;
+		public string Path;
 
 		/// <summary>
 		/// What the engine detected
@@ -206,10 +266,10 @@ namespace myWorkSafe
 		/// </summary>
 		public MirrorAction PendingAction;
 
-		public CancellableEventArgs(string sourcePath, MirrorSituation situation, MirrorAction defaultAction)
+		public CancellableEventArgs(string path, MirrorSituation situation, MirrorAction defaultAction)
 		{
 			Situation = situation;
-			SourcePath = sourcePath;
+			Path = path;
 			PendingAction = defaultAction;
 		}
 	}
