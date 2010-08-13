@@ -21,10 +21,10 @@ namespace WorkSafe.Tests
 		}
 
 		[Test]
-		public void Test()
+		public void Scan_OnSourceCode_FindsLotsOfFiles()
 		{
 			var files = _scanner.Scan(FileLocator.DirectoryOfApplicationOrSolution);
-			Assert.That(files.Count(), Is.GreaterThan(10));
+			Assert.That(files.Count(), Is.GreaterThan(600));
 		}
 	}
 }

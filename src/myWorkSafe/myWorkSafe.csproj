@@ -101,6 +101,7 @@
       <DependentUpon>NewDrivePopup.cs</DependentUpon>
     </Compile>
     <Compile Include="Progress.cs" />
+    <Compile Include="MirrorMaker.cs" />
     <Compile Include="Usb\DriveDetector.cs">
       <SubType>Form</SubType>
     </Compile>
