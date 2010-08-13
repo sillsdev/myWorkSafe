@@ -26,7 +26,7 @@ namespace myWorkSafe
 		}
 	}
 
-	public struct FileOrDirectory
+	public class FileOrDirectory
 	{
 		public string Path;
 		public enum FileOrDirectoryType {File, Directory}

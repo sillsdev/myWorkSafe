@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using myWorkSafe;
 using NUnit.Framework;
 using Palaso.TestUtilities;
@@ -32,7 +27,6 @@ namespace WorkSafe.Tests
 		[TearDown]
 		public void TearDown()
 		{
-			//_maker.Dispose();
 			_sourceTempFolder.Dispose();
 			_destTempFolder.Dispose();
 		}
@@ -129,7 +123,7 @@ namespace WorkSafe.Tests
 			CreateSourceDirectoriesAndGenericFile("fruit", "skipMe", "treefruit", "apple.txt");
 			var path = CreateSourceDirectoriesAndGenericFile("fruit", "vinefruit", "rasberry.txt");
 			_maker.StartingDirectory += ((o, args) =>
-											{ if (args.SourcePath.Contains("skip")) 
+											{ if (args.Path.Contains("skip")) 
 												args.PendingAction = MirrorAction.Skip; });
 			_maker.Run();
 			AssertCorrespondingFileExists(path);
@@ -143,7 +137,7 @@ namespace WorkSafe.Tests
 			var path = CreateSourceDirectoriesAndGenericFile("fruit", "treefruit", "apple.txt");
 			_maker.StartingFile += ((o, args) =>
 												{
-													if (args.SourcePath.Contains("skip"))
+													if (args.Path.Contains("skip"))
 														args.PendingAction = MirrorAction.Skip;
 												});
 			_maker.Run();
@@ -151,38 +145,10 @@ namespace WorkSafe.Tests
 			AssertCorrespondingFileDoesNotExist(dontCopy);
 		}
 
-		[Test]
-		public void Run_ToldToRemoveDirectory_RemovedOnDestination()
-		{
-			var path = CreateSourceDirectoriesAndGenericFile("fruit", "treefruit", "apple.txt");
-			_maker.Run();
-			AssertCorrespondingFileExists(path);
-			_maker.StartingDirectory += ((o, args) =>
-											{
-												if (args.SourcePath.Contains("treefruit"))
-													args.PendingAction = MirrorAction.Remove;
-											});
-			_maker.Run();
-			AssertCorrespondingDirectoryDoesNotExist(_sourceTempFolder.Combine("fruit", "treefruit"));
-		}
+
 
 		[Test]
-		public void Run_ToldToRemoveFile_RemovedOnDestination()
-		{
-			var path = CreateSourceDirectoriesAndGenericFile("fruit", "treefruit", "apple.txt");
-			_maker.Run();
-			AssertCorrespondingFileExists(path);
-			_maker.StartingFile += ((o, args) =>
-										{
-											if (args.SourcePath.Contains("apple.txt"))
-												args.PendingAction = MirrorAction.Remove;
-										});
-			_maker.Run();
-			AssertCorrespondingFileDoesNotExist(path);
-		}
-
-		[Test]
-		public void Run_SourceMissingFile_RemovedOnDestination()
+		public void Run_SourceMissingFileAndCallbackSaysToRemove_RemovedOnDestination()
 		{
 			// NB: this requires the engine to also scan the destination to find left-overs
 
@@ -190,17 +156,27 @@ namespace WorkSafe.Tests
 			_maker.Run();
 			AssertCorrespondingFileExists(path);
 			File.Delete(path);
+			_maker.StartingFile += ((o, args) =>
+								{
+									if (args.Situation == MirrorSituation.FileOnDestinationButNotSource)
+										args.PendingAction = MirrorAction.Remove;
+								});
 			_maker.Run();
 			AssertCorrespondingFileDoesNotExist(path);
 		}
 
 		[Test]
-		public void Run_SourceMissingDirectory_RemovedOnDestination()
+		public void Run_SourceMissingDirectoryAndCallbackSaysToRemove_RemovedOnDestination()
 		{
 			var path = CreateSourceDirectoriesAndGenericFile("fruit", "treefruit", "apple.txt");
 			_maker.Run();
 			AssertCorrespondingFileExists(path);
 			Directory.Delete(_sourceTempFolder.Combine("fruit"),true);
+			_maker.StartingFile += ((o, args) =>
+								{
+									if (args.Situation == MirrorSituation.DirectoryOnDestinationButNotSource)
+										args.PendingAction = MirrorAction.Remove;
+								});
 			_maker.Run();
 			AssertCorrespondingDirectoryDoesNotExist(_sourceTempFolder.Combine("fruit"));
 		}
