@@ -63,7 +63,7 @@ namespace WorkSafe.Tests
 		public void Run_DestinationDoesNotHaveDirectory_CorrectSituationInEvent()
 		{
 			var path = CreateSourceDirectoriesAndGenericFile("fruit");
-			CancellableEventArgs gotArgs=null;
+			MirrorEventArgs gotArgs=null;
 			_maker.StartingDirectory += ((o, args) => gotArgs = args);
 			_maker.Run();
 			Assert.AreEqual(MirrorSituation.DirectoryMissing, gotArgs.Situation);
@@ -75,7 +75,7 @@ namespace WorkSafe.Tests
 		{
 			var path = CreateSourceDirectoriesAndGenericFile("fruit");
 			_maker.Run();
-			CancellableEventArgs gotArgs = null;
+			MirrorEventArgs gotArgs = null;
 			_maker.StartingDirectory += ((o, args) => gotArgs = args);
 			_maker.Run();
 			Assert.AreEqual(MirrorSituation.DirectoryExists, gotArgs.Situation);
@@ -86,7 +86,7 @@ namespace WorkSafe.Tests
 		public void Run_DestinationDoesNotHaveFile_CorrectSituationInEvent()
 		{
 			var path = CreateSourceDirectoriesAndGenericFile("fruit","apple.txt");
-			CancellableEventArgs gotArgs = null;
+			MirrorEventArgs gotArgs = null;
 			_maker.StartingFile += ((o, args) => gotArgs = args);
 			_maker.Run();
 			Assert.AreEqual(MirrorSituation.FileMissing, gotArgs.Situation);
@@ -98,7 +98,7 @@ namespace WorkSafe.Tests
 		{
 			var path = CreateSourceDirectoriesAndGenericFile("fruit","apple.txt");
 			_maker.Run();
-			CancellableEventArgs gotArgs = null;
+			MirrorEventArgs gotArgs = null;
 			_maker.StartingFile += ((o, args) => gotArgs = args);
 			_maker.Run();
 			Assert.AreEqual(MirrorSituation.FileIsSame, gotArgs.Situation);
