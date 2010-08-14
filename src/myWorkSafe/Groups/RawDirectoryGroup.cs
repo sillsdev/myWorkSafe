@@ -14,7 +14,7 @@ namespace myWorkSafe.Groups
 			{
 				foreach (var pattern in excludeFilePattern)
 				{
-					Filter.FileNameIncludes.Add(pattern);
+					Filter.FileNameExcludes.Add(pattern);
 				}
 			}
 			if (null != excludeDirectoryName)

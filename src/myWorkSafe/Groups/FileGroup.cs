@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Synchronization.Files;
+
 
 namespace myWorkSafe.Groups
 {
@@ -121,15 +122,6 @@ namespace myWorkSafe.Groups
 		}
 
 
-		public bool ShouldSkipSubDirectory(FileData directoryData)
-		{
-			//we bracket with spaces so that we don't match substrings
-			string value = " "+directoryData.Name.ToLower()+" ";
-			if(Filter.SubdirectoryExcludes.Any(s => (" "+s.ToLower()+" ") ==value))
-				return true;
-			return ShouldSkipFile(directoryData.RelativePath);
-		}
-
 		public bool ShouldSkipSubDirectory(string path)
 		{
 			//we bracket with spaces so that we don't match substrings
@@ -148,6 +140,18 @@ namespace myWorkSafe.Groups
 			}
 			return false;
 		}
+	}
+
+	public class FileSyncScopeFilter
+	{
+		public FileSyncScopeFilter()
+		{
+			SubdirectoryExcludes = new List<string>();
+			FileNameExcludes = new List<string>();
+		}
+		public List<string> SubdirectoryExcludes;
+		public FileAttributes AttributeExcludeMask;
+		public List<string> FileNameExcludes;
 	}
 
 	/*
