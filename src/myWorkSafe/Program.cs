@@ -57,10 +57,10 @@ namespace myWorkSafe
 				trayIcon.ContextMenu = trayMenu;
 				trayIcon.Visible = true;
 				trayIcon.MouseClick += new MouseEventHandler(trayIcon_MouseClick);
-
-
-				DoTestRun();
-				return;
+//
+//
+//				DoTestRun();
+//				return;
 
 
 				detector.DeviceArrived += new DriveDetectorEventHandler(OnDeviceArrived);

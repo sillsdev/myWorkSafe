@@ -21,7 +21,8 @@ namespace myWorkSafe
 		enum State {Preparing, BackingUp, CouldNotEject, SafelyEjected, ExpectingPhysicalRemoval,
 			ReadyToBackup,
 			Succeeded,
-			ErrorEncountered
+			ErrorEncountered,
+			Cancelled
 		}
 
 		private State CurrentState;
@@ -162,6 +163,7 @@ namespace myWorkSafe
 					CloseNow();
 					break;
 				case State.CouldNotEject:
+				case State.Cancelled:
 				case State.SafelyEjected:
 				case State.ExpectingPhysicalRemoval:
 				case State.ReadyToBackup:
@@ -208,6 +210,10 @@ namespace myWorkSafe
 						item.SubItems.Add("Not enough room.");
 						item.ForeColor = Color.DarkRed;
 						break;
+					case FileGroup.DispositionChoice.Cancelled:
+						item.SubItems.Add("Cancelled.");
+						item.ForeColor = Color.DarkRed;
+						break;
 					case FileGroup.DispositionChoice.WasBackedUp:
 						item.ImageIndex = 0;
 						item.SubItems.Add("Done");
@@ -243,6 +249,15 @@ namespace myWorkSafe
 					break;
 				case State.Succeeded:
 					_status.Text = "Finished";
+					_updateMediaStatusTimer.Enabled = false;
+					syncProgressBar.Visible = false;
+					closeButton.Visible = true;
+					cancelButton.Visible = false;
+					closeButton.Focus();
+					Cursor = Cursors.Default;
+					break;
+				case State.Cancelled:
+					_status.Text = "Cancelled";
 					_updateMediaStatusTimer.Enabled = false;
 					syncProgressBar.Visible = false;
 					closeButton.Visible = true;
@@ -462,14 +477,14 @@ namespace myWorkSafe
 			if (_preparationWorker != null)
 			{
 				_status.Text = "Cancelling...";
-				_preparationWorker.RunWorkerCompleted +=new RunWorkerCompletedEventHandler((x,y)=>CloseNow());
+				_preparationWorker.RunWorkerCompleted +=new RunWorkerCompletedEventHandler((x,y)=>ChangeState(State.Cancelled));
 				_preparationWorker.CancelAsync();
 			}
 			if(_backupWorker !=null)
 			{
 				_status.Text = "Cancelling...";
 				syncProgressBar.Visible = false;
-				_backupWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler((x, y) => CloseNow());
+				_backupWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler((x, y) => ChangeState(State.Cancelled));
 				_backupWorker.CancelAsync();
 			}
 		}

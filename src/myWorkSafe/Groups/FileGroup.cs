@@ -23,7 +23,8 @@ namespace myWorkSafe.Groups
 		public enum DispositionChoice {Hide=0, Waiting, Calculating, WillBeBackedUp, NotEnoughRoom,
 			Synchronizing,
 			WasBackedUp,
-			WillBeDeleted
+			WillBeDeleted,
+			Cancelled
 		}
 
 		public DispositionChoice Disposition;
