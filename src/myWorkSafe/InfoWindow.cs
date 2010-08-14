@@ -14,6 +14,7 @@ namespace myWorkSafe
 
 		private void InfoWindow_Load(object sender, EventArgs e)
 		{
+			Activate(); //bring to front
 			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "about.htm");
 			_webBrowser.Navigate(path);
 
@@ -38,6 +39,11 @@ namespace myWorkSafe
 				e.Cancel = true; //we don't want to navigate away from here, we'll launch a browser instead
 				Process.Start(e.Url.AbsoluteUri);
 			}
+
+		}
+
+		private void _webBrowser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
+		{
 
 		}
 	}

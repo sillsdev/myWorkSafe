@@ -45,6 +45,7 @@
 			this._webBrowser.Size = new System.Drawing.Size(579, 321);
 			this._webBrowser.TabIndex = 0;
 			this._webBrowser.Navigating += new System.Windows.Forms.WebBrowserNavigatingEventHandler(this._webBrowser_Navigating);
+			this._webBrowser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this._webBrowser_DocumentCompleted);
 			// 
 			// button1
 			// 
