@@ -128,7 +128,7 @@ namespace myWorkSafe
 		}
 
 
-		void OnStartingFile(object sender, CancellableEventArgs args)
+		void OnStartingFile(object sender, MirrorEventArgs args)
 		{
 			if (ShouldSkip("Backup", args))
 			{
@@ -173,7 +173,7 @@ namespace myWorkSafe
 			_errorCountSinceLastSuccess = 0;
 		}
 
-		void OnStartingDirectory(object sender, CancellableEventArgs args)
+		void OnStartingDirectory(object sender, MirrorEventArgs args)
 		{
 			if (ShouldSkip("Backup", args))
 			{
@@ -222,7 +222,7 @@ namespace myWorkSafe
 			}
 		}
 
-		public void DoSynchronization()
+		public void Run()
 		{
 			_cancelRequested = false;
 
@@ -264,8 +264,9 @@ namespace myWorkSafe
 						try
 						{
 
-							_engine.StartingDirectory += new EventHandler<CancellableEventArgs>(OnStartingDirectory);
-							_engine.StartingFile += new EventHandler<CancellableEventArgs>(OnStartingFile);
+							_engine.StartingDirectory += OnStartingDirectory;
+							_engine.StartingFile += OnStartingFile;
+							_engine.ItemHandlingError += OnItemHandlingError;
 
 							string destinationSubFolder = group.GetDestinationSubFolder(DestinationRootForThisUser);
 
@@ -303,29 +304,20 @@ namespace myWorkSafe
 			}
 		}
 
-		/*	void OnDestinationSkippedChange(object sender, SkippedChangeEventArgs e)
-			{
-				if(e.SkipReason == SkipReason.ApplicationRequest)
-				{
-					_progress.WriteMessage("Skipping '{0}  {1}'", e.NewFilePath ?? "", e.CurrentFilePath ?? "");
-					return;
-				}
-
+		void OnItemHandlingError(object sender, ItemHandlingErrorArgs e)
+		{
+				//todo: make work for non-english
 				if(e.Exception.Message.Contains("space")
-					|| e.Exception.Message.Contains("full")
-					|| e.Exception.GetType() == typeof(System.IO.IOException))
+					|| e.Exception.Message.Contains("full"))
 				{
-					_progress.WriteError(e.SkipReason.ToString());
 					_progress.WriteError(e.Exception.Message);
 					_gotIOExceptionProbablyDiskFull = true;
 					_engine.Cancel();//will just end this group, not close the window
 					return;
 				}
-				//ConflictLoserWriteError. This reason will be raised if a change is skipped because an attempt to recycle a losing file fails.
-	//			var path = e.CurrentFilePath == null ? e.NewFilePath : e.CurrentFilePath;
 				try
 				{
-					_progress.WriteError("File Skipped ['{0}'/'{1}']. Reason={2}. Exception Follows:", e.NewFilePath ?? "", e.CurrentFilePath ?? "", e.SkipReason);
+					_progress.WriteError("Error while processing file'{0}'. Reason={1}. Exception Follows:", e.Path, e.Exception.Message);
 					if(e.Exception !=null)
 						_progress.WriteException(e.Exception);
 
@@ -350,7 +342,7 @@ namespace myWorkSafe
 				}
 			}
 		
-		 */
+		 
 		private void CleanupTempFiles()
 		{
 			foreach (var group in _groups)
@@ -411,7 +403,7 @@ namespace myWorkSafe
 			InvokeProgress(args);
 		}*/
 
-		private bool ShouldSkip(string mode, CancellableEventArgs args)
+		private bool ShouldSkip(string mode, MirrorEventArgs args)
 		{
 			if (args.Situation == MirrorSituation.DirectoryMissing)
 			{
@@ -445,7 +437,7 @@ namespace myWorkSafe
 
 		public event Action GroupProgress;
 
-		public void InvokeProgress(CancellableEventArgs args)
+		public void InvokeProgress(MirrorEventArgs args)
 		{
 			if (FileProgress != null)
 			{

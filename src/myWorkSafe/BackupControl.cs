@@ -454,7 +454,7 @@ namespace myWorkSafe
 
 		void _backupWorker_DoWork(object sender, DoWorkEventArgs e)
 		{
-			_controller.DoSynchronization();		
+			_controller.Run();		
 		}
 
 		private void OnCancelClick(object sender, EventArgs e)

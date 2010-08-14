@@ -9,8 +9,9 @@ namespace myWorkSafe
 {
 	public class MirrorMaker :IDisposable
 	{
-		public event EventHandler<CancellableEventArgs> StartingDirectory;
-		public event EventHandler<CancellableEventArgs> StartingFile;
+		public event EventHandler<MirrorEventArgs> StartingDirectory;
+		public event EventHandler<MirrorEventArgs> StartingFile;
+		public event EventHandler<ItemHandlingErrorArgs> ItemHandlingError;
 
 		private  string _sourceRootPath;
 		private  string _parentOfDestinationRootPath;
@@ -61,7 +62,7 @@ namespace myWorkSafe
 				string destination = GetDestination(sourceDirectory.Path);
 				if(ShouldCreateDirectory(sourceDirectory))
 				{
-					Directory.CreateDirectory(GetDestination(sourceDirectory.Path));
+					CreateDirectory(sourceDirectory.Path);
 				}
 				RemoveDestinationItemFromRemainingList(destination);
 			}
@@ -78,6 +79,20 @@ namespace myWorkSafe
 			if (_cancelRequested)
 				return;
 			HandleRemainingDestinationFiles();
+		}
+
+		private void CreateDirectory(string sourcePath)
+		{
+			string destination = GetDestination(sourcePath);
+			try
+			{
+				Directory.CreateDirectory(destination);
+			}
+			catch (Exception error)
+			{
+				//enhance: create and use a special CreateDirector action
+				RaiseItemHandlingError(destination, MirrorAction.Create, error);
+			}
 		}
 
 		private void RemoveDestinationItemFromRemainingList(string destination)
@@ -116,7 +131,15 @@ namespace myWorkSafe
 								MirrorAction.DoNothing);
 				if(action == MirrorAction.Delete)
 				{
-					Directory.Delete(directory.Path, true);
+					try
+					{
+						Directory.Delete(directory.Path, true);
+					}
+					catch (Exception error)
+					{
+						RaiseItemHandlingError(directory.Path, MirrorAction.Delete, error);
+					}
+
 					_skippedOrRemovedDirectories.Add(directory.Path);
 				}
 				
@@ -125,30 +148,47 @@ namespace myWorkSafe
 
 		private void HandleFile(string source, string dest)
 		{
-			switch (ShouldCreateOrUpdateFile(source))
+			MirrorAction action = GetActionForFile(source);
+			try
 			{
-				case MirrorAction.Delete:
-					if (File.Exists(dest))
-					{
-						File.Delete(dest);
-					}
-					break;
-				case MirrorAction.DoNothing:
-				case MirrorAction.Skip:
-					break;
-				case MirrorAction.Create:
-				case MirrorAction.Update:
-					if (File.Exists(dest))
-					{
-						File.Delete(dest);
-					}
-					File.Copy(source, dest);
-					break;
-				default:
-					ThrowProgramError("Unexpected enumeration in switch: {0}", source);
-					break;
+				switch (action)
+				{
+					case MirrorAction.Delete:
+						if (File.Exists(dest))
+						{
+							File.Delete(dest);
+						}
+						break;
+					case MirrorAction.DoNothing:
+					case MirrorAction.Skip:
+						break;
+					case MirrorAction.Create:
+					case MirrorAction.Update:
+						if (File.Exists(dest))
+						{
+							File.Delete(dest);
+						}
+						File.Copy(source, dest);
+						break;
+					default:
+						ThrowProgramError("Unexpected enumeration in switch: {0}", source);
+						break;
+				}
 			}
-			
+			catch (Exception error)
+			{
+				RaiseItemHandlingError(source, action, error);
+			}
+		}
+
+		private void RaiseItemHandlingError(string path, MirrorAction action, Exception error)
+		{
+			var args = new ItemHandlingErrorArgs(path, action, error);
+			EventHandler<ItemHandlingErrorArgs> handler = ItemHandlingError;
+			if (handler != null)
+			{
+				handler(this, args);
+			}
 		}
 
 		private void ThrowProgramError(params string[] parts)
@@ -174,7 +214,7 @@ namespace myWorkSafe
 			return action == MirrorAction.Create;
 		}
 
-		private MirrorAction ShouldCreateOrUpdateFile(string source)
+		private MirrorAction GetActionForFile(string source)
 		{
 			var dest = GetDestination(source);
 			var situation = MirrorSituation.FileIsSame;
@@ -224,8 +264,8 @@ namespace myWorkSafe
 
 		private MirrorAction GetDirectoryActionFromClient(FileOrDirectory directory, MirrorSituation situation, MirrorAction action)
 		{
-			var args = new CancellableEventArgs(directory.Path, situation,action);
-			EventHandler<CancellableEventArgs> handler = StartingDirectory;
+			var args = new MirrorEventArgs(directory.Path, situation,action);
+			EventHandler<MirrorEventArgs> handler = StartingDirectory;
 			if (handler != null)
 			{
 				handler(this, args);
@@ -247,8 +287,8 @@ namespace myWorkSafe
 				return MirrorAction.Skip;
 			}
 
-			var args = new CancellableEventArgs(path, situation, action);
-			EventHandler<CancellableEventArgs> handler = StartingFile;
+			var args = new MirrorEventArgs(path, situation, action);
+			EventHandler<MirrorEventArgs> handler = StartingFile;
 			if (handler != null)
 			{
 				handler(this, args);
@@ -282,10 +322,11 @@ namespace myWorkSafe
 		DirectoryExists,
 		FileIsSame,
 		FileOnDestinationButNotSource,
-		DirectoryOnDestinationButNotSource
+		DirectoryOnDestinationButNotSource,
+		Error
 	}
 
-	public class CancellableEventArgs : EventArgs
+	public class MirrorEventArgs : EventArgs
 	{
 		/// <summary>
 		/// The path to the file or directory on the source side of the mirror, unless
@@ -303,11 +344,24 @@ namespace myWorkSafe
 		/// </summary>
 		public MirrorAction PendingAction;
 
-		public CancellableEventArgs(string path, MirrorSituation situation, MirrorAction defaultAction)
+		public MirrorEventArgs(string path, MirrorSituation situation, MirrorAction defaultAction)
 		{
 			Situation = situation;
 			Path = path;
 			PendingAction = defaultAction;
+		}
+	}
+
+	public class ItemHandlingErrorArgs: MirrorEventArgs
+	{
+		public Exception Exception;
+
+		public ItemHandlingErrorArgs(string path, 
+			MirrorAction actionThatWasBeingAttempted,
+			Exception error)
+			: base(path, MirrorSituation.Error, actionThatWasBeingAttempted)
+		{
+			Exception = error;
 		}
 	}
 }

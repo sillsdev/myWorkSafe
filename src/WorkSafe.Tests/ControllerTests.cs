@@ -42,7 +42,7 @@ namespace WorkSafe.Tests
 				var groups = new List<FileGroup>(new[] { source });
 				var sync = new MirrorController(to.Path, groups, 100, new NullProgress());
 				sync.GatherPreview();
-				sync.DoSynchronization();
+				sync.Run();
 				System.IO.File.WriteAllText(from.Combine("test1.txt"), "Blah blah Blah Blah Blah");
 				sync = new MirrorController(to.Path, groups, 100, new NullProgress());
 				sync.GatherPreview();
@@ -141,7 +141,7 @@ namespace WorkSafe.Tests
 
 				var sync = new MirrorController(to.Path, groups, 100, progress);
 
-				sync.DoSynchronization();
+				sync.Run();
 				AssertFileExists(sync, source, to, "1.txt");
 			}
 		}
@@ -154,18 +154,19 @@ namespace WorkSafe.Tests
 			{
 				System.IO.File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
 				System.IO.File.WriteAllText(from.Combine("test2.txt"), "Blah blah blah");
+				System.IO.File.WriteAllText(from.Combine("test3.txt"), "Blah blah blah");
 				var source = new RawDirectoryGroup("1", from.Path, null, null);
 				var groups = new List<FileGroup>(new[] { source });
 				var progress = new StringBuilderProgress(){ShowVerbose=true};
-				var sync = new MirrorController(to.Path, groups, 100, progress);
+				var controller = new MirrorController(to.Path, groups, 100, progress);
 
 				using(File.OpenWrite(from.Combine("test2.txt")))//lock it up
 				{
-					sync.GatherPreview();
-					sync.DoSynchronization();
+					controller.Run();
 				}
-				AssertFileExists(sync, source, to, "test1.txt");
-				AssertFileDoesNotExist(sync, source, to, "test2.txt");
+				AssertFileExists(controller, source, to, "test1.txt");
+				AssertFileExists(controller, source, to, "test3.txt");
+				AssertFileDoesNotExist(controller, source, to, "test2.txt");
 				Assert.That(progress.ErrorEncountered);
 			}
 		}
@@ -179,18 +180,18 @@ namespace WorkSafe.Tests
 				File.WriteAllText(from.Combine("test1.txt"), "Blah blah");
 				var source = new RawDirectoryGroup("1", from.Path, null, null) {NormallyPropogateDeletions = true};
 				var groups = new List<FileGroup>(new[] { source });
-				var sync = new MirrorController(to.Path, groups, 100, new NullProgress());
-				sync.DoSynchronization();
+				var controller = new MirrorController(to.Path, groups, 100, new NullProgress());
+				controller.Run();
 
 				//should be there at the destination
-				AssertFileExists(sync, source, to, "test1.txt");
+				AssertFileExists(controller, source, to, "test1.txt");
 				File.Delete(from.Combine("test1.txt"));
 
 				File.WriteAllText(from.Combine("test2.txt"), "Blah blah");
-				sync = new MirrorController(to.Path, groups, 100, new NullProgress());
-				sync.DoSynchronization();
+				controller = new MirrorController(to.Path, groups, 100, new NullProgress());
+				controller.Run();
 
-				AssertFileDoesNotExist(sync, source, to, "test1.txt");
+				AssertFileDoesNotExist(controller, source, to, "test1.txt");
 			}
 		}
 		
@@ -208,14 +209,14 @@ namespace WorkSafe.Tests
 
 				var groups = new List<FileGroup>(new[] { source });
 				var sync = new MirrorController(to.Path, groups, 100, new NullProgress());
-				sync.DoSynchronization();
+				sync.Run();
 				string destFile = to.Combine(sync.DestinationRootForThisUser, source.Name, "test1.txt");
 				Assert.IsTrue(File.Exists(destFile));
 				File.Delete(from.Combine("test1.txt"));
 
 				sync = new MirrorController(to.Path, groups, 100, new NullProgress());
 				Assert.IsTrue(File.Exists(destFile));
-				sync.DoSynchronization();
+				sync.Run();
 
 				Assert.IsFalse(File.Exists(to.Combine("test1.txt")));
 			}
@@ -235,15 +236,15 @@ namespace WorkSafe.Tests
 				source.NormallyPropogateDeletions = false;
 
 				var groups = new List<FileGroup>(new[] { source });
-				var sync = new MirrorController(to.Path, groups, 100, new NullProgress());
-				sync.DoSynchronization();
-				AssertFileExists(sync, source, to, Path.Combine(".hg", "test1.txt"));
+				var controller = new MirrorController(to.Path, groups, 100, new NullProgress());
+				controller.Run();
+				AssertFileExists(controller, source, to, Path.Combine(".hg", "test1.txt"));
 
 				File.Delete(from.Combine(".hg","test1.txt"));
-				sync = new MirrorController(to.Path, groups, 100, new NullProgress());
-				sync.DoSynchronization();
+				controller = new MirrorController(to.Path, groups, 100, new NullProgress());
+				controller.Run();
 
-				AssertFileDoesNotExist(sync,source,to, Path.Combine(".hg", "test1.txt"));
+				AssertFileDoesNotExist(controller,source,to, Path.Combine(".hg", "test1.txt"));
 			}
 		}
 
@@ -262,7 +263,7 @@ namespace WorkSafe.Tests
 				var groups = new List<FileGroup>(new[] { source });
 				var progress = new StringBuilderProgress() { ShowVerbose = true };
 				var sync = new MirrorController(to.Path, groups, 100, progress);
-				sync.DoSynchronization();
+				sync.Run();
 
 				// we don't get this progress yet Assert.That(progress.Text.ToLower().Contains("skip"));
 				Assert.AreEqual(0, source.NewFileCount);
@@ -272,14 +273,14 @@ namespace WorkSafe.Tests
 		}
 
 
-		private void AssertFileDoesNotExist(MirrorController sync, RawDirectoryGroup source, TemporaryFolder destFolder, string fileName)
+		private void AssertFileDoesNotExist(MirrorController controller, RawDirectoryGroup source, TemporaryFolder destFolder, string fileName)
 		{
-			string path = destFolder.Combine(sync.DestinationRootForThisUser, source.Name, fileName);
+			string path = destFolder.Combine(controller.DestinationRootForThisUser, source.Name, fileName);
 			Assert.IsFalse(File.Exists(path), path);
 		}
-		private void AssertFileExists(MirrorController sync, RawDirectoryGroup source, TemporaryFolder destFolder, string fileName)
+		private void AssertFileExists(MirrorController controller, RawDirectoryGroup source, TemporaryFolder destFolder, string fileName)
 		{
-			string path = destFolder.Combine(sync.DestinationRootForThisUser, source.Name, fileName);
+			string path = destFolder.Combine(controller.DestinationRootForThisUser, source.Name, fileName);
 			Assert.IsTrue(File.Exists(path), path);
 		}
 
