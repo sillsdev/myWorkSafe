@@ -275,7 +275,14 @@ namespace myWorkSafe
 
 							//_engine.PreviewMode = false;
 							_engine.Run(group.RootFolder, destinationSubFolder);
-							group.Disposition = FileGroup.DispositionChoice.WasBackedUp;
+							if (_engine.WasCancelled)
+							{
+								_currentGroup.Disposition = FileGroup.DispositionChoice.Cancelled;
+							}
+							else
+							{
+								group.Disposition = FileGroup.DispositionChoice.WasBackedUp;
+							}
 						}
 						catch (IOException error)
 						{

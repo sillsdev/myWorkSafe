@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,7 @@ namespace myWorkSafe
 		List<string> _skippedOrRemovedDirectories;
 		private List<FileOrDirectory> _remainingDestItems;
 		private bool _cancelRequested;
+		public bool WasCancelled;
 
 		//todo: remove
 		public MirrorMaker(string sourceRootPath, string parentOfDestinationRootPath)
@@ -45,7 +47,10 @@ namespace myWorkSafe
 
 			var scanner = new DirectoryScanner();
 			if(_cancelRequested)
+			{
+				WasCancelled = true;
 				return;
+			}
 
 			var sourceItems =scanner.Scan(_sourceRootPath);
 			_remainingDestItems = new List<FileOrDirectory>();
@@ -58,7 +63,10 @@ namespace myWorkSafe
 			foreach (var sourceDirectory in sourceItems.Where(i => i.Type == FileOrDirectory.FileOrDirectoryType.Directory))
 			{
 				if (_cancelRequested)
+				{
+					WasCancelled = true;
 					return;
+				}
 				string destination = GetDestination(sourceDirectory.Path);
 				if(ShouldCreateDirectory(sourceDirectory))
 				{
@@ -69,7 +77,10 @@ namespace myWorkSafe
 			foreach (var sourceFile in sourceItems.Where(i => i.Type == FileOrDirectory.FileOrDirectoryType.File))
 			{
 				if (_cancelRequested)
+				{
+					WasCancelled = true;
 					return;
+				}
 				string destination = GetDestination(sourceFile.Path);
 				HandleFile(sourceFile.Path, destination);
 				RemoveDestinationItemFromRemainingList(destination);
@@ -77,8 +88,16 @@ namespace myWorkSafe
 			
 			HandleRemainingDestinationDirectories();
 			if (_cancelRequested)
+			{
+				WasCancelled = true;
 				return;
+			}
 			HandleRemainingDestinationFiles();
+			if (_cancelRequested)
+			{
+				WasCancelled = true;
+				return;
+			}
 		}
 
 		private void CreateDirectory(string sourcePath)
@@ -169,6 +188,9 @@ namespace myWorkSafe
 							File.Delete(dest);
 						}
 						File.Copy(source, dest);
+						//File.SetLastWriteTimeUtc(dest, File.GetLastWriteTimeUtc(source));
+						//this fails!
+						//Debug.Assert(File.GetLastWriteTimeUtc(dest) == File.GetLastWriteTimeUtc(source));
 						break;
 					default:
 						ThrowProgramError("Unexpected enumeration in switch: {0}", source);
@@ -228,7 +250,14 @@ namespace myWorkSafe
 			{
 				DateTime sourceWriteTime = File.GetLastWriteTimeUtc(source);
 				DateTime destWriteTime = File.GetLastWriteTimeUtc(dest);
-				if(sourceWriteTime > destWriteTime)
+				var dif = TimeSpan.FromTicks(Math.Abs(sourceWriteTime.Ticks - destWriteTime.Ticks));
+				
+				//for some reason, the target is always a couple seconds later
+				if(dif.Seconds < 5)
+				{
+					situation = MirrorSituation.FileIsSame;
+				}
+				else if(sourceWriteTime > destWriteTime)
 				{
 					situation = MirrorSituation.SourceFileNewer;
 					defaultAction = MirrorAction.Update;
@@ -237,10 +266,6 @@ namespace myWorkSafe
 				{
 					situation = MirrorSituation.SourceFileOlder;
 					defaultAction = MirrorAction.Update; //NOTICE, we default to overwriting, even if the dest is newer!
-				}
-				else
-				{
-					situation = MirrorSituation.FileIsSame;
 				}
 			}
 
