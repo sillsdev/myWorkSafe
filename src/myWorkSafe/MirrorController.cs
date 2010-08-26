@@ -136,8 +136,6 @@ namespace myWorkSafe
 				return;
 			}
 
-			_files++;
-			InvokeProgress(args);
 
 			switch (args.Situation)
 			{
@@ -145,11 +143,15 @@ namespace myWorkSafe
 					_alreadyAccountedFor.Add(args.Path);
 					break;
 				case MirrorSituation.FileMissing:
+					_files++;
+					InvokeProgress(args);
 					_progress.WriteVerbose("[{0}] Creating {1}", _currentGroup.Name, args.Path);
 					_alreadyAccountedFor.Add(args.Path);
 					break;
 				case MirrorSituation.SourceFileOlder:
 				case MirrorSituation.SourceFileNewer:
+					_files++;
+					InvokeProgress(args);
 					_progress.WriteVerbose("[{0}] Updating {1}", _currentGroup.Name, args.Path);
 					break;
 				case MirrorSituation.FileOnDestinationButNotSource:
