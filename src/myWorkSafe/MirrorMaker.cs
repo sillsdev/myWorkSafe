@@ -46,6 +46,7 @@ namespace myWorkSafe
 			_parentOfDestinationRootPath = parentOfDestinationRootPath;
 
 			var scanner = new DirectoryScanner();
+			scanner.OnError += (sender, args) => RaiseItemHandlingError(args.Path, MirrorAction.Skip, args.Error);
 			if(_cancelRequested)
 			{
 				WasCancelled = true;

@@ -199,7 +199,7 @@ namespace myWorkSafe
 						item.SubItems.Add("Calculating...");
 						break;
 					case FileGroup.DispositionChoice.Synchronizing:
-						item.SubItems.Add("Synchronizing...");
+						item.SubItems.Add("Mirroring...");
 						break;
 					case FileGroup.DispositionChoice.WillBeBackedUp:
 						//item.ImageIndex = 0;
@@ -344,8 +344,34 @@ namespace myWorkSafe
 			InvokeIfRequired(()=>
 			                 	{
 									if (_controller.FilesCopiedThusFar >= syncProgressBar.Minimum
-										&& _controller.FilesCopiedThusFar <= syncProgressBar.Maximum)
+										&& _controller.FilesCopiedThusFar <= syncProgressBar.Maximum)                                       
+									{
 										syncProgressBar.Value = _controller.FilesCopiedThusFar;
+									}
+									var max = 40;
+									string display="";
+			                 		var parts = path.Split(new char[] {Path.DirectorySeparatorChar});
+									//in case the neame itself is too long...
+									if (parts.Length == 0)
+										return;
+									if (parts[parts.Length -1].Length > max)
+									{
+										var length = path.Length;
+										var start = length > max ? length - max : 0;
+										length = length > max ? max : length;
+										display = path.Substring(start, length);
+									}
+									else for (int i = parts.Length-1; i >= 0 ; i--)
+			                 		{
+										var potential = parts[i] + display;
+										if (potential.Length > max)
+											break;
+			                 			display = potential;
+			                 		}
+
+
+			                 		_status.Text = string.Format("Copying files... ({0})", display);
+
 								});
 			return GetIsCancellationPending(path);
 		}
