@@ -89,6 +89,7 @@ rootFolder= c:\"))
 		}
 
 		[Test]
+		[Category("SkipOnTeamCity")]
 		public void CreateGroups_MyDocumentsBasedRootFolder_Converted()
 		{
 			using (var f = FileFromContents(
