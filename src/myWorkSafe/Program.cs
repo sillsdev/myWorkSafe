@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using Dolinay;
+using Localization;
 using myWorkSafe.Properties;
 using Palaso.UsbDrive;
+
 
 namespace myWorkSafe
 {
@@ -37,6 +38,10 @@ namespace myWorkSafe
 
 			SetUpErrorHandling();
 
+			LocalizationManager.Enabled = true;
+			LocalizationManager.Initialize();
+			//LocalizationManager.UILangId = "fr";
+
 			var trayMenu = new ContextMenu();
 			trayMenu.MenuItems.Add("Exit", OnExit);
 
@@ -59,8 +64,8 @@ namespace myWorkSafe
 				trayIcon.MouseClick += new MouseEventHandler(trayIcon_MouseClick);
 //
 //
-//				DoTestRun();
-//				return;
+				DoTestRun();
+				return;
 
 
 				detector.DeviceArrived += new DriveDetectorEventHandler(OnDeviceArrived);
