@@ -1,4 +1,7 @@
-﻿namespace myWorkSafe
+﻿using Localization;
+using Localization.UI;
+
+namespace myWorkSafe
 {
 	partial class BackupControl
 	{
@@ -46,10 +49,12 @@
 			this.syncProgressBar = new System.Windows.Forms.ProgressBar();
 			this._status = new System.Windows.Forms.Label();
 			this._probablyRemovedPhysicallyTimer = new System.Windows.Forms.Timer(this.components);
-			this._mediaStatusIndicator = new myWorkSafe.MediaStatus();
 			this._startTimer = new System.Windows.Forms.Timer(this.components);
 			this.label1 = new System.Windows.Forms.Label();
 			this._updateMediaStatusTimer = new System.Windows.Forms.Timer(this.components);
+			this._localizationExtender = new LocalizationExtender(this.components);
+			this._mediaStatusIndicator = new myWorkSafe.MediaStatus();
+			((System.ComponentModel.ISupportInitialize)(this._localizationExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// _safeToRemoveLabel
@@ -58,6 +63,9 @@
 			this._safeToRemoveLabel.AutoSize = true;
 			this._safeToRemoveLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._safeToRemoveLabel.ForeColor = System.Drawing.Color.Teal;
+			this._localizationExtender.SetLocalizableToolTip(this._safeToRemoveLabel, null);
+			this._localizationExtender.SetLocalizationComment(this._safeToRemoveLabel, null);
+			this._localizationExtender.SetLocalizingId(this._safeToRemoveLabel, "BackupControl._safeToRemoveLabel");
 			this._safeToRemoveLabel.Location = new System.Drawing.Point(113, 221);
 			this._safeToRemoveLabel.MaximumSize = new System.Drawing.Size(356, 0);
 			this._safeToRemoveLabel.Name = "_safeToRemoveLabel";
@@ -69,6 +77,9 @@
 			// cancelButton
 			// 
 			this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this._localizationExtender.SetLocalizableToolTip(this.cancelButton, null);
+			this._localizationExtender.SetLocalizationComment(this.cancelButton, null);
+			this._localizationExtender.SetLocalizingId(this.cancelButton, "BackupControl.cancelButton");
 			this.cancelButton.Location = new System.Drawing.Point(266, 310);
 			this.cancelButton.Name = "cancelButton";
 			this.cancelButton.Size = new System.Drawing.Size(75, 23);
@@ -82,6 +93,9 @@
 			this.backupNowButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.backupNowButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this.backupNowButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._localizationExtender.SetLocalizableToolTip(this.backupNowButton, null);
+			this._localizationExtender.SetLocalizationComment(this.backupNowButton, null);
+			this._localizationExtender.SetLocalizingId(this.backupNowButton, "BackupControl.backupNowButton");
 			this.backupNowButton.Location = new System.Drawing.Point(364, 244);
 			this.backupNowButton.Name = "backupNowButton";
 			this.backupNowButton.Size = new System.Drawing.Size(145, 89);
@@ -95,6 +109,9 @@
 			this.closeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.closeButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this.closeButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._localizationExtender.SetLocalizableToolTip(this.closeButton, null);
+			this._localizationExtender.SetLocalizationComment(this.closeButton, null);
+			this._localizationExtender.SetLocalizingId(this.closeButton, "BackupControl.closeButton");
 			this.closeButton.Location = new System.Drawing.Point(376, 277);
 			this.closeButton.Name = "closeButton";
 			this.closeButton.Size = new System.Drawing.Size(134, 56);
@@ -130,11 +147,19 @@
 			// 
 			// columnHeader1
 			// 
+			this._localizationExtender.SetLocalizableToolTip(this.columnHeader1, null);
+			this._localizationExtender.SetLocalizationComment(this.columnHeader1, null);
+			this._localizationExtender.SetLocalizationPriority(this.columnHeader1, LocalizationPriority.InternalUseOnly);
+			this._localizationExtender.SetLocalizingId(this.columnHeader1, "BackupControl.listView1ColcolumnHeader1");
 			this.columnHeader1.Text = "Name";
 			this.columnHeader1.Width = 200;
 			// 
 			// columnHeader2
 			// 
+			this._localizationExtender.SetLocalizableToolTip(this.columnHeader2, null);
+			this._localizationExtender.SetLocalizationComment(this.columnHeader2, null);
+			this._localizationExtender.SetLocalizationPriority(this.columnHeader2, LocalizationPriority.InternalUseOnly);
+			this._localizationExtender.SetLocalizingId(this.columnHeader2, "BackupControl.listView1ColcolumnHeader2");
 			this.columnHeader2.Text = "Size";
 			this.columnHeader2.Width = 189;
 			// 
@@ -152,6 +177,10 @@
 			// 
 			this._status.AutoSize = true;
 			this._status.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._localizationExtender.SetLocalizableToolTip(this._status, null);
+			this._localizationExtender.SetLocalizationComment(this._status, null);
+			this._localizationExtender.SetLocalizationPriority(this._status, LocalizationPriority.InternalUseOnly);
+			this._localizationExtender.SetLocalizingId(this._status, "BackupControl._status");
 			this._status.Location = new System.Drawing.Point(118, 10);
 			this._status.Name = "_status";
 			this._status.Size = new System.Drawing.Size(114, 17);
@@ -163,18 +192,6 @@
 			this._probablyRemovedPhysicallyTimer.Interval = 1000;
 			this._probablyRemovedPhysicallyTimer.Tick += new System.EventHandler(this._probablyRemovedPhysicallyTimer_Tick);
 			// 
-			// _mediaStatusIndicator
-			// 
-			this._mediaStatusIndicator.BackColor = System.Drawing.Color.Transparent;
-			this._mediaStatusIndicator.DeviceSizeInKiloBytes = ((long)(131072));
-			this._mediaStatusIndicator.DriveLabel = "Q:\\\\";
-			this._mediaStatusIndicator.ExistingFillPercentage = 50;
-			this._mediaStatusIndicator.Location = new System.Drawing.Point(3, 10);
-			this._mediaStatusIndicator.Name = "_mediaStatusIndicator";
-			this._mediaStatusIndicator.PendingFillPercentage = 25;
-			this._mediaStatusIndicator.Size = new System.Drawing.Size(100, 323);
-			this._mediaStatusIndicator.TabIndex = 11;
-			// 
 			// _startTimer
 			// 
 			this._startTimer.Interval = 500;
@@ -185,6 +202,10 @@
 			this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.label1.AutoSize = true;
 			this.label1.ForeColor = System.Drawing.Color.DarkRed;
+			this._localizationExtender.SetLocalizableToolTip(this.label1, "The tooltip for test version warning");
+			this._localizationExtender.SetLocalizationComment(this.label1, "A comment on the test version warning");
+			this._localizationExtender.SetLocalizationPriority(this.label1, LocalizationPriority.Low);
+			this._localizationExtender.SetLocalizingId(this.label1, "TestVersionWarningLabel");
 			this.label1.Location = new System.Drawing.Point(108, 320);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(152, 13);
@@ -195,6 +216,25 @@
 			// 
 			this._updateMediaStatusTimer.Interval = 3000;
 			this._updateMediaStatusTimer.Tick += new System.EventHandler(this._updateMediaStatusTimer_Tick);
+			// 
+			// _localizationExtender
+			// 
+			this._localizationExtender.LocalizationGroup = "BackupControl";
+			// 
+			// _mediaStatusIndicator
+			// 
+			this._mediaStatusIndicator.BackColor = System.Drawing.Color.Transparent;
+			this._mediaStatusIndicator.DeviceSizeInKiloBytes = ((long)(131072));
+			this._mediaStatusIndicator.DriveLabel = "Q:\\\\";
+			this._mediaStatusIndicator.ExistingFillPercentage = 50;
+			this._localizationExtender.SetLocalizableToolTip(this._mediaStatusIndicator, null);
+			this._localizationExtender.SetLocalizationComment(this._mediaStatusIndicator, null);
+			this._localizationExtender.SetLocalizingId(this._mediaStatusIndicator, "BackupControl.MediaStatus");
+			this._mediaStatusIndicator.Location = new System.Drawing.Point(3, 10);
+			this._mediaStatusIndicator.Name = "_mediaStatusIndicator";
+			this._mediaStatusIndicator.PendingFillPercentage = 25;
+			this._mediaStatusIndicator.Size = new System.Drawing.Size(100, 323);
+			this._mediaStatusIndicator.TabIndex = 11;
 			// 
 			// BackupControl
 			// 
@@ -209,9 +249,13 @@
 			this.Controls.Add(this.listView1);
 			this.Controls.Add(this.syncProgressBar);
 			this.Controls.Add(this._status);
+			this._localizationExtender.SetLocalizableToolTip(this, null);
+			this._localizationExtender.SetLocalizationComment(this, null);
+			this._localizationExtender.SetLocalizingId(this, "BackupControl.BackupControl");
 			this.Name = "BackupControl";
 			this.Size = new System.Drawing.Size(535, 348);
 			this.Load += new System.EventHandler(this.BackupControl_Load);
+			((System.ComponentModel.ISupportInitialize)(this._localizationExtender)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -234,5 +278,6 @@
 		private System.Windows.Forms.Timer _startTimer;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Timer _updateMediaStatusTimer;
+		private LocalizationExtender _localizationExtender;
 	}
 }
