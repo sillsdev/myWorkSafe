@@ -16,9 +16,8 @@
 
     <Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
 
-    <!-- TODO: should we move the version number somewhere else, like to TeamCity config? 
-        TODO: have one place to set it which will also stamp the assembly properly
-     -->
+    <!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
+    
     <CreateProperty Value="0.1.$(BuildCounter)">
       <Output PropertyName="Version" TaskParameter="Value"/>
     </CreateProperty>
@@ -50,7 +49,7 @@
 
   <Target Name="Test" DependsOnTargets ="Build">
     <ItemGroup>
-      <TestAssemblies Include="$(teamcity_build_checkoutDir)/output/release/*Tests.dll;"  Exclude="**\obj\**;**\SpongeTests.dll" />
+      <TestAssemblies Include="$(teamcity_build_checkoutDir)/output/release/*Tests.dll;"  />
     </ItemGroup>
     <NUnitTeamCity Assemblies="@(TestAssemblies)" ExcludeCategory="SkipOnTeamCity" />
   </Target>
@@ -73,7 +72,7 @@
     <!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
      
     <Message Text="Attempting rsync of myWorkSafeDownloadPointers.htm" Importance="high"/>
-    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/myWorkSafeDownloadPointers.htm" bob@saymore.palaso.org:/var/www/virtual/palaso.org/saymore/htdocs/downloads/myWorkSafeDownloadPointers.htm' /> 
+    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/myWorkSafeDownloadPointers.htm" bob@saymore.palaso.org:/var/www/virtual/palaso.org/saymore/htdocs/files/myWorkSafeDownloadPointers.htm' /> 
   </Target>
   
 
@@ -81,7 +80,7 @@
   <Target Name="Upload" DependsOnTargets="VersionNumbers; Installer" >
     <Message Text="Attempting rsync of myWorkSafeInstaller.$(Version).msi" Importance="high"/>
 
-    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/myWorkSafeInstaller.$(Version).msi" bob@saymore.palaso.org:/var/www/virtual/palaso.org/saymore/htdocs/downloads/myWorkSafeInstaller.$(Version).msi' /> 
+    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/myWorkSafeInstaller.$(Version).msi" bob@saymore.palaso.org:/var/www/virtual/palaso.org/saymore/htdocs/files/myWorkSafeInstaller.$(Version).msi' /> 
 
     <CallTarget Targets ='MakeDownloadPointers'/>
   </Target>
