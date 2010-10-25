@@ -278,6 +278,28 @@ namespace WorkSafe.Tests
 			}
 		}
 
+        [TestAttribute]
+        public void Run_FileExtenstionExcluded_IsSkipped()
+        {
+            using (var from = new TemporaryFolder("synctest_source"))
+            using (var to = new TemporaryFolder("synctest_dest"))
+            {
+                 File.WriteAllText(from.Combine("one.txt"), "Blah blah");
+                var source = new RawDirectoryGroup("1", from.Path, null, null);
+                source.Filter.FileNameExcludes.Add("*.txt");
+
+                var groups = new List<FileGroup>(new[] { source });
+                var progress = new StringBuilderProgress() { ShowVerbose = true };
+                var sync = new MirrorController(to.Path, groups, 100, progress);
+                sync.Run();
+
+                AssertFileDoesNotExist(sync, source, to, "one.txt");
+                // we don't get this progress yet Assert.That(progress.Text.ToLower().Contains("skip"));
+                Assert.AreEqual(0, source.NewFileCount);
+                Assert.AreEqual(0, source.UpdateFileCount);
+                Assert.AreEqual(0, source.DeleteFileCount);
+            }
+        }
 
 		private void AssertFileDoesNotExist(MirrorController controller, RawDirectoryGroup source, TemporaryFolder destFolder, string fileName)
 		{

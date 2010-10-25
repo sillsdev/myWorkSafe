@@ -138,6 +138,10 @@ namespace myWorkSafe.Groups
 				if(Filter.SubdirectoryExcludes.Any(s => s.ToLower() == part.ToLower()))
 					return true;
 			}
+
+            if (Filter.FileNameExcludes.Any(pattern => parts.Last().EndsWith(pattern.Replace("*.",""))))
+                return true;
+
 			return false;
 		}
 	}
