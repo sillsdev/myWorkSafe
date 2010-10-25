@@ -15,7 +15,7 @@ namespace myWorkSafe
 		private void InfoWindow_Load(object sender, EventArgs e)
 		{
 			Activate(); //bring to front
-			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "about.htm");
+			var path = FileLocator.GetFileDistributedWithApplication( "about.htm");
 			_webBrowser.Navigate(path);
 
 		}
