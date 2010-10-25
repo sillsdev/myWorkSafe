@@ -34,7 +34,7 @@ namespace myWorkSafe
 				var webBrowser = new WebBrowser();
 				webBrowser.Dock = DockStyle.Fill;
 				_aboutPage.Controls.Add(webBrowser);
-				var path =FileLocator.GetFileDistributedWithApplication("distfiles","about.htm");
+				var path =FileLocator.GetFileDistributedWithApplication("about.htm");
 				webBrowser.Navigate(path);
 			}
 		}

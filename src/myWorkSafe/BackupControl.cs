@@ -116,7 +116,7 @@ namespace myWorkSafe
 
 		private void ReadInGroups(string destinationFolderPath)
 		{
-			var path = FileLocator.GetFileDistributedWithApplication("distfiles", "myWorkSafe.ini");
+			var path = FileLocator.GetFileDistributedWithApplication("myWorkSafe.ini");
 			_groups = new List<FileGroup>();
 			var factoryGroupsReader = new GroupIniFileReader(path);
 			factoryGroupsReader.CreateGroups(_groups);

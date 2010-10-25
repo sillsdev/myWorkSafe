@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Dolinay;
 using Localization;
 using myWorkSafe.Properties;
+using Palaso.Reporting;
 using Palaso.UsbDrive;
 
 
@@ -62,11 +63,6 @@ namespace myWorkSafe
 				trayIcon.ContextMenu = trayMenu;
 				trayIcon.Visible = true;
 				trayIcon.MouseClick += new MouseEventHandler(trayIcon_MouseClick);
-//
-//
-				DoTestRun();
-				return;
-
 
 				detector.DeviceArrived += new DriveDetectorEventHandler(OnDeviceArrived);
 				Application.Idle += new EventHandler(Application_Idle);
@@ -126,7 +122,8 @@ namespace myWorkSafe
 					long freeSpaceInKilobytes = (long) (drive.AvailableFreeSpace/1024);
 					string destinationDeviceRoot = drive.RootDirectory.ToString();
 					var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes, progress);
-					using (var form = new MainWindow(backupControl, progress))
+                    UsageReporter.ReportLaunchesAsync(); 
+                    using (var form = new MainWindow(backupControl, progress))
 					{
 						form.ShowDialog();
 					}
@@ -184,9 +181,11 @@ namespace myWorkSafe
 
 		private static void SetUpErrorHandling()
 		{
-			Palaso.Reporting.ErrorReport.AddProperty("EmailAddress", "hattonjohn@gmail.com");
+            ErrorReport.EmailAddress = "hide@gmail.org".Replace("hide", "hattonjohn");
 			Palaso.Reporting.ErrorReport.AddStandardProperties();
 			Palaso.Reporting.ExceptionHandler.Init();
+
+            //Note: we're going to do this when the app window opens, rather than at start up.  UsageReporter.ReportLaunchesAsync();
 		}
 	}
 }
