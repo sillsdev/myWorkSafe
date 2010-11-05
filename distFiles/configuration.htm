@@ -1,4 +1,12 @@
 <html>
+<head>
+    <style type="text/css">
+        .style2
+        {
+            font-family: "Courier New", Courier, monospace;
+        }
+    </style>
+</head>
 <body>
 <font face="Segoe UI">
 <h3>Customization</h3>
@@ -46,23 +54,24 @@
 
 <div>&#160;</div>
 
-<div><font size="2" face="Courier New">#I never would put something I want to backup on the desktop. 
-    <br /></font><font size="2" face="Courier New">[Desktop] 
-    <br />skip </font></div>
-
-<p><font size="2" face="Courier New">#My machine is loaded with other people’s data, but this language 
-    <br />#</font><font size="2" face="Courier New">is one we actually work in, so I want to give it priority 
-    <br /></font><font size="2" face="Courier New">[EdoloData] 
-    <br />rootFolder = $MyDocuments$ /LanguageData/Edolo </font></p>
-
-<p><font size="2" face="Courier New">#I keep my </font><font size="2" face="Courier New">WeSay</font><font size="2" face="Courier New"> folder somewhere special</font></p>
-<font size="2" face="Courier"><font face="Courier New">[WeSay] 
-    <br />rootFolder=c:\dev\WeSayProjects</font> 
-
-  <br /></font>
-
-<p>
-  <br /></p>
+<div><font size="2" class="style2">#I never would put something I want to backup on the desktop. 
+    <br />[Desktop] 
+    <br />skip 
+    <br />#My machine is loaded with other people’s data, but this language 
+    <br />#is one we actually work in, so I want to give it priority 
+    <br />
+    <br />[EdoloData] 
+    <br />rootFolder = $MyDocuments$ /LanguageData/Edolo 
+    <br />
+    <br />
+    #I keep my WeSay folder somewhere special</span>
+        class="style2"><br />
+    [WeSay] 
+    <br />rootFolder=c:\dev\WeSayProjects 
+    <br />#I want to backup FieldWorks version 7 data, by looking in the Registry
+    <br />[FieldWorks7]
+    <br />rootFolder=HKEY_LOCAL_MACHINE\SOFTWARE\SIL\FieldWorks\7.0,ProjectsDir
+  <br /></font></div>
 
 <p>So far, we’ve seen two levels of settings: one comes with the program, and another can override that a user with special needs.&#160; There is a third level: drive-specific settings.&#160; For example, you could have one drive for data, and another for videos.&#160; In my case, I like to get a very small amount of data backed up constantly: my current list of passwords/registrations.&#160; To do that, place a file named, again, “myWorkSafe.ini” inside the folder used 
     for backup on the device; in my case, “f:/myWorkSafe-John-THINKPAD”. Here’s the contents:</p>
@@ -77,5 +86,5 @@
 
 <h3>Summary</h3>
 
-<p>If you find yourself frequently customizing colleague’s myWorkSafe’s, something is wrong.&#160; The point is to have enough smarts and domain knowledge to make this unnecessary.&#160; But these configuration abilities should be enough to make the program work for some of us geeks, and we need that to happen, so that myWorkSafe gets a lot of testing.</p>
+<p>If you find yourself frequently customizing colleague’s myWorkSafe’s, <strong>something is wrong</strong>.&#160; The point is to have enough smarts and domain knowledge to make this unnecessary.&#160; But these configuration abilities should be enough to make the program work for some of us geeks, and we need that to happen, so that myWorkSafe gets a lot of testing.</p>
 </font></body></html>
