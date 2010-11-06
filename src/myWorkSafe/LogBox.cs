@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace myWorkSafe
@@ -11,7 +13,14 @@ namespace myWorkSafe
     	public LogBox()
         {
             InitializeComponent();
+
+            //On some machines (winXP?) we get in trouble if we don't make sure these boxes are visible before
+            //they get invoked() to. 
+            _box.CreateControl();
+    	    _verboseBox.Visible = true;
+            _verboseBox.CreateControl();
         }
+
 
         public void WriteStatus(string message, params object[] args)
         {
@@ -27,14 +36,14 @@ namespace myWorkSafe
         {
 //            try
 //            {
-                _box.Invoke(new Action(() =>
-                                      {
+                 SafeInvoke(_box,new Action(() =>
+                 {
                                 _box.SelectionStart = _box.Text.Length;
                                 _box.SelectionColor = color;
                                 _box.AppendText(String.Format(message + Environment.NewLine, args));
                                        }));
 
-                _verboseBox.Invoke(new Action(() =>
+                SafeInvoke(_verboseBox,new Action(() =>
                 {
                     _verboseBox.SelectionStart = _verboseBox.Text.Length;
                     _verboseBox.SelectionColor = color;
@@ -80,7 +89,7 @@ namespace myWorkSafe
         public void WriteError(string message, params object[] args)
         {
             Write(Color.Red,Environment.NewLine+ "Error:" + message, args);
-			_reportProblemLink.Invoke(new Action(() =>
+			SafeInvoke(_reportProblemLink, new Action(() =>
 			{
 				_reportProblemLink.Visible = true;
 			}));
@@ -93,10 +102,27 @@ namespace myWorkSafe
 			get;
 			set;
 		}
-		
+
+        /// <summary>
+        /// This is an attempt to avoid a mysterious crash (B.Waters) where the invoke was happening before the window's handle had been created
+        /// </summary>
+		public void SafeInvoke(Control box, Action action)
+		{
+
+
+                if (!box.IsHandleCreated)
+                {
+                    Debug.Fail("In release build, would have given up writing this message, because the destination control isn't built yet.");
+                    return;
+                }
+                
+            
+		    box.Invoke(action);
+		}
+
         public void WriteVerbose(string message, params object[] args)
         {
-            _verboseBox.Invoke(new Action(() =>
+            SafeInvoke(_verboseBox,new Action(() =>
             {
                 _verboseBox.SelectionStart = _verboseBox.Text.Length;
                 _verboseBox.SelectionColor = Color.DarkGray;

@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
 using myWorkSafe.Usb;
@@ -43,6 +44,7 @@ namespace myWorkSafe
 		{
 			//BringToFront();
 			Activate();
+            _logBox.Show();
 		}
 
 		private void _errorWatchTimer_Tick(object sender, System.EventArgs e)
@@ -55,6 +57,14 @@ namespace myWorkSafe
 
 			}
 		}
+
+        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Pause && (e.Alt))
+            {
+                throw new ApplicationException("User-invoked test crash.");
+            }
+        }
 
 
 	}
