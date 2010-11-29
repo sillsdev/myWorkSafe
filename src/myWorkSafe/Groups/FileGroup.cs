@@ -139,7 +139,7 @@ namespace myWorkSafe.Groups
 					return true;
 			}
 
-            if (Filter.FileNameExcludes.Any(pattern => parts.Last().EndsWith(pattern.Replace("*.",""))))
+            if (Filter.FileNameExcludes.Any(pattern => parts.Last().ToLower().EndsWith(pattern.Replace("*.","").ToLower())))
                 return true;
 
 			return false;
