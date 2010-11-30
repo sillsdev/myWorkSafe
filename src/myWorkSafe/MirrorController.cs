@@ -136,7 +136,6 @@ namespace myWorkSafe
 				return;
 			}
 
-
 			switch (args.Situation)
 			{
 				case MirrorSituation.FileIsSame:
@@ -227,93 +226,97 @@ namespace myWorkSafe
 		public void Run()
 		{
 			_cancelRequested = false;
-
 			_alreadyAccountedFor = new HashSet<string>();
 
-			try
-			{
-				foreach (var group in _groups)
-				{
-					if (_cancelRequested)
-					{
-						break;
-					}
-					_currentGroup = group; //used by callbacks
+            try
+            {
+                foreach (var group in _groups)
+                {
+                    if (_cancelRequested)
+                    {
+                        break;
+                    }
+                    _currentGroup = group; //used by callbacks
+                    try
+                    {
+                        if (group.Disposition == FileGroup.DispositionChoice.Hide)
+                        {
+                            _progress.WriteMessage("Skipping group {0}", group.Name);
+                            continue;
+                        }
+                        if (_gotIOExceptionProbablyDiskFull)
+                        {
+                            group.Disposition = FileGroup.DispositionChoice.NotEnoughRoom;
+                            continue;
+                        }
 
-					if (group.Disposition == FileGroup.DispositionChoice.Hide)
-					{
-						_progress.WriteMessage("Skipping group {0}", group.Name);
-						continue;
-					}
-					if (_gotIOExceptionProbablyDiskFull)
-					{
-						group.Disposition = FileGroup.DispositionChoice.NotEnoughRoom;
-						continue;
-					}
+                        _progress.WriteMessage("Beginning group {0}", group.Name);
+                        if (group.Disposition == FileGroup.DispositionChoice.NotEnoughRoom)
+                            continue;
 
-					_progress.WriteMessage("Beginning group {0}", group.Name);
-
-
-					if (group.Disposition == FileGroup.DispositionChoice.NotEnoughRoom)
-						continue;
-
-					group.ClearStatistics();
-					group.Disposition = FileGroup.DispositionChoice.Synchronizing;
-					InvokeGroupProgress();
-
-					using (_engine = new MirrorMaker())
-					{
-						try
-						{
-
-							_engine.StartingDirectory += OnStartingDirectory;
-							_engine.StartingFile += OnStartingFile;
-							_engine.ItemHandlingError += OnItemHandlingError;
-
-							string destinationSubFolder = group.GetDestinationSubFolder(DestinationRootForThisUser);
-
-							_progress.WriteVerbose("[{0}] Source={1}", group.Name, group.RootFolder);
-							_progress.WriteVerbose("[{0}] Destination={1}", group.Name, destinationSubFolder);
-
-							//_engine.PreviewMode = false;
-							_engine.Run(group.RootFolder, destinationSubFolder);
-							if (_engine.WasCancelled)
-							{
-								_currentGroup.Disposition = FileGroup.DispositionChoice.Cancelled;
-							}
-							else
-							{
-								group.Disposition = FileGroup.DispositionChoice.WasBackedUp;
-							}
-						}
-						catch (IOException error)
-						{
-							_gotIOExceptionProbablyDiskFull = true;
-							//enhance: we could clarify that it was partially backed up
-							_currentGroup.Disposition = FileGroup.DispositionChoice.NotEnoughRoom;
-							_progress.WriteWarning(error.Message);
-						}
-
-						if (GroupProgress != null)
-						{
-							GroupProgress.Invoke();
-						}
-					}
-					InvokeGroupProgress();
-				}
-				_engine = null;
-			}
-			catch (Exception error)
-			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, something didn't work.");
-			}
-			finally
-			{
-				CleanupTempFiles();
-			}
+                        group.ClearStatistics();
+                        group.Disposition = FileGroup.DispositionChoice.Synchronizing;
+                        InvokeGroupProgress();
+                        MirrorGroup(group);
+                        InvokeGroupProgress();
+                    }
+                    catch (Exception error)
+                    {
+                        _progress.WriteError("Exception processing group: " + group.Name);
+                        _progress.WriteException(error);
+                    }
+                    _engine = null;
+                    _progress.WriteMessage("Controller finished normally.");
+                }
+            }
+            finally
+            {
+                CleanupTempFiles();
+            }		
 		}
 
-		void OnItemHandlingError(object sender, ItemHandlingErrorArgs e)
+	    private void MirrorGroup(FileGroup group)
+	    {
+	        using (_engine = new MirrorMaker())
+	        {
+	            try
+	            {
+	                _engine.StartingDirectory += OnStartingDirectory;
+	                _engine.StartingFile += OnStartingFile;
+	                _engine.ItemHandlingError += OnItemHandlingError;
+
+	                string destinationSubFolder = group.GetDestinationSubFolder(DestinationRootForThisUser);
+
+	                _progress.WriteVerbose("[{0}] Source={1}", group.Name, group.RootFolder);
+	                _progress.WriteVerbose("[{0}] Destination={1}", group.Name, destinationSubFolder);
+
+	                //_engine.PreviewMode = false;
+	                _engine.Run(group.RootFolder, destinationSubFolder);
+	                if (_engine.WasCancelled)
+	                {
+	                    _currentGroup.Disposition = FileGroup.DispositionChoice.Cancelled;
+	                }
+	                else
+	                {
+	                    group.Disposition = FileGroup.DispositionChoice.WasBackedUp;
+	                }
+	            }
+	            catch (IOException error)
+	            {
+	                _gotIOExceptionProbablyDiskFull = true;
+	                //enhance: we could clarify that it was partially backed up
+	                _currentGroup.Disposition = FileGroup.DispositionChoice.NotEnoughRoom;
+	                _progress.WriteWarning(error.Message);
+	            }
+
+	            if (GroupProgress != null)
+	            {
+	                GroupProgress.Invoke();
+	            }
+	        }
+	    }
+
+	    void OnItemHandlingError(object sender, ItemHandlingErrorArgs e)
 		{
 				//todo: make work for non-english
 				if(e.Exception.Message.Contains("space")
@@ -414,28 +417,37 @@ namespace myWorkSafe
 
 		private bool ShouldSkip(string mode, MirrorEventArgs args)
 		{
-			if (args.Situation == MirrorSituation.DirectoryMissing)
-			{
-				if (_currentGroup.ShouldSkipSubDirectory(args.Path))
-				{
-					_progress.WriteVerbose("{0} [{1}] Skipping Folder {2}", mode, _currentGroup.Name, args.Path);
-					return true;
-				}
-				//TODO: what about if it is not missing, but should be removed ?
-				return false;
-			}
+            try
+            {
+                if (args.Situation == MirrorSituation.DirectoryMissing)
+                {
+                    if (_currentGroup.ShouldSkipSubDirectory(args.Path))
+                    {
+                        _progress.WriteVerbose("{0} [{1}] Skipping Folder {2}", mode, _currentGroup.Name, args.Path);
+                        return true;
+                    }
+                    //TODO: what about if it is not missing, but should be removed ?
+                    return false;
+                }
 
-			if (_alreadyAccountedFor.Contains(args.Path))
-			{
-				_progress.WriteVerbose("[{0}] Skipping new file because it was already backed up by a previous group:  {1}", _currentGroup.NewFileCount, args.Path);
-				return true;
-			}
-			if (_currentGroup.ShouldSkipFile(args.Path))
-			{
-				_progress.WriteVerbose("[{0}] Skipping new file: {1}", _currentGroup.Name, args.Path);
-				return true;
-			}
-			return false;
+                if (_alreadyAccountedFor.Contains(args.Path))
+                {
+                    _progress.WriteVerbose(
+                        "[{0}] Skipping new file because it was already backed up by a previous group:  {1}",
+                        _currentGroup.NewFileCount, args.Path);
+                    return true;
+                }
+                if (_currentGroup.ShouldSkipFile(args.Path))
+                {
+                    _progress.WriteVerbose("[{0}] Skipping new file: {1}", _currentGroup.Name, args.Path);
+                    return true;
+                }
+            }
+            catch(Exception e)
+            {
+                _progress.WriteException(e);
+            }
+		    return false;
 		}
 
 

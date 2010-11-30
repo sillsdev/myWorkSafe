@@ -102,7 +102,19 @@ namespace myWorkSafe
 		static void HandleDeviceArrived(string driveLetter)
 		{
 			MultiProgress progress= new MultiProgress(new IProgress[]{});
-			List<UsbDriveInfo> foundDrives = GetFoundDrives();
+		    FileLogProgress fileLogProgress=null;
+            try
+            {
+                var path = Path.Combine(Path.GetTempPath(), "myWorkSafeLog.txt");
+                fileLogProgress = new FileLogProgress(path);
+                progress.Add(fileLogProgress);
+            }
+            catch (Exception)
+            {
+                //don't want to not backup if something goes wrong creating the log
+            }
+
+		    List<UsbDriveInfo> foundDrives = GetFoundDrives();
 			var drive = foundDrives.FirstOrDefault(d => d.RootDirectory.ToString() == driveLetter);
 			if (drive == null || !drive.IsReady)
 				return;
@@ -126,6 +138,10 @@ namespace myWorkSafe
                     using (var form = new MainWindow(backupControl, progress))
 					{
 						form.ShowDialog();
+                        if(fileLogProgress!=null)
+                        {
+                            fileLogProgress.WriteMessage("Finished showing Dialog");
+                        }
 					}
 				}
 			}
