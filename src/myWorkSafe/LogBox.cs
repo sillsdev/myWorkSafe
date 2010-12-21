@@ -112,7 +112,7 @@ namespace myWorkSafe
 
                 if (!box.IsHandleCreated)
                 {
-                    Debug.Fail("In release build, would have given up writing this message, because the destination control isn't built yet.");
+                    //Debug.Fail("In release build, would have given up writing this message, because the destination control isn't built yet.");
                     return;
                 }
                 
