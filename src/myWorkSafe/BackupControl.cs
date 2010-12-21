@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Media;
@@ -66,8 +67,8 @@ namespace myWorkSafe
 			//driveDetector.DeviceArrived += new DriveDetectorEventHandler(OnDriveArrived);
 
 			//TODO: see if DeviceRemoved could be used instaead of DeviceSomethingHappened
-			//driveDetector.DeviceRemoved += new DriveDetectorEventHandler(OnDriveRemoved);
-			_driveDetector.DeviceSomethingHappened += new DriveDetectorEventHandler(OnDriveSomething);
+            _driveDetector.DeviceRemoved += new DriveDetectorEventHandler(OnDriveSomething);
+			//_driveDetector.DeviceSomethingHappened += new DriveDetectorEventHandler(OnDriveSomething);
 			//driveDetector.QueryRemove += new DriveDetectorEventHandler(OnQueryRemove);
 
 
@@ -155,11 +156,12 @@ namespace myWorkSafe
 		private void OnDriveSomething(object sender, DriveDetectorEventArgs e)
 		{
 			//we can't actually get the info for what the drive used to be... ///if (e.Drive == _destinationDeviceRoot)
-
+            Debug.Fail("In release build, would be closing.");
 			switch (CurrentState)
 			{
 				case State.Preparing:
 				case State.BackingUp:
+			        Progress.WriteError("Got Drive event ({0}) while preparing or backing up. Cancelling.", e.Drive);
 					OnCancelClick(this, null);
 					CloseNow();
 					break;
@@ -170,6 +172,7 @@ namespace myWorkSafe
 				case State.ReadyToBackup:
 				case State.Succeeded:
 				case State.ErrorEncountered:
+			        Progress.WriteError("Got Drive event ({0}) while in state {1}. Closing.", e.Drive, CurrentState.ToString());
 					CloseNow();
 					break;
 				default:

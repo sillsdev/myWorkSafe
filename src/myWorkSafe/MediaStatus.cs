@@ -62,10 +62,21 @@ namespace myWorkSafe
 			e.Graphics.DrawImage(pictureBox1.Image, pictureBox1.Bounds);
 			double freeFraction = (1.0 - (ExistingFillPercentage/100.0));
 			var freeSpaceHeight = freeFraction*(pictureBox1.Image.Height - (connectorHeight + 95));
-			if (PendingFillPercentage == UnknownFillPercentage)
+
+            if (PendingFillPercentage == UnknownFillPercentage)
 			{
-				e.Graphics.FillRectangle(Brushes.White, pictureBox1.Left + 6, pictureBox1.Top + connectorHeight, stickWidth - 10,
-										 (int)freeSpaceHeight);
+                {
+                    e.Graphics.FillRectangle(Brushes.White, pictureBox1.Left + 6, pictureBox1.Top + connectorHeight,
+                                             stickWidth - 10,
+                                             (int) freeSpaceHeight);
+                }
+
+                if (ExistingFillPercentage > 90)
+                {
+                     e.Graphics.FillRectangle(Brushes.Red, pictureBox1.Left + 6, (int) (pictureBox1.Top + connectorHeight + freeSpaceHeight),
+                                             stickWidth - 10,
+                                             (int) (pictureBox1.Image.Height - (pictureBox1.Top +connectorHeight + freeSpaceHeight+ 90)));              
+                }
 			}
 			else
 			{
