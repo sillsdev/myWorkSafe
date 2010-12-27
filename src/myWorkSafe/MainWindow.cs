@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using myWorkSafe.Usb;
 using Palaso.IO;
+using Palaso.Progress.LogBox;
 
 namespace myWorkSafe
 {

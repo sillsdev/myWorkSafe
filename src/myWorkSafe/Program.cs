@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Dolinay;
 using Localization;
 using myWorkSafe.Properties;
+using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.UsbDrive;
 

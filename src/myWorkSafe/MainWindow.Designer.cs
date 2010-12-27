@@ -1,4 +1,6 @@
-﻿namespace myWorkSafe
+﻿using Palaso.Progress.LogBox;
+
+namespace myWorkSafe
 {
 	partial class MainWindow
 	{
@@ -35,7 +37,7 @@
             this._logPage = new System.Windows.Forms.TabPage();
             this._aboutPage = new System.Windows.Forms.TabPage();
             this._errorWatchTimer = new System.Windows.Forms.Timer(this.components);
-            this._logBox = new myWorkSafe.LogBox();
+            this._logBox = new LogBox();
             this.tabControl1.SuspendLayout();
             this._logPage.SuspendLayout();
             this.SuspendLayout();

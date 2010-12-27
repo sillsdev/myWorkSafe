@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using myWorkSafe.Groups;
 using Palaso.Code;
+using Palaso.Progress.LogBox;
 
 namespace myWorkSafe
 {
