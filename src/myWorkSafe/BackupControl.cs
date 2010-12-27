@@ -14,6 +14,7 @@ using myWorkSafe.Groups;
 using myWorkSafe.Usb;
 using System.IO;
 using Palaso.IO;
+using Palaso.Progress.LogBox;
 
 
 namespace myWorkSafe
