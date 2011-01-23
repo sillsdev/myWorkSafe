@@ -198,7 +198,7 @@ namespace myWorkSafe
 
 		private static void SetUpErrorHandling()
 		{
-            ErrorReport.EmailAddress = "hide@gmail.org".Replace("hide", "hattonjohn");
+            ErrorReport.EmailAddress = "hide@gmail.com".Replace("hide", "hattonjohn");
 			Palaso.Reporting.ErrorReport.AddStandardProperties();
 			Palaso.Reporting.ExceptionHandler.Init();
 
