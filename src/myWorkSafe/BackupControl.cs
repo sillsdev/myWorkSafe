@@ -156,6 +156,9 @@ namespace myWorkSafe
 
 		private void OnDriveSomething(object sender, DriveDetectorEventArgs e)
 		{
+            //I think the idea here was to auto-quit if the usb is removed, but...
+
+		    return;//this was leading to a crash on XP becuase the log was going to a window that had been closed (I think)
 			//we can't actually get the info for what the drive used to be... ///if (e.Drive == _destinationDeviceRoot)
             Debug.Fail("In release build, would be closing.");
 			switch (CurrentState)
