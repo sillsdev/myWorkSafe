@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using myWorkSafe.Usb;
 using Palaso.IO;
@@ -66,6 +67,28 @@ namespace myWorkSafe
                 throw new ApplicationException("User-invoked test crash.");
             }
         }
+
+
+
+        [DllImport("user32.dll")]
+        static extern int GetForegroundWindow(); 
+
+        public bool IsActiveWindow
+        {
+            get
+            {
+                return this.Handle == (IntPtr) GetForegroundWindow();
+            }
+        }
+//
+//        private void MainWindow_Deactivate(object sender, EventArgs e)
+//        {
+//            IsActiveWindow = false;
+//        }
+//        private void MainWindow_Activated(object sender, EventArgs e)
+//        {
+//            IsActiveWindow = true;
+//        }
 
 
 	}
