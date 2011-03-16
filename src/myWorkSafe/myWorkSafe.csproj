@@ -71,6 +71,12 @@
     <Compile Include="BackupControl.Designer.cs">
       <DependentUpon>BackupControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="AllDonePopup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AllDonePopup.Designer.cs">
+      <DependentUpon>AllDonePopup.cs</DependentUpon>
+    </Compile>
     <Compile Include="MirrorController.cs" />
     <Compile Include="DirectoryScanner.cs" />
     <Compile Include="Groups\FileGroupFromIniSection.cs" />
@@ -118,6 +124,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="BackupControl.resx">
       <DependentUpon>BackupControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AllDonePopup.resx">
+      <DependentUpon>AllDonePopup.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="InfoWindow.resx">
       <DependentUpon>InfoWindow.cs</DependentUpon>

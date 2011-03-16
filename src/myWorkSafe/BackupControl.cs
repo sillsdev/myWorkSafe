@@ -263,6 +263,10 @@ namespace myWorkSafe
 					cancelButton.Visible = false;
 					closeButton.Focus();
 					Cursor = Cursors.Default;
+                    using (var player = new SoundPlayer(Properties.Resources.finished))
+                    {
+                        player.Play();
+                    }
 					break;
 				case State.Cancelled:
 					_status.Text = "Cancelled";
@@ -421,7 +425,17 @@ namespace myWorkSafe
 			else
 			{
 				ChangeState(State.Succeeded);
-				//AttemptEjectInAMoment();
+
+                if (!((MainWindow)ParentForm).IsActiveWindow)
+                {
+                    using (var dlg = new AllDonePopup())
+                    {
+                        dlg.ShowDialog();
+                        CloseNow.Invoke();
+                    }
+                }
+
+			    //AttemptEjectInAMoment();
 			}
 		}
 
