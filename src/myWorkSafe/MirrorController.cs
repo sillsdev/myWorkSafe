@@ -330,7 +330,21 @@ namespace myWorkSafe
 				}
 				try
 				{
-					_progress.WriteError("Error while processing file'{0}'. Reason={1}. Exception Follows:", e.Path, e.Exception.Message);
+                    //for some reason many systems have these bogus "my videos", "my music", etc. links
+                    //which don't actually work.
+                    if (e.Exception is UnauthorizedAccessException)
+                    {
+                        _progress.WriteWarning("Could not access a directory or file: '{0}'. Reason={1}. Exception Follows:", e.Path, e.Exception.Message);
+                        return;
+                    } 
+/*                    if(e.Exception is AccessViolationException)
+                    {
+                        _progress.WriteWarning("Could not access a directory or file: '{0}'. Reason={1}. Exception Follows:", e.Path, e.Exception.Message);
+                        return;
+                    }
+
+  */                  
+                    _progress.WriteError("Error while processing file'{0}'. Reason={1}. Exception Follows:", e.Path, e.Exception.Message);
 					if(e.Exception !=null)
 						_progress.WriteException(e.Exception);
 
