@@ -6,6 +6,7 @@ using System.Linq;
 using myWorkSafe.Groups;
 using Palaso.Code;
 using Palaso.Progress.LogBox;
+using Palaso.Reporting;
 
 namespace myWorkSafe
 {
@@ -266,7 +267,7 @@ namespace myWorkSafe
                     {
                         _progress.WriteError("Exception processing group: " + group.Name);
                         _progress.WriteException(error);
-                        Program.Usage.ReportException(false,"backup",error);
+                        UsageReporter.ReportException(false,"backup",error);
                     }
                     _engine = null;
                     _progress.WriteMessage("Controller finished normally.");
@@ -274,7 +275,7 @@ namespace myWorkSafe
                     //we don't want to send, say, 100 errors just because the drive is full. Let's just send one.
                     if(_firstErrorMessage!=null)
                     {
-                        Program.Usage.SendEvent("Backup", "file error(just the 1st one)", "file error(just the 1st one)", _firstErrorMessage, 0);
+                        UsageReporter.SendEvent("Backup", "file error(just the 1st one)", "file error(just the 1st one)", _firstErrorMessage, 0);
                     }
 
           

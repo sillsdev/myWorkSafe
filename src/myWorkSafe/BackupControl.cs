@@ -15,6 +15,7 @@ using myWorkSafe.Usb;
 using System.IO;
 using Palaso.IO;
 using Palaso.Progress.LogBox;
+using Palaso.Reporting;
 
 
 namespace myWorkSafe
@@ -535,7 +536,7 @@ namespace myWorkSafe
 				_backupWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler((x, y) => ChangeState(State.Cancelled));
 				_backupWorker.CancelAsync();
 			}
-            Program.Usage.SendEvent("Backup","Command","CancelBackup","",0);
+            UsageReporter.SendEvent("Backup","Command","CancelBackup","",0);
 		}
 
 

@@ -163,7 +163,7 @@ namespace myWorkSafe
 	        string destinationDeviceRoot = drive.RootDirectory.ToString();
 	        var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes, progress);
                     
-	        Usage.SendNavigationNotice("StartBackup");
+	        UsageReporter.SendNavigationNotice("StartBackup");
 	        Settings.Default.Save();
             
 	        using (var form = new MainWindow(backupControl, progress))
@@ -247,8 +247,7 @@ namespace myWorkSafe
                 Settings.Default.Reporting = new ReportingSettings();
                 Settings.Default.Save();
             }
-            Usage = new UsageReporter(Settings.Default.Reporting);
-            Usage.BeginGoogleAnalytics("myWorkSafe.palaso.org", "UA-22170471-1");     
+            UsageReporter.Init(Settings.Default.Reporting, "myWorkSafe.palaso.org", "UA-22170471-1");     
 		}
 	}
 }
