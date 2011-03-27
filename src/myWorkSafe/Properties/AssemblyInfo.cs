@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("myWorkSafe")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("SIL International")]
+[assembly: AssemblyCompany("SIL")]
 [assembly: AssemblyProduct("myWorkSafe")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]

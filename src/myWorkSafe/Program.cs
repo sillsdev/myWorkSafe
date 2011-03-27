@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using Dolinay;
+using Dolinay; //drive detector
 using Localization;
 using myWorkSafe.Properties;
 using Palaso.Progress.LogBox;
@@ -18,6 +17,7 @@ namespace myWorkSafe
 	static class Program
 	{
 		private static string _pendingDriveArrival;
+	    public static UsageReporter Usage;
 
 		[STAThread]
 		static void Main(string[] args)
@@ -38,14 +38,27 @@ namespace myWorkSafe
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
+            //bring in settings from any previous version
+            if (Settings.Default.NeedUpgrade)
+            {
+                //see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
+                Settings.Default.Upgrade();
+                Settings.Default.NeedUpgrade = false;
+                Settings.Default.Save();
+            }
+
+
 			SetUpErrorHandling();
+		    SetUpReporting();
+            Settings.Default.Save();
 
 			LocalizationManager.Enabled = true;
 			LocalizationManager.Initialize();
 			//LocalizationManager.UILangId = "fr";
 
 			var trayMenu = new ContextMenu();
-			trayMenu.MenuItems.Add("Exit", OnExit);
+            trayMenu.MenuItems.Add("Start Backup", OnStartViaMenu); 
+            trayMenu.MenuItems.Add("Exit", OnExit);
 
 			if(args.Length == 1 && args[0].Trim()=="afterInstall")
 			{
@@ -73,7 +86,10 @@ namespace myWorkSafe
 
 		static void trayIcon_MouseClick(object sender, MouseEventArgs e)
 		{
-			if(DialogResult.Abort == new InfoWindow().ShowDialog())
+            if (e.Button != MouseButtons.Left)
+                return;//don't do this when they use the menu
+
+		    if(DialogResult.Abort == new InfoWindow().ShowDialog())
 				Application.Exit();
 		}
 
@@ -131,19 +147,7 @@ namespace myWorkSafe
 				//based on that popup, it might now pass this test:
 				if (IsAKnownBackupDrive(drive))
 				{
-					long totalSpaceInKilobytes = (long) (drive.TotalSize/1024);
-					long freeSpaceInKilobytes = (long) (drive.AvailableFreeSpace/1024);
-					string destinationDeviceRoot = drive.RootDirectory.ToString();
-					var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes, progress);
-                    UsageReporter.ReportLaunchesAsync(); 
-                    using (var form = new MainWindow(backupControl, progress))
-					{
-						form.ShowDialog();
-                        if(fileLogProgress!=null)
-                        {
-                            fileLogProgress.WriteMessage("Finished showing Dialog");
-                        }
-					}
+					LaunchBackup(progress, fileLogProgress, drive);
 				}
 			}
 			catch (Exception error)
@@ -152,7 +156,27 @@ namespace myWorkSafe
 			}
 		}
 
-		private static bool IsAKnownBackupDrive(UsbDriveInfo drive)
+	    private static void LaunchBackup(IProgress progress, IProgress fileLogProgress, UsbDriveInfo drive)
+	    {
+	        long totalSpaceInKilobytes = (long) (drive.TotalSize/1024);
+	        long freeSpaceInKilobytes = (long) (drive.AvailableFreeSpace/1024);
+	        string destinationDeviceRoot = drive.RootDirectory.ToString();
+	        var backupControl = new BackupControl(destinationDeviceRoot, freeSpaceInKilobytes, totalSpaceInKilobytes, progress);
+                    
+	        Usage.SendNavigationNotice("StartBackup");
+	        Settings.Default.Save();
+            
+	        using (var form = new MainWindow(backupControl, progress))
+	        {
+	            form.ShowDialog();
+	            if(fileLogProgress!=null)
+	            {
+	                fileLogProgress.WriteMessage("Finished showing Dialog");
+	            }
+	        }
+	    }
+        
+	    private static bool IsAKnownBackupDrive(UsbDriveInfo drive)
 		{
 			return Directory.Exists(BackupControl.GetDestinationFolderPath(drive.RootDirectory.ToString()));
 		}
@@ -171,8 +195,21 @@ namespace myWorkSafe
 			return foundDrives;
 		}
 
+        private static void OnStartViaMenu(object sender, EventArgs e)
+        {
 
-		private static void OnExit(object sender, EventArgs e)
+            var drives = UsbDriveInfo.GetDrives();
+            if (drives.Count == 0)
+            {
+                Palaso.Reporting.ErrorReport.NotifyUserOfProblem("No USB drives found");
+                return;
+            }
+            LaunchBackup(new NullProgress(), new NullProgress(), drives[0]);
+            return;
+
+        }
+
+	    private static void OnExit(object sender, EventArgs e)
 	        {
 		 		Application.Exit();
 	        }
@@ -198,11 +235,20 @@ namespace myWorkSafe
 
 		private static void SetUpErrorHandling()
 		{
-            ErrorReport.EmailAddress = "hide@gmail.com".Replace("hide", "hattonjohn");
-			Palaso.Reporting.ErrorReport.AddStandardProperties();
-			Palaso.Reporting.ExceptionHandler.Init();
+		    ErrorReport.EmailAddress = "hide@gmail.com".Replace("hide", "hattonjohn");
+		    ErrorReport.AddStandardProperties();
+		    ExceptionHandler.Init();
+		}
 
-            //Note: we're going to do this when the app window opens, rather than at start up.  UsageReporter.ReportLaunchesAsync();
+        private static void SetUpReporting()
+        {
+            if(Settings.Default.Reporting == null)
+            {
+                Settings.Default.Reporting = new ReportingSettings();
+                Settings.Default.Save();
+            }
+            Usage = new UsageReporter(Settings.Default.Reporting);
+            Usage.BeginGoogleAnalytics("myWorkSafe.palaso.org", "UA-22170471-1");     
 		}
 	}
 }

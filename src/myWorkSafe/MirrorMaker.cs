@@ -166,6 +166,10 @@ namespace myWorkSafe
 			}
 		}
 
+	    public int DeletedCount;
+        public int UpdatedCount;
+        public int CreatedCount;
+
 		private void HandleFile(string source, string dest)
 		{
 			MirrorAction action = GetActionForFile(source);
@@ -177,18 +181,22 @@ namespace myWorkSafe
 						if (File.Exists(dest))
 						{
 							File.Delete(dest);
+						    ++DeletedCount;
 						}
 						break;
 					case MirrorAction.DoNothing:
 					case MirrorAction.Skip:
 						break;
 					case MirrorAction.Create:
-					case MirrorAction.Update:
 						if (File.Exists(dest))
 						{
 							File.Delete(dest);
 						}
 						File.Copy(source, dest);
+                        ++CreatedCount;
+				        break;
+					case MirrorAction.Update:
+				        ++UpdatedCount;
 						//File.SetLastWriteTimeUtc(dest, File.GetLastWriteTimeUtc(source));
 						//this fails!
 						//Debug.Assert(File.GetLastWriteTimeUtc(dest) == File.GetLastWriteTimeUtc(source));

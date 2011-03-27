@@ -11,7 +11,7 @@ namespace myWorkSafe
 {
 	public partial class MainWindow : Form
 	{
-		public MainWindow(BackupControl backupControl, MultiProgress progress)
+		public MainWindow(BackupControl backupControl, IProgress progress)
 		{
 			//Font = SystemFonts.MessageBoxFont;
 			InitializeComponent();
@@ -19,7 +19,10 @@ namespace myWorkSafe
 			backupControl.Dock = DockStyle.Fill;
 			backupControl.CloseNow += () => Close();
 			_backupPage.Controls.Add(backupControl);
-			progress.Add(_logBox);
+
+		    var muliprogress = progress as MultiProgress;
+            if(muliprogress !=null)
+                muliprogress.Add(_logBox);
 		}
 
 		private void SetWindowText()
