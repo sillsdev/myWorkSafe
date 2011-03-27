@@ -25,7 +25,7 @@ namespace myWorkSafe
 		private int _errorCountSinceLastSuccess;
 		private bool _gotIOExceptionProbablyDiskFull;
 		private const int MaxErrorsBeforeAbort = 10;
-
+        private string _firstErrorMessage = null;
 
 		public MirrorController(string destinationFolderPath, IEnumerable<FileGroup> groups, long totalAvailableOnDeviceInKilobytes, IProgress progress)
 		{
@@ -94,6 +94,7 @@ namespace myWorkSafe
 					//than the first one which was too big. Or algorithm doesn't try
 					//to fit it in.
 					group.Disposition = FileGroup.DispositionChoice.NotEnoughRoom;
+                    
 					InvokeGroupProgress();
 					continue;
 				}
@@ -123,7 +124,7 @@ namespace myWorkSafe
 
 					InvokeGroupProgress();
 					_files = 0;
-				}
+                }
 				_engine = null;
 			}
 		}
@@ -265,10 +266,24 @@ namespace myWorkSafe
                     {
                         _progress.WriteError("Exception processing group: " + group.Name);
                         _progress.WriteException(error);
+                        Program.Usage.ReportException(false,"backup",error);
                     }
                     _engine = null;
                     _progress.WriteMessage("Controller finished normally.");
+                    
+                    //we don't want to send, say, 100 errors just because the drive is full. Let's just send one.
+                    if(_firstErrorMessage!=null)
+                    {
+                        Program.Usage.SendEvent("Backup", "file error(just the 1st one)", "file error(just the 1st one)", _firstErrorMessage, 0);
+                    }
+
+          
                 }
+//                Program.ReportToGoogleAnalytics("FinishedBackup", "filesBackedUp", _totalFilesThatWillBeBackedUp);
+                /*                    Program.ReportToGoogleAnalytics("finishedUpdated","updated", _engine.UpdatedCount);
+                    Program.ReportToGoogleAnalytics("finishedCreated", "created", _engine.CreatedCount);
+                    Program.ReportToGoogleAnalytics("finishedDeleted", "deleted", _engine.DeletedCount);
+                 */
             }
             finally
             {
@@ -319,7 +334,7 @@ namespace myWorkSafe
 
 	    void OnItemHandlingError(object sender, ItemHandlingErrorArgs e)
 		{
-				//todo: make work for non-english
+	            //todo: make work for non-english
 				if(e.Exception.Message.Contains("space")
 					|| e.Exception.Message.Contains("full"))
 				{
@@ -343,8 +358,13 @@ namespace myWorkSafe
                         return;
                     }
 
-  */                  
-                    _progress.WriteError("Error while processing file'{0}'. Reason={1}. Exception Follows:", e.Path, e.Exception.Message);
+  */
+				    var msg = string.Format("Error while processing file'{0}'. Reason={1}. Exception Follows:", e.Path,
+				                            e.Exception.Message);
+                    _progress.WriteError(msg);
+				    if(_firstErrorMessage!=null)
+                        _firstErrorMessage = msg;
+
 					if(e.Exception !=null)
 						_progress.WriteException(e.Exception);
 

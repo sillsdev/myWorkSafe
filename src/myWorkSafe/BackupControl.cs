@@ -39,7 +39,7 @@ namespace myWorkSafe
 		private List<FileGroup> _groups;
 		private DriveDetector _driveDetector;
 
-		public BackupControl(string destinationDeviceRoot, long availableFreeSpaceInKilobytes, long totalSpaceOfDeviceInKilobytes, MultiProgress progress)
+		public BackupControl(string destinationDeviceRoot, long availableFreeSpaceInKilobytes, long totalSpaceOfDeviceInKilobytes, IProgress progress)
 		{
 			Progress = progress;
 			//Font = SystemFonts.MessageBoxFont;
@@ -535,6 +535,7 @@ namespace myWorkSafe
 				_backupWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler((x, y) => ChangeState(State.Cancelled));
 				_backupWorker.CancelAsync();
 			}
+            Program.Usage.SendEvent("Backup","Command","CancelBackup","",0);
 		}
 
 
