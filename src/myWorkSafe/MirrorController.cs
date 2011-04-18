@@ -156,7 +156,8 @@ namespace myWorkSafe
 					InvokeProgress(args);
 					_progress.WriteVerbose("[{0}] Updating {1}", _currentGroup.Name, args.Path);
 					break;
-				case MirrorSituation.FileOnDestinationButNotSource:
+                case MirrorSituation.DirectoryOnDestinationButNotSource:
+                case MirrorSituation.FileOnDestinationButNotSource:
 					if (!_currentGroup.NormallyPropogateDeletions
 						&& !args.Path.Contains(".hg")) //always propogate deletions inside the mercurial folder
 					{
@@ -169,6 +170,7 @@ namespace myWorkSafe
 						_progress.WriteVerbose("[{0}] Deleting {1}", _currentGroup.Name, args.Path);
 					}
 					break;
+                
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
