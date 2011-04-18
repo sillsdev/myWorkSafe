@@ -247,7 +247,13 @@ namespace myWorkSafe
                 Settings.Default.Reporting = new ReportingSettings();
                 Settings.Default.Save();
             }
-            UsageReporter.Init(Settings.Default.Reporting, "myWorkSafe.palaso.org", "UA-22170471-1");     
+            UsageReporter.Init(Settings.Default.Reporting, "myWorkSafe.palaso.org", "UA-22170471-1",
+#if DEBUG
+ true
+#else
+                false
+#endif
+);
 		}
 	}
 }
