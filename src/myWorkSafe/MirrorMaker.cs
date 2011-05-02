@@ -197,10 +197,10 @@ namespace myWorkSafe
 				        break;
 					case MirrorAction.Update:
 				        ++UpdatedCount;
-						//File.SetLastWriteTimeUtc(dest, File.GetLastWriteTimeUtc(source));
-						//this fails!
-						//Debug.Assert(File.GetLastWriteTimeUtc(dest) == File.GetLastWriteTimeUtc(source));
-						break;
+                       File.Copy(source, dest, true);
+                       File.SetLastWriteTimeUtc(dest, File.GetLastWriteTimeUtc(source));
+                       Debug.Assert(File.GetLastWriteTimeUtc(dest) == File.GetLastWriteTimeUtc(source));
+                       break;
 					default:
 						ThrowProgramError("Unexpected enumeration in switch: {0}", source);
 						break;
@@ -384,6 +384,24 @@ namespace myWorkSafe
 			Path = path;
 			PendingAction = defaultAction;
 		}
+
+        /// <summary>
+        /// becuase we're a bit over-simple here, we don't have the actual destination path, so at least we can strip off the c:\
+        /// when saying "we're now creating ______ "
+        /// </summary>
+        /// <returns></returns>
+	    public string GetDestinationPathForDisplay()
+	    {
+            try
+            {
+                var root = System.IO.Path.GetPathRoot(Path);
+                return Path.Substring(root.Length);
+            }
+            catch(Exception e)
+            {
+                return "error in GetDestinationPathForDisplay() "+e.Message;
+            }
+	    }
 	}
 
 	public class ItemHandlingErrorArgs: MirrorEventArgs

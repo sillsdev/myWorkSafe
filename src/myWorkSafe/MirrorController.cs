@@ -147,14 +147,14 @@ namespace myWorkSafe
 				case MirrorSituation.FileMissing:
 					_files++;
 					InvokeProgress(args);
-					_progress.WriteVerbose("[{0}] Creating {1}", _currentGroup.Name, args.Path);
+					_progress.WriteVerbose("[{0}] Will create on backup: {1}", _currentGroup.Name, args.GetDestinationPathForDisplay());
 					_alreadyAccountedFor.Add(args.Path);
 					break;
 				case MirrorSituation.SourceFileOlder:
 				case MirrorSituation.SourceFileNewer:
 					_files++;
 					InvokeProgress(args);
-					_progress.WriteVerbose("[{0}] Updating {1}", _currentGroup.Name, args.Path);
+                    _progress.WriteVerbose("[{0}] Updating {1}", _currentGroup.Name, args.GetDestinationPathForDisplay());
 					break;
                 case MirrorSituation.DirectoryOnDestinationButNotSource:
                 case MirrorSituation.FileOnDestinationButNotSource:
@@ -162,7 +162,7 @@ namespace myWorkSafe
 						&& !args.Path.Contains(".hg")) //always propogate deletions inside the mercurial folder
 					{
 						args.PendingAction = MirrorAction.Skip;
-						_progress.WriteVerbose("[{0}] Because of group policy, will not propagate deletion of {1}", _currentGroup.Name, args.Path);
+                        _progress.WriteVerbose("[{0}] Because of group policy, will not propagate deletion of {1}", _currentGroup.Name, args.GetDestinationPathForDisplay());
 					}
 					else
 					{
@@ -193,7 +193,7 @@ namespace myWorkSafe
 			switch (args.Situation)
 			{
 				case MirrorSituation.DirectoryMissing:
-					_progress.WriteVerbose("[{0}] Creating {1}", _currentGroup.Name, args.Path);
+                    _progress.WriteVerbose("[{0}] Creating on backup {1}", _currentGroup.Name, args.GetDestinationPathForDisplay());
 					_alreadyAccountedFor.Add(args.Path);
 					break;
 				case MirrorSituation.DirectoryExists:
@@ -204,12 +204,12 @@ namespace myWorkSafe
 						&& !args.Path.Contains(".hg")) //always propogate deletions inside the mercurial folder
 					{
 						args.PendingAction = MirrorAction.Skip;
-						_progress.WriteVerbose("[{0}] Because of group policy, will not propagate deletion of {1}", _currentGroup.Name, args.Path);
+                        _progress.WriteVerbose("[{0}] Because of group policy, will not propagate deletion of {1}", _currentGroup.Name, args.GetDestinationPathForDisplay());
 					}
 					else
 					{
 						args.PendingAction = MirrorAction.Delete;
-						_progress.WriteVerbose("[{0}] Deleting {1}", _currentGroup.Name, args.Path);
+                        _progress.WriteVerbose("[{0}] Deleting {1}", _currentGroup.Name, args.GetDestinationPathForDisplay());
 					}
 					break;
 				default:

@@ -111,7 +111,8 @@ namespace WorkSafe.Tests
 			var path = CreateSourceDirectoriesAndGenericFile("fruit", "treefruit", "apple.txt");
 			_maker.Run();
 			File.WriteAllText(path, "newer contents");
-			File.SetLastWriteTimeUtc(path, new DateTime(2010, 1,1));
+            var destPath = GetDestPathFromSourcePath(path);
+			File.SetLastWriteTimeUtc(destPath, new DateTime(2010, 1,1));
 			_maker.Run();
 			AssertDestinationFileUpdated(path);
 		}
