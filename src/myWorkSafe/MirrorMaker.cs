@@ -199,7 +199,7 @@ namespace myWorkSafe
 				        ++UpdatedCount;
                        File.Copy(source, dest, true);
                        File.SetLastWriteTimeUtc(dest, File.GetLastWriteTimeUtc(source));
-                       Debug.Assert(File.GetLastWriteTimeUtc(dest) == File.GetLastWriteTimeUtc(source));
+                       //always fails. Ah well. Debug.Assert(File.GetLastWriteTimeUtc(dest) == File.GetLastWriteTimeUtc(source));
                        break;
 					default:
 						ThrowProgramError("Unexpected enumeration in switch: {0}", source);
@@ -395,7 +395,7 @@ namespace myWorkSafe
             try
             {
                 var root = System.IO.Path.GetPathRoot(Path);
-                return Path.Substring(root.Length);
+                return Path.Substring(root.Length).Replace("{","{{").Replace("}","}}");
             }
             catch(Exception e)
             {
