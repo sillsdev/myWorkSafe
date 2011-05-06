@@ -324,6 +324,35 @@ namespace WorkSafe.Tests
             }
         }
 
+        /// <summary>
+        /// regression, where "07Support&F 7f3"  lead to a crash as MirrorController tried to do a string.format() with that
+        /// </summary>
+	    [Test]
+	    public void Run_PathHasDangerousCharacters_DoesCopy()
+	    {
+            //couldn't make it break on what came to me over email: var problemPart = "07Support&F 7f3";
+            var problemPart = "{9}";
+            using (var from = new TemporaryFolder("synctest_source"))
+            using (var to = new TemporaryFolder("synctest_dest"))
+            {
+                using (var sub =  new TemporaryFolder(from, problemPart))
+                {
+                    var fileName = "1.txt";
+                    System.IO.File.WriteAllText(sub.Combine(fileName), "Blah blah");
+                    var source = new RawDirectoryGroup("1", from.Path, null, null);
+                    var groups = new List<FileGroup>(new[] { source });
+                    var progress = new ConsoleProgress() { ShowVerbose = true };
+
+                    var sync = new MirrorController(to.Path, groups, 100, progress);
+
+                    sync.Run();
+                    string path = to.Combine ("1",problemPart,fileName);
+			        Assert.That(File.Exists(path),  path);
+                }
+            }
+	    }
+
+
 		private void AssertFileDoesNotExist(MirrorController controller, RawDirectoryGroup source, TemporaryFolder destFolder, string fileName)
 		{
 			string path = destFolder.Combine(controller.DestinationRootForThisUser, source.Name, fileName);
