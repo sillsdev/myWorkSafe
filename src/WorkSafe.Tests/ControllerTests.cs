@@ -5,6 +5,7 @@ using NUnit.Framework;
 using Palaso.Progress.LogBox;
 using Palaso.TestUtilities;
 using System.IO;
+using Palaso.Extensions;
 
 namespace WorkSafe.Tests
 {
@@ -352,6 +353,38 @@ namespace WorkSafe.Tests
             }
 	    }
 
+        /// <summary>
+        /// regression, related to dotnet 3.5's short path limit (around 260)
+        /// </summary>
+        [Test, Ignore("not yet")]
+        public void Run_PathIsVeryLong_DoesCopy()
+        {
+            using (var from = new TemporaryFolder("synctest_source"))
+            using (var to = new TemporaryFolder("synctest_dest"))
+            {
+                string sub = from.Path;
+                for (int i = 0; i < 10; i++)
+                {
+                    sub = sub + Path.DirectorySeparatorChar+"OnePartOfTheDirectory" + i;
+                    Microsoft.Experimental.IO.LongPathDirectory.Create(sub);
+                }
+                
+                var fileName = "1.txt";
+                using(var file = Microsoft.Experimental.IO.LongPathFile.Open(sub.CombineForPath(fileName), FileMode.CreateNew,
+                                                            FileAccess.ReadWrite))
+                {
+                }
+                var source = new RawDirectoryGroup("Group1", from.Path, null, null);
+                var groups = new List<FileGroup>(new[] {source});
+                var progress = new ConsoleProgress() {ShowVerbose = true};
+
+                var sync = new MirrorController(to.Path, groups, 100, progress);
+
+                sync.Run();
+                string path = sub.Replace("synctest_source", "synctest_dest"+Path.DirectorySeparatorChar+"Group1").CombineForPath("1.txt");
+                Assert.That(File.Exists(path), path);
+            }
+        }
 
 		private void AssertFileDoesNotExist(MirrorController controller, RawDirectoryGroup source, TemporaryFolder destFolder, string fileName)
 		{

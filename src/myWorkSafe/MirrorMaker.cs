@@ -392,6 +392,7 @@ namespace myWorkSafe
         /// <returns></returns>
 	    public string GetDestinationPathForDisplay()
 	    {
+            //TODO this is giving wrong locations. In actuality, the location is preceded by the group name
             try
             {
                 var root = System.IO.Path.GetPathRoot(Path);

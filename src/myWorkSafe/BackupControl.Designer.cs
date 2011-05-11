@@ -1,6 +1,4 @@
-﻿using Localization;
-using Localization.UI;
-
+﻿
 namespace myWorkSafe
 {
 	partial class BackupControl
@@ -51,9 +49,9 @@ namespace myWorkSafe
             this._probablyRemovedPhysicallyTimer = new System.Windows.Forms.Timer(this.components);
             this._startTimer = new System.Windows.Forms.Timer(this.components);
             this._updateMediaStatusTimer = new System.Windows.Forms.Timer(this.components);
-            this._localizationExtender = new Localization.UI.LocalizationExtender(this.components);
+
             this._mediaStatusIndicator = new myWorkSafe.MediaStatus();
-            ((System.ComponentModel.ISupportInitialize)(this._localizationExtender)).BeginInit();
+
             this.SuspendLayout();
             // 
             // _safeToRemoveLabel
@@ -176,10 +174,7 @@ namespace myWorkSafe
             // 
             this._updateMediaStatusTimer.Interval = 3000;
             this._updateMediaStatusTimer.Tick += new System.EventHandler(this._updateMediaStatusTimer_Tick);
-            // 
-            // _localizationExtender
-            // 
-            this._localizationExtender.LocalizationGroup = "BackupControl";
+
             // 
             // _mediaStatusIndicator
             // 
@@ -208,7 +203,6 @@ namespace myWorkSafe
             this.Name = "BackupControl";
             this.Size = new System.Drawing.Size(535, 348);
             this.Load += new System.EventHandler(this.BackupControl_Load);
-            ((System.ComponentModel.ISupportInitialize)(this._localizationExtender)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -230,6 +224,5 @@ namespace myWorkSafe
 		private System.Windows.Forms.Timer _probablyRemovedPhysicallyTimer;
         private System.Windows.Forms.Timer _startTimer;
 		private System.Windows.Forms.Timer _updateMediaStatusTimer;
-		private LocalizationExtender _localizationExtender;
 	}
 }
