@@ -118,17 +118,6 @@ namespace myWorkSafe
 		static void HandleDeviceArrived(string driveLetter)
 		{
 			MultiProgress progress= new MultiProgress(new IProgress[]{});
-		    FileLogProgress fileLogProgress=null;
-            try
-            {
-                var path = Path.Combine(Path.GetTempPath(), "myWorkSafeLog.txt");
-                fileLogProgress = new FileLogProgress(path);
-                progress.Add(fileLogProgress);
-            }
-            catch (Exception)
-            {
-                //don't want to not backup if something goes wrong creating the log
-            }
 
 		    List<UsbDriveInfo> foundDrives = GetFoundDrives();
 			var drive = foundDrives.FirstOrDefault(d => d.RootDirectory.ToString() == driveLetter);
@@ -146,7 +135,7 @@ namespace myWorkSafe
 				//based on that popup, it might now pass this test:
 				if (IsAKnownBackupDrive(drive))
 				{
-					LaunchBackup(progress, fileLogProgress, drive);
+					LaunchBackup(progress, GetFileLogProgress(progress), drive);
 				}
 			}
 			catch (Exception error)
@@ -154,6 +143,22 @@ namespace myWorkSafe
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, something went wrong.");
 			}
 		}
+
+	    private static FileLogProgress GetFileLogProgress(MultiProgress progress)
+	    {
+	        FileLogProgress fileLogProgress=null;
+	        try
+	        {
+	            var path = Path.Combine(Path.GetTempPath(), "myWorkSafeLog.txt");
+	            fileLogProgress = new FileLogProgress(path);
+	            progress.Add(fileLogProgress);
+	        }
+	        catch (Exception)
+	        {
+	            //don't want to not backup if something goes wrong creating the log
+	        }
+	        return fileLogProgress;
+	    }
 
 	    private static void LaunchBackup(IProgress progress, IProgress fileLogProgress, UsbDriveInfo drive)
 	    {
@@ -203,7 +208,8 @@ namespace myWorkSafe
                 Palaso.Reporting.ErrorReport.NotifyUserOfProblem("No USB drives found");
                 return;
             }
-            LaunchBackup(new NullProgress(), new NullProgress(), drives[0]);
+            var progress = new MultiProgress(new IProgress[]{});
+            LaunchBackup(progress, GetFileLogProgress(progress), drives[0]);
             return;
 
         }
