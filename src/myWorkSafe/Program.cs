@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using Dolinay; //drive detector
-using Localization;
+
 using myWorkSafe.Properties;
 using Palaso.Progress.LogBox;
 using Palaso.Reporting;
@@ -52,8 +52,7 @@ namespace myWorkSafe
 		    SetUpReporting();
             Settings.Default.Save();
 
-			LocalizationManager.Enabled = true;
-			LocalizationManager.Initialize();
+
 			//LocalizationManager.UILangId = "fr";
 
 			var trayMenu = new ContextMenu();

@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Dolinay;
-using Localization;
+
 using myWorkSafe.Groups;
 using myWorkSafe.Usb;
 using System.IO;
@@ -208,7 +208,7 @@ namespace myWorkSafe
 						item.SubItems.Add("Calculating...");
 						break;
 					case FileGroup.DispositionChoice.Synchronizing:
-						item.SubItems.Add(LocalizationManager.LocalizeString("MirroringStatus","Mirroring...","What is shown while the copying is going on", "BackupControl",LocalizationCategory.Label,LocalizationPriority.High));
+						item.SubItems.Add("Mirroring...");//LocalizationManager.LocalizeString("MirroringStatus","Mirroring...","What is shown while the copying is going on", "BackupControl",LocalizationCategory.Label,LocalizationPriority.High));
 						break;
 					case FileGroup.DispositionChoice.WillBeBackedUp:
 						//item.ImageIndex = 0;
