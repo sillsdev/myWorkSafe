@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using myWorkSafe;
 using myWorkSafe.Groups;
 using NUnit.Framework;
@@ -6,6 +7,7 @@ using Palaso.Progress.LogBox;
 using Palaso.TestUtilities;
 using System.IO;
 using Palaso.Extensions;
+using Microsoft.Experimental.IO;
 
 namespace WorkSafe.Tests
 {
@@ -359,8 +361,11 @@ namespace WorkSafe.Tests
         [Test, Ignore("not yet")]
         public void Run_PathIsVeryLong_DoesCopy()
         {
-            using (var from = new TemporaryFolder("synctest_source"))
-            using (var to = new TemporaryFolder("synctest_dest"))
+            //we're adding this guid because teh normal tempfolder code can't handle this super deap thing, can't clear it out for us
+            //as we re-run this test
+            var guid = Guid.NewGuid().ToString();
+            using (var from = new TemporaryFolder("synctest_source"+guid))
+            using (var to = new TemporaryFolder("synctest_dest"+guid))
             {
                 string sub = from.Path;
                 for (int i = 0; i < 10; i++)
@@ -381,12 +386,13 @@ namespace WorkSafe.Tests
                 var sync = new MirrorController(to.Path, groups, 100, progress);
 
                 sync.Run();
-                string path = sub.Replace("synctest_source", "synctest_dest"+Path.DirectorySeparatorChar+"Group1").CombineForPath("1.txt");
-                Assert.That(File.Exists(path), path);
+                string path = sub.Replace("synctest_source"+guid, "synctest_dest"+guid+Path.DirectorySeparatorChar+"Group1").CombineForPath("1.txt");
+
+                Assert.That(LongPathFile.Exists(path), path);
             }
         }
 
-		private void AssertFileDoesNotExist(MirrorController controller, RawDirectoryGroup source, TemporaryFolder destFolder, string fileName)
+	    private void AssertFileDoesNotExist(MirrorController controller, RawDirectoryGroup source, TemporaryFolder destFolder, string fileName)
 		{
 			string path = destFolder.Combine(controller.DestinationRootForThisUser, source.Name, fileName);
 			Assert.IsFalse(File.Exists(path), path);

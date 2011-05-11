@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Win32.SafeHandles;
 using Palaso.Code;
+
 
 namespace myWorkSafe
 {
 	public class MirrorMaker :IDisposable
-	{
-		public event EventHandler<MirrorEventArgs> StartingDirectory;
+	{       
+        public event EventHandler<MirrorEventArgs> StartingDirectory;
 		public event EventHandler<MirrorEventArgs> StartingFile;
 		public event EventHandler<ItemHandlingErrorArgs> ItemHandlingError;
 
@@ -55,7 +58,7 @@ namespace myWorkSafe
 
 			var sourceItems =scanner.Scan(_sourceRootPath);
 			_remainingDestItems = new List<FileOrDirectory>();
-			if (Directory.Exists(_parentOfDestinationRootPath))
+			if (SafeIO.Directory.Exists(_parentOfDestinationRootPath))
 			{
 				_remainingDestItems.AddRange(scanner.Scan(_parentOfDestinationRootPath));
 			}
@@ -106,7 +109,7 @@ namespace myWorkSafe
 			string destination = GetDestination(sourcePath);
 			try
 			{
-				Directory.CreateDirectory(destination);
+                SafeIO.Directory.Create(destination);
 			}
 			catch (Exception error)
 			{
@@ -135,7 +138,7 @@ namespace myWorkSafe
 								MirrorAction.DoNothing);
 				if(action == MirrorAction.Delete)
 				{
-					File.Delete(file.Path);
+                    SafeIO.File.Delete(file.Path);
 				}
 			}
 		}
@@ -153,11 +156,12 @@ namespace myWorkSafe
 				{
 					try
 					{
-						Directory.Delete(directory.Path, true);
+					    SafeIO.Directory.Delete(directory.Path);
 					}
 					catch (Exception error)
 					{
 						RaiseItemHandlingError(directory.Path, MirrorAction.Delete, error);
+                        
 					}
 
 					_skippedOrRemovedDirectories.Add(directory.Path);
@@ -178,9 +182,9 @@ namespace myWorkSafe
 				switch (action)
 				{
 					case MirrorAction.Delete:
-						if (File.Exists(dest))
+						if (SafeIO.File.Exists(dest))
 						{
-							File.Delete(dest);
+							SafeIO.File.Delete(dest);
 						    ++DeletedCount;
 						}
 						break;
@@ -188,17 +192,17 @@ namespace myWorkSafe
 					case MirrorAction.Skip:
 						break;
 					case MirrorAction.Create:
-						if (File.Exists(dest))
+						if (SafeIO.File.Exists(dest))
 						{
-							File.Delete(dest);
+							SafeIO.File.Delete(dest);
 						}
-						File.Copy(source, dest);
+						SafeIO.File.Copy(source, dest, true);
                         ++CreatedCount;
 				        break;
 					case MirrorAction.Update:
 				        ++UpdatedCount;
-                       File.Copy(source, dest, true);
-                       File.SetLastWriteTimeUtc(dest, File.GetLastWriteTimeUtc(source));
+                       SafeIO.File.Copy(source, dest, true);
+                       SafeIO.File.SetLastWriteTimeUtc(dest, SafeIO.File.GetLastWriteTimeUtc(source));
                        //always fails. Ah well. Debug.Assert(File.GetLastWriteTimeUtc(dest) == File.GetLastWriteTimeUtc(source));
                        break;
 					default:
@@ -212,7 +216,8 @@ namespace myWorkSafe
 			}
 		}
 
-		private void RaiseItemHandlingError(string path, MirrorAction action, Exception error)
+
+	    private void RaiseItemHandlingError(string path, MirrorAction action, Exception error)
 		{
 			var args = new ItemHandlingErrorArgs(path, action, error);
 			EventHandler<ItemHandlingErrorArgs> handler = ItemHandlingError;
@@ -233,7 +238,7 @@ namespace myWorkSafe
 			var dest = GetDestination(sourceDirectory.Path);
 			var situation = MirrorSituation.DirectoryExists;
 			var defaultAction = MirrorAction.DoNothing;
-			if(!Directory.Exists(dest))
+			if(!SafeIO.Directory.Exists(dest))
 			{
 				 situation = MirrorSituation.DirectoryMissing;
 				 defaultAction = MirrorAction.Create;
@@ -250,15 +255,15 @@ namespace myWorkSafe
 			var dest = GetDestination(source);
 			var situation = MirrorSituation.FileIsSame;
 			var defaultAction = MirrorAction.DoNothing;
-			if (!File.Exists(dest))
+			if (!SafeIO.File.Exists(dest))
 			{
 				situation = MirrorSituation.FileMissing;
 				defaultAction = MirrorAction.Create;
 			}
 			else
 			{
-				DateTime sourceWriteTime = File.GetLastWriteTimeUtc(source);
-				DateTime destWriteTime = File.GetLastWriteTimeUtc(dest);
+				DateTime sourceWriteTime = SafeIO.File.GetLastWriteTimeUtc(source);
+                DateTime destWriteTime = SafeIO.File.GetLastWriteTimeUtc(dest);
 				var dif = TimeSpan.FromTicks(Math.Abs(sourceWriteTime.Ticks - destWriteTime.Ticks));
 				
 				//for some reason, the target is always a couple seconds later
@@ -283,16 +288,6 @@ namespace myWorkSafe
 			Guard.Against(situation == MirrorSituation.FileMissing && action == MirrorAction.Delete, "Told to remove an non-existant file");
 			Guard.Against(situation == MirrorSituation.FileMissing && action == MirrorAction.Update, "Told to update an non-existant file");
 			return action;
-		}
-
-		private MirrorSituation GetSituationForFile(string path)
-		{
-			var dest = GetDestination(path);
-			if (!File.Exists(dest))
-			{
-				return MirrorSituation.FileMissing;
-			}
-			return MirrorSituation.FileIsSame;
 		}
 
 
@@ -384,7 +379,7 @@ namespace myWorkSafe
 			Path = path;
 			PendingAction = defaultAction;
 		}
-
+        internal const int MAX_PATH = 260; 
         /// <summary>
         /// becuase we're a bit over-simple here, we don't have the actual destination path, so at least we can strip off the c:\
         /// when saying "we're now creating ______ "
@@ -395,8 +390,16 @@ namespace myWorkSafe
             //TODO this is giving wrong locations. In actuality, the location is preceded by the group name
             try
             {
-                var root = System.IO.Path.GetPathRoot(Path);
-                return Path.Substring(root.Length).Replace("{","{{").Replace("}","}}");
+                string root;
+                if (Path.Length < MAX_PATH)
+                {
+                    root = System.IO.Path.GetPathRoot(Path);
+                }
+                else
+                {
+                    root = System.IO.Path.GetPathRoot(Path.Substring(0, 100));//just get truncate it, we just want "c:" or whatever
+                }
+                return Path.Substring(root.Length).Replace("{", "{{").Replace("}", "}}");
             }
             catch(Exception e)
             {

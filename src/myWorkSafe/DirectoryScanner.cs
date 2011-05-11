@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+
 
 namespace myWorkSafe
 {
 	public class DirectoryScanner
-	{
-		public event EventHandler<ScanningErrorArgs> OnError;
+	{      
+        public event EventHandler<ScanningErrorArgs> OnError;
 
 		public IEnumerable<FileOrDirectory> Scan(string rootPath)
 		{
@@ -17,7 +17,7 @@ namespace myWorkSafe
 			string[] directories = new string[0];
 			try
 			{
-				directories = Directory.GetDirectories(rootPath);
+                directories = SafeIO.Directory.GetDirectories(rootPath);
 			}
 			catch (Exception error)
 			{
@@ -36,7 +36,7 @@ namespace myWorkSafe
 			string[] files = new string[0];
 			try
 			{
-				files = Directory.GetFiles(rootPath);
+                files = SafeIO.Directory.GetFiles(rootPath);
 			}
 			catch (Exception error)
 			{
