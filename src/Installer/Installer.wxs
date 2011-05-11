@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->                                                             
 <!-- will be used later on in this file.  this value should be B U I  LD_SCRIPT_MUST_REPLACE_AT_RUNTIME (in quotes) -->
-<?define Property_ProductVersion = "0.1.0" ?>
+<?define Property_ProductVersion = "BUILD_SCRIPT_MUST_REPLACE_AT_RUNTIME" ?>
 
 <!-- * means auto-generate a new guid each time. This is "a unique identifier for the particular product release" -->
 <?define Property_ProductCode = "*" ?>
@@ -41,9 +41,9 @@ users to install just the shortcut for your app, then demand-install the
 rest of the app the first time the icon is run.  If this is not behavior you
 are trying to support, you're better off using non-advertised shortcuts. "-->
 
-    <PropertyRef Id="NETFRAMEWORK35" />
-    <Condition Message="Before myWorkSafe can install, you need to install Microsoft's free .NET Framework 3.5.  A full discussion of myWorkSafe's requirements can be found at myWorkSafe.org/wiki/Prerequisites.">
-      Installed OR NETFRAMEWORK35
+    <PropertyRef Id="NETFRAMEWORK40CLIENT" />
+    <Condition Message="Before myWorkSafe can install, you need to install Microsoft's free .NET Framework 4.0 Client Profile.  A full discussion of myWorkSafe's requirements can be found at myWorkSafe.org/wiki/Prerequisites.">
+      Installed OR NETFRAMEWORK40CLIENT
     </Condition>
 
     <!--because of bug, this needs to be 1 -->
@@ -77,7 +77,9 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
           <Component Id="LocalizationManager.dll" Guid="{3F548E74-7D7B-4462-B7F4-FAD54ACFD150}">
             <File Id="LocalizationManager.dll" Name="LocalizationManager.dll" KeyPath="yes" Source="..\..\output\release\LocalizationManager.dll" />
           </Component>
-          
+          <Component Id="Microsoft.Experimental.IO.dll" Guid="{A7F71192-32A9-4F3D-A09E-289AF8B5BDC6}">
+            <File Id="Microsoft.Experimental.IO.dll" Name="Microsoft.Experimental.IO.dll" KeyPath="yes" Source="..\..\output\release\Microsoft.Experimental.IO.dll" />
+          </Component>          
           <!--          <Component Id="PalasoUIWindowsForms.dll" Guid="{CD1AF43D-5800-4bf1-BA9A-B7C74D4780FA}">
             <File Id="PalasoUIWindowsForms.dll" Name="PalasoUIWindowsForms.dll" KeyPath="yes" Source="..\..\output\release\PalasoUIWindowsForms.dll" />
           </Component>
@@ -95,6 +97,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
       <ComponentRef Id="Palaso.dll"/>
       <!--   <ComponentRef Id="PalasoUIWindowsForms.dll"/>-->
       <ComponentRef Id="LocalizationManager.dll"/>
+      <ComponentRef Id="Microsoft.Experimental.IO.dll"/>
       <ComponentRef Id="myWorkSafe.exe" />
 
       <ComponentGroupRef Id ="DistFiles"/>

@@ -18,7 +18,7 @@
 
     <!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
     
-    <CreateProperty Value="0.7.$(BuildCounter)">
+    <CreateProperty Value="0.8.$(BuildCounter)">
       <Output PropertyName="Version" TaskParameter="Value"/>
     </CreateProperty>
    
@@ -75,7 +75,7 @@
   <Target Name="Upload" DependsOnTargets="VersionNumbers; Installer" >
     <Message Text="Attempting rsync of myWorkSafeInstaller.$(Version).msi" Importance="high"/>
 
-    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/myWorkSafeInstaller.$(Version).msi" bob@palaso.org:/var/www/virtual/palaso.org/myworksafe/htdocs/files/myWorkSafeInstaller.$(Version).msi' /> 
+    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/myWorkSafeInstaller-$(Version).msi" bob@palaso.org:/var/www/virtual/palaso.org/myworksafe/htdocs/files/myWorkSafeInstaller.$(Version).msi' /> 
 
     <CallTarget Targets ='MakeDownloadPointers'/>
   </Target>
@@ -98,7 +98,7 @@
     <Delete Files="$(teamcity_build_checkoutDir)\output\installer\myWorkSafeInstaller.$(Version).msi" TreatErrorsAsWarnings="false" />
 
     <Copy SourceFiles="$(teamcity_build_checkoutDir)\output\installer\myWorkSafeInstaller.msi"
-          DestinationFiles="$(teamcity_build_checkoutDir)\output\installer\myWorkSafeInstaller.$(Version).msi"
+          DestinationFiles="$(teamcity_build_checkoutDir)\output\installer\myWorkSafeInstaller-$(Version).msi"
           />
 
     <!-- remove the installer which has no version number (wouldn't need this if the copy above was a move, instead) -->
