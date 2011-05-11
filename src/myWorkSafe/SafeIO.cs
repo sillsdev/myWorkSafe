@@ -85,18 +85,33 @@ namespace myWorkSafe
                     return LongPathDirectory.EnumerateFiles(path).ToArray();
                 }
             }
+
+            public static string GetLeafDirectoryName(string path)
+            {
+//                if (path.Length < MAX_PATH)
+//                {
+//                    return System.IO.Path.GetFileName(path);
+//                }
+//                else
+                {
+                    return path.Split(new char[]{Path.DirectorySeparatorChar},StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+                }                
+            }
         }
         public class File
         {
             public static void Delete(string path)
             {
+                
                  if (path.Length < MAX_PATH)
                 {
-                    System.IO.File.Delete(path);
+                    if (File.Exists(path)) 
+                        System.IO.File.Delete(path);
                 }
                 else
                 {
-                    LongPathFile.Delete(path);
+                    if (LongPathFile.Exists(path)) 
+                        LongPathFile.Delete(path);
                 }
             }
 

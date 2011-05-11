@@ -19,6 +19,8 @@ namespace myWorkSafe.Groups
 			DestGuid = Guid.NewGuid();
 
 			Filter.AttributeExcludeMask = FileAttributes.Hidden | FileAttributes.Temporary | FileAttributes.System;
+
+		    NormallyPropogateDeletions = false;
 		}
 
 		public enum DispositionChoice {Hide=0, Waiting, Calculating, WillBeBackedUp, NotEnoughRoom,
@@ -124,6 +126,7 @@ namespace myWorkSafe.Groups
 
 		public bool ShouldSkipSubDirectory(string path)
 		{
+		    path = SafeIO.Directory.GetLeafDirectoryName(path);
 			//we bracket with spaces so that we don't match substrings
 			string value = " " + path.ToLower() + " ";
 			return Filter.SubdirectoryExcludes.Any(s => (" " + s.ToLower() + " ") == value);
