@@ -85,7 +85,7 @@ namespace myWorkSafe
 				_progress.WriteMessage("Beginning preview of group {0}", group.Name);
 
 				Debug.Assert(!string.IsNullOrEmpty(group.RootFolder), "should have been weeded out already");
-				Debug.Assert(Directory.Exists(group.RootFolder), "should have been weeded out already");
+				Debug.Assert(SafeIO.Directory.Exists(group.RootFolder), "should have been weeded out already");
 
 
 				if (limitHasBeenReached)
