@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C573DDE1-9BC6-4358-8671-3F5BC17462F1}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>myWorkSafe</RootNamespace>
+    <AssemblyName>myWorkSafe</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ApplicationIcon>Resources\application.ico</ApplicationIcon>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\output\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\output\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="LocalizationManager, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\LocalizationManager.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Experimental.IO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Microsoft.Experimental.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="Palaso, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Palaso.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BackupControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="BackupControl.Designer.cs">
+      <DependentUpon>BackupControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AllDonePopup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AllDonePopup.Designer.cs">
+      <DependentUpon>AllDonePopup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MirrorController.cs" />
+    <Compile Include="DirectoryScanner.cs" />
+    <Compile Include="Groups\FileGroupFromIniSection.cs" />
+    <Compile Include="Groups\GroupIniFileReader.cs" />
+    <Compile Include="Groups\RawDirectoryGroup.cs" />
+    <Compile Include="InfoWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InfoWindow.Designer.cs">
+      <DependentUpon>InfoWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ini\IniDocument.cs" />
+    <Compile Include="ini\IniException.cs" />
+    <Compile Include="ini\IniItem.cs" />
+    <Compile Include="ini\IniReader.cs" />
+    <Compile Include="ini\IniSection.cs" />
+    <Compile Include="ini\IniSectionCollection.cs" />
+    <Compile Include="ini\IniWriter.cs" />
+    <Compile Include="ini\OrderedList.cs" />
+    <Compile Include="ini\OrderedListEnumerator.cs" />
+    <Compile Include="NewDrivePopup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewDrivePopup.Designer.cs">
+      <DependentUpon>NewDrivePopup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MirrorMaker.cs" />
+    <Compile Include="SafeIO.cs" />
+    <Compile Include="Usb\DriveDetector.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Groups\FileGroup.cs" />
+    <Compile Include="MainWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainWindow.Designer.cs">
+      <DependentUpon>MainWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MediaStatus.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MediaStatus.Designer.cs">
+      <DependentUpon>MediaStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="BackupControl.resx">
+      <DependentUpon>BackupControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AllDonePopup.resx">
+      <DependentUpon>AllDonePopup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InfoWindow.resx">
+      <DependentUpon>InfoWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainWindow.resx">
+      <DependentUpon>MainWindow.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MediaStatus.resx">
+      <DependentUpon>MediaStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewDrivePopup.resx">
+      <DependentUpon>NewDrivePopup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="Usb\Device.cs" />
+    <Compile Include="Usb\DeviceCapabilities.cs" />
+    <Compile Include="Usb\DeviceClass.cs" />
+    <Compile Include="Usb\DiskDeviceClass.cs" />
+    <Compile Include="Usb\Native.cs" />
+    <Compile Include="Usb\Volume.cs" />
+    <Compile Include="Usb\VolumeDeviceClass.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\usbkey.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\usbstick.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\finished.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\application.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\error.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\warning.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\menuButton.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\smallVertcalLogo.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

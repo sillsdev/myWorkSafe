@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="about.htm" Guid="e19de804-2375-4eeb-83db-8cd216b94d1e" />
+  <File Id="image1.png" Guid="6800f865-3ef2-480e-ac04-1daf4c2d7a21" />
+  <File Id="groups.ini" Guid="16579751-3dc7-4061-a181-1c07a406993c" />
+  <File Id="configuration.htm" Guid="429cc4d8-b1c1-432e-8bdf-9c53a129c23e" />
+  <File Id="myWorkSafe.ini" Guid="49fe0832-7267-4dc9-93f3-9224ac1e2ef9" />
+  <File Id="license.rtf" Guid="624f0f91-3705-4fc2-a158-6815f3737a33" />
+</InstallerMetadata>

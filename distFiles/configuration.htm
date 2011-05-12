@@ -1,0 +1,90 @@
+<html>
+<head>
+    <style type="text/css">
+        .style2
+        {
+            font-family: "Courier New", Courier, monospace;
+        }
+    </style>
+</head>
+<body>
+<font face="Segoe UI">
+<h3>Customization</h3>
+
+<div>myWorkSafe is basically intended to have zero configuration.&#160; I, as an occasional supporter of language workers, do not have time to individually configure their backup programs. Instead, I want myWorkSafe to embody all the same decisions I would make for a typical native-speaker language worker.&#160; This configuration ships with in the form of a “myWorkSafe.ini” file found in the folder where the application was installed.&#160; For example here are some entries which illustrate many of the options:</div>
+
+<div>&#160;</div>
+
+<p><font size="2" face="Courier">[Paratext] 
+    <br />#on 32-bit Windows 
+
+    <br />rootFolder=HKEY_LOCAL_MACHINE\Software\ScrChecks\1.0\Settings_Directory </font></p>
+
+<p><font size="2" face="Courier">#on 64 bit Windows 
+    <br />rootFolder=HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ScrChecks\1.0\Settings_Directory </font></p>
+
+<p><font size="2" face="Courier">#in case that registry entry is missing 
+    <br />rootFolder=c:\my paratext projects&#160;&#160;&#160; </font></p>
+
+<p><font size="2" face="Courier">excludeFolder=TNE Notes Database 
+    <br />excludeFolder=cms</font></p>
+
+<p><font size="2" face="Courier">[AdaptIt] 
+    <br />rootFolder=$Documents$\AdaptIt Unicode Work 
+
+    <br />#try this one if that one doesn't work 
+
+    <br />rootFolder=$Documents$\AdaptIt Work </font></p>
+
+<p><font size="2" face="Courier">[WeSay] 
+    <br />rootFolder=$MyDocuments$\WeSay 
+
+    <br />excludeFile=*.pdf</font></p>
+
+<p><font size="2" face="Courier">[MyPictures] 
+    <br />name = My Pictures 
+
+    <br />rootFolder = $MyPictures$ 
+
+    <br />excludeFolder=Sample Pictures</font></p>
+
+<div>&#160;</div>
+
+<div>If you want, you can make different decisions, or just add to myWorkSafe’s smarts, by modifying the “myWorkSafe.ini” found in your appData/local/myWorkSafe (or whatever the equivalent is on that version of Windows).&#160; A blank version of this file is created after the first use of the program.&#160; So, for example, I’m <em>not</em> a typical language worker, so my settings alter things radically (I basically have too much data to ever fit on a USB key, so I limit myWorkSafe to a few key things):</div>
+
+<div>&#160;</div>
+
+<div><font size="2" class="style2">#I never would put something I want to backup on the desktop. 
+    <br />[Desktop] 
+    <br />skip 
+    <br />#My machine is loaded with other people’s data, but this language 
+    <br />#is one we actually work in, so I want to give it priority 
+    <br />
+    <br />[EdoloData] 
+    <br />rootFolder = $MyDocuments$ /LanguageData/Edolo 
+    <br />
+    <br />
+    #I keep my WeSay folder somewhere special</span>
+        class="style2"><br />
+    [WeSay] 
+    <br />rootFolder=c:\dev\WeSayProjects 
+    <br />#I want to backup FieldWorks version 7 data, by looking in the Registry
+    <br />[FieldWorks7]
+    <br />rootFolder=HKEY_LOCAL_MACHINE\SOFTWARE\SIL\FieldWorks\7.0,ProjectsDir
+  <br /></font></div>
+
+<p>So far, we’ve seen two levels of settings: one comes with the program, and another can override that a user with special needs.&#160; There is a third level: drive-specific settings.&#160; For example, you could have one drive for data, and another for videos.&#160; In my case, I like to get a very small amount of data backed up constantly: my current list of passwords/registrations.&#160; To do that, place a file named, again, “myWorkSafe.ini” inside the folder used 
+    for backup on the device; in my case, “f:/myWorkSafe-John-THINKPAD”. Here’s the contents:</p>
+
+<p><font size="2" face="Courier New">[Settings] 
+    <br /># I don't want this to be affected by myWorkSafe’s factory settings, at all 
+
+    <br />clearAllPreviousSettings </font></p>
+
+<p><font size="2" face="Courier New">[Passwords] 
+    <br />rootFolder= C:\Users\John\Documents\Passwords</font></p>
+
+<h3>Summary</h3>
+
+<p>If you find yourself frequently customizing colleague’s myWorkSafe’s, <strong>something is wrong</strong>.&#160; The point is to have enough smarts and domain knowledge to make this unnecessary.&#160; But these configuration abilities should be enough to make the program work for some of us geeks, and we need that to happen, so that myWorkSafe gets a lot of testing.</p>
+</font></body></html>

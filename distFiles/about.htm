@@ -1,0 +1,88 @@
+<html>
+<head>
+    <style type="text/css">
+        .style1
+        {
+            width: 100%;
+        }
+        .style2
+        {
+            width: 182px;
+        }
+        .style3
+        {
+            width: 141px;
+        }
+    </style>
+</head>
+<body>
+<img  src="image1.png"/>
+<font face="Segoe UI">
+<br /><a href="http://myWorkSafe.palaso.org">myWorkSafe.palaso.org</a></p>
+
+
+   
+  <h3>Why another backup program?</h3>
+
+  <div>myWorkSafe aims to provide a zero-configuration backup system for a particular kind of user. That user does best when things are simple.&#160; He is using computers primarily as an appliance for doing language development work.&#160;&#160; He may find the raw file system confusing, and may end up putting documents in various places, including the Desktop.&#160; He may collect videos, music, games, and installers, quickly overwhelming the USB flash drives which were intended to be used to backup his language development work. He may need reminding to backup, and perhaps prompting to cycle between different backup devices. Finally, he may be far from technical help, may not notice the early signs of hard drive failure, and may be subject to a high-risk of laptop theft.&#160; <h3>How it works</h3>
+  </div>
+
+  <div>Once installed, myWorkSafe is always running. It places a small icon in the Windows Task Bar.&#160; When you insert a USB flash drive for the first time, the application asks you if you want to use it for Backup.&#160; Subsequently, when you insert it, myWorkSafe opens and begins backing up.</div>
+
+  <div>&#160;</div>
+
+  <div>The first unusual thing about myWorkSafe is that it knows about file types and the files that belong to certain tasks (e.g. translation or dictionary making). For example, it knows how to look in the registry and figure out where Paratext documents are stored.&#160; It knows that certain files in the folder are actually not user data, but rather program data, so they don’t need to be backed up (e.g. “TNE Notes Database”).&#160; It knows that Thunderbird has a very large index file which doesn’t need to be backed up, because it will be rebuilt if needed.&#160; And it knows that the target user often has program installers in their My Documents folder, and these should not be allowed to fill up the backup media.</div>
+
+  <div>&#160;</div>
+
+  <div>The second unusual thing about myWorkSafe is that it is <em>opinionated</em> about which are the most important things to backup.&#160; While we would ideally like to always preserve an exact snapshot of the computer, in practice we don’t have the room on the backup device. More advanced users can make decisions about what’s most important.&#160; For example, in most cases, translation work is more irreplaceable than music files. Likewise, dictionary work is more precious than old emails.&#160; myWorkSafe allows these prioritization decisions to be made ahead of time, so the user isn’t faced with that complexity at backup time.&#160; In fact, it comes with this prioritization built-in, so that no configuration is needed for the majority of cases.&#160; The program tells the users which groups it can backup, and which ones it cannot, depending on how much space is available on the external media.&#160; If necessary, you can <a href="configuration.htm">customize how myWorkSafe decides</a> what to back up.</div>
+
+  <h3>Release Notes</h3>
+
+  <h5>Known limitations</h5>
+
+  <ul>
+    <li><font face="Segoe UI">A lower-priority group will not be deleted to make room for a newly enlarged, high-priority group.</font> </li>
+
+    <li>Windows only, but a Linux version is very doable. </li>
+
+    <li>No historical backups are created, nothing is compressed.&#160; While not completely unimportant, the need for this has decreased as language applications (e.g. Paratext, <a href="http://WeSay.org">WeSay</a>, OurWord, OneStory) incorporate full historical repositories, internally. These repositories (i.e.&#160; “.hg” folders) are themselves part of the backup.&#160; Additionally, music and video files, which take the most room, are not very compressible.</li>
+  </ul>
+  <h3>Credits</h3>
+       <table class="style1">
+            <tr>
+                <td class="style2">
+<font face="Segoe UI">
+                    Design &amp; Code</td>
+                <td class="style3">
+<font face="Segoe UI">
+                    John Hatton</td>
+                <td>
+<font face="Segoe UI">
+                    <a href="http://pnglanguages.org/">SIL Papua New Guinea</a>, <a href="http://palaso.org">Palaso</a>, &amp; <a href="http://sil.org">SIL International Software Development</a></td>
+            </tr>
+            <tr>
+                <td class="style2">
+<font face="Segoe UI">
+                    Localization Library</td>
+                <td class="style3">
+<font face="Segoe UI">
+                    David Olson</td>
+                <td>
+<font face="Segoe UI">
+                    <a href="http://sil.org">SIL International Software Development</a> (JAARS)</td>
+            </tr>
+            <tr>
+                <td class="style2">
+<font face="Segoe UI">
+                    Server Infrastructure</td>
+                <td class="style3">
+<font face="Segoe UI">
+                    Cambell Prince</td>
+                <td>
+<font face="Segoe UI">
+                    <a href="http://palaso.org">Payap Language Software</a> (Thailand),&nbsp; <a href="http://sil.org">SIL International Software Development</a>
+                </td>
+            </tr>
+        </table>
+</body></html>
