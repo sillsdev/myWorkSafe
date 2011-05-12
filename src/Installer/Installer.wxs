@@ -42,9 +42,9 @@ rest of the app the first time the icon is run.  If this is not behavior you
 are trying to support, you're better off using non-advertised shortcuts. "-->
 
 
-    <PropertyRef Id="NETFRAMEWORK35_CLIENT" />
+    <PropertyRef Id="NETFRAMEWORK35" />
     <Condition Message="Before myWorkSafe can install, you need to install Microsoft's free .NET Framework 3.5.  A full discussion of myWorkSafe's requirements can be found at myWorkSafe.org/wiki/Prerequisites.">
-      Installed OR NETFRAMEWORK35_CLIENT
+      Installed OR NETFRAMEWORK35
     </Condition>
 
     <!--because of bug, this needs to be 1 -->
