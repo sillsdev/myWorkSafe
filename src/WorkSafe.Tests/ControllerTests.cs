@@ -304,6 +304,46 @@ namespace WorkSafe.Tests
                 Assert.AreEqual(0, source.DeleteFileCount);
             }
         }
+
+
+        [Test]
+        public void Run_FileIncludedInPreviousGroup_NotCopiedAgainLater()
+        {
+            using (var from = new TemporaryFolder("synctest_source"))
+            using (var to = new TemporaryFolder("synctest_dest"))
+            {
+                File.WriteAllText(from.Combine("one.txt"), "Blah blah");
+                var source1 = new RawDirectoryGroup("1", from.Path, null, null);
+
+
+                var source2 = new RawDirectoryGroup("2", from.Path, null, null);
+                var groups = new List<FileGroup>(new[] { source1, source2 });
+                var sync = new MirrorController(to.Path, groups, 100, new ConsoleProgress());
+                sync.Run();
+                AssertFileExists(sync, source1, to, "one.txt");
+                AssertFileDoesNotExist(sync, source2, to, "one.txt");
+            }
+        }
+
+
+        [Test]
+        public void Run_FileExcludedByPreviousGroup_ButIsCopiedByLaterGroup()
+        {
+            using (var from = new TemporaryFolder("synctest_source"))
+            using (var to = new TemporaryFolder("synctest_dest"))
+            {
+                File.WriteAllText(from.Combine("one.txt"), "Blah blah");
+                var source1 = new RawDirectoryGroup("1", from.Path, null, null);
+                source1.Filter.FileNameExcludes.Add("*.txt");
+                var source2 = new RawDirectoryGroup("2", from.Path, null, null);
+                var groups = new List<FileGroup>(new[] { source1, source2 });
+                var sync = new MirrorController(to.Path, groups, 100, new ConsoleProgress());
+                sync.Run();
+                AssertFileExists(sync, source2, to, "one.txt");
+                AssertFileDoesNotExist(sync, source1, to, "one.txt");
+            }
+        }
+        
         [Test]
         public void Run_ToldToSkipExtensionButSourceHasUpperCaseOfExt_DoesNotCopy()
         {

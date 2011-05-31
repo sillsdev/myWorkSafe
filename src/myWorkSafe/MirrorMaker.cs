@@ -7,13 +7,15 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 using Palaso.Code;
+using Palaso.Progress.LogBox;
 
 
 namespace myWorkSafe
 {
 	public class MirrorMaker :IDisposable
-	{       
-        public event EventHandler<MirrorEventArgs> StartingDirectory;
+	{
+	    private readonly IProgress _progress;
+	    public event EventHandler<MirrorEventArgs> StartingDirectory;
 		public event EventHandler<MirrorEventArgs> StartingFile;
 		public event EventHandler<ItemHandlingErrorArgs> ItemHandlingError;
 
@@ -24,9 +26,10 @@ namespace myWorkSafe
 		private bool _cancelRequested;
 		public bool WasCancelled;
 
-		//todo: remove
+		//Tests Only
 		public MirrorMaker(string sourceRootPath, string parentOfDestinationRootPath)
 		{
+		    _progress = new ConsoleProgress();
 			_sourceRootPath = sourceRootPath;
 			_parentOfDestinationRootPath = parentOfDestinationRootPath;
 			_skippedOrRemovedDirectories = new List<string>();
@@ -39,11 +42,13 @@ namespace myWorkSafe
 			Run(_sourceRootPath, _parentOfDestinationRootPath);
 		}
 
-		public MirrorMaker()
+		public MirrorMaker(IProgress progress)
 		{
-			_skippedOrRemovedDirectories = new List<string>();
+		    _progress = progress;
+		    _skippedOrRemovedDirectories = new List<string>();
 		}
-		public void Run(string sourceRootPath, string parentOfDestinationRootPath)
+
+	    public void Run(string sourceRootPath, string parentOfDestinationRootPath)
 		{
 			_sourceRootPath = sourceRootPath;
 			_parentOfDestinationRootPath = parentOfDestinationRootPath;
@@ -63,6 +68,8 @@ namespace myWorkSafe
 				_remainingDestItems.AddRange(scanner.Scan(_parentOfDestinationRootPath));
 			}
 
+	        List<string> directoriesWeCreated = new List<string>();
+
 			//nb: this relies on the directories being order from parent-to-children
 			foreach (var sourceDirectory in sourceItems.Where(i => i.Type == FileOrDirectory.FileOrDirectoryType.Directory))
 			{
@@ -74,7 +81,7 @@ namespace myWorkSafe
 				string destination = GetDestination(sourceDirectory.Path);
 				if(ShouldCreateDirectory(sourceDirectory))
 				{
-					CreateDirectory(sourceDirectory.Path);
+                    directoriesWeCreated.Add(CreateDirectory(sourceDirectory.Path));
 				}
 				RemoveDestinationItemFromRemainingList(destination);
 			}
@@ -102,9 +109,44 @@ namespace myWorkSafe
 				WasCancelled = true;
 				return;
 			}
+
+            RemoveEmptyDirectories(directoriesWeCreated);
 		}
 
-		private void CreateDirectory(string sourcePath)
+        /// <summary>
+        /// We make a lot of empty directories, because we make it, then later decide if we should copy any of
+        /// the files from the source into it.  So this removes them if we didn't
+        /// </summary>
+	    private void RemoveEmptyDirectories(List<string> directories)
+	    {
+            bool didRemoveADirectory;
+            //we loop because we might encounter an outer directory first, but can't delete it because some inner empty directory
+            //hasn't been deleted yet.
+            do
+            {
+                didRemoveADirectory=false;
+	            foreach (var directory in directories)
+	            {
+	                if (Directory.Exists(directory) && 0 == Directory.GetFiles(directory).Length &&
+	                    0 == Directory.GetDirectories(directory).Length)
+	                {
+	                    try
+	                    {
+	                        _progress.WriteVerbose("Deleting the empty directory '{0}'", directory);
+	                        Directory.Delete(directory);
+	                        didRemoveADirectory = true;
+	                    }
+	                    catch (Exception e)
+	                    {
+	                        _progress.WriteWarning("Could not delete the empty directory '{0}' Reason:{1}", directory,
+	                                               e.Message);
+	                    }
+	                }
+	            }
+            } while (didRemoveADirectory);
+	    }
+
+	    private string CreateDirectory(string sourcePath)
 		{
 			string destination = GetDestination(sourcePath);
 			try
@@ -116,6 +158,7 @@ namespace myWorkSafe
 				//enhance: create and use a special CreateDirector action
 				RaiseItemHandlingError(destination, MirrorAction.Create, error);
 			}
+	        return destination;
 		}
 
 		private void RemoveDestinationItemFromRemainingList(string destination)

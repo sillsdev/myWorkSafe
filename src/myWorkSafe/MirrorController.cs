@@ -103,7 +103,7 @@ namespace myWorkSafe
 				InvokeGroupProgress();
 
 				string destinationSubFolder = group.GetDestinationSubFolder(DestinationRootForThisUser);
-				using (_engine = new MirrorMaker())
+				using (_engine = new MirrorMaker(_progress))
 				{
 					_engine.StartingDirectory += OnStartingDirectory;
 					_engine.StartingFile += OnStartingFile;
@@ -194,10 +194,10 @@ namespace myWorkSafe
 			{
 				case MirrorSituation.DirectoryMissing:
                     _progress.WriteVerbose("[{0}] Creating on backup {1}", _currentGroup.Name, args.GetDestinationPathForDisplay());
-					_alreadyAccountedFor.Add(args.Path);
+					//_alreadyAccountedFor.Add(args.Path);
 					break;
 				case MirrorSituation.DirectoryExists:
-					_alreadyAccountedFor.Add(args.Path);
+					//_alreadyAccountedFor.Add(args.Path);
 					break;
 				case MirrorSituation.DirectoryOnDestinationButNotSource:
 					if (!_currentGroup.NormallyPropogateDeletions
@@ -296,7 +296,7 @@ namespace myWorkSafe
 
 	    private void MirrorGroup(FileGroup group)
 	    {
-	        using (_engine = new MirrorMaker())
+	        using (_engine = new MirrorMaker(_progress))
 	        {
 	            try
 	            {
@@ -459,9 +459,10 @@ namespace myWorkSafe
             {
                 if (args.Situation == MirrorSituation.DirectoryMissing)
                 {
-                    if (_currentGroup.ShouldSkipSubDirectory(args.Path))
+                    string reasonForSkiping;
+                    if (_currentGroup.ShouldSkipSubDirectory(args.Path, out reasonForSkiping))
                     {
-                        _progress.WriteVerbose("{0} [{1}] Skipping Folder {2}", mode, _currentGroup.Name, args.Path);
+                        _progress.WriteVerbose("{0} [{1}] Skipping folder '{2}' because {3}", mode, _currentGroup.Name, args.Path, reasonForSkiping);
                         return true;
                     }
                     //TODO: what about if it is not missing, but should be removed ?
@@ -471,13 +472,14 @@ namespace myWorkSafe
                 if (_alreadyAccountedFor.Contains(args.Path))
                 {
                     _progress.WriteVerbose(
-                        "[{0}] Skipping new file because it was already backed up by a previous group:  {1}",
-                        _currentGroup.NewFileCount, args.Path);
+                        "[{0}] Skipping '{1}' because it was already backed up by a previous group",
+                        _currentGroup.Name, args.Path);
                     return true;
                 }
-                if (_currentGroup.ShouldSkipFile(args.Path))
+                string reasonForSkipping;
+                if (_currentGroup.ShouldSkipFile(args.Path, out reasonForSkipping))
                 {
-                    _progress.WriteVerbose("[{0}] Skipping new file: {1}", _currentGroup.Name, args.Path);
+                    _progress.WriteVerbose("[{0}] Skipping '{1}' because {2}", _currentGroup.Name, args.Path, reasonForSkipping);
                     return true;
                 }
             }

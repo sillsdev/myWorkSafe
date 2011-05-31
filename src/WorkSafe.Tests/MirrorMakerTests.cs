@@ -31,17 +31,28 @@ namespace WorkSafe.Tests
 			_destTempFolder.Dispose();
 		}
 
-		[Test]
-		public void Run_EmptyDestination_DestinationFolderCreated()
+	    [Test] public void Run_HaveSomethingToCopyAndDestinationIsEmpty_DestinationFolderCreated()
 		{
 			using (var tempDest = new TemporaryFolder("MirrorMakerDest-special"))
 			{
 				Directory.Delete(tempDest.Path);
 				var specialMaker = new MirrorMaker(_sourceRoot, tempDest.Path);
+			    _sourceTempFolder.GetNewTempFile(true); //if there's nothing to copy, mws will delete the destination
 				specialMaker.Run();
 				Assert.IsTrue(Directory.Exists(tempDest.Path));
 			}
 		}
+        [Test]
+        public void Run_HaveNothingToCopyAndDestinationIsEmpty_DestinationFolderRemoved()
+        {
+            using (var tempDest = new TemporaryFolder("MirrorMakerDest-special"))
+            {
+                Directory.Delete(tempDest.Path);
+                var specialMaker = new MirrorMaker(_sourceRoot, tempDest.Path);
+                specialMaker.Run();
+                Assert.IsFalse(Directory.Exists(tempDest.Path));
+            }
+        }
 
 		[Test]
 		public void Run_EmptyDestination_FileCopied()
