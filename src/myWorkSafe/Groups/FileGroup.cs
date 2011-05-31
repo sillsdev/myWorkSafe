@@ -124,27 +124,62 @@ namespace myWorkSafe.Groups
 		}
 
 
-		public bool ShouldSkipSubDirectory(string path)
+		public bool ShouldSkipSubDirectory(string path, out string reasonForSkiping)
 		{
-		    path = SafeIO.Directory.GetLeafDirectoryName(path);
+		    //path = SafeIO.Directory.GetLeafDirectoryName(path);
 			//we bracket with spaces so that we don't match substrings
-			string value = " " + path.ToLower() + " ";
-			return Filter.SubdirectoryExcludes.Any(s => (" " + s.ToLower() + " ") == value);
+			//string value = " " + path.ToLower() + " ";
+
+            var parts = path.Split(new char[] { Path.DirectorySeparatorChar });
+            foreach (var part in parts)
+            {
+                foreach (var pattern in Filter.SubdirectoryExcludes)
+                {
+                    if (pattern.ToLower() == part.ToLower())
+                    {
+                        reasonForSkiping = string.Format("'{0}' matches directory exclusion pattern '{1}'", part, pattern);
+                        return true;
+                    }
+                }
+            }
+
+//		    foreach (var pattern in Filter.SubdirectoryExcludes)
+//		    {
+//		        if((" " + pattern.ToLower() + " ") == value)
+//		        {
+//                    reasonForSkiping = string.Format("'{0}' matches directory exclusion pattern '{1}'",path, pattern); 
+//                    return true;
+//		        }
+//		    }
+		    reasonForSkiping = string.Empty;
+            return false;
 		}
 
-		public bool ShouldSkipFile(string relativePath)
+		public bool ShouldSkipFile(string relativePath, out string reasonForSkiping)
 		{
 			string value = "//"+relativePath.ToLower()+"//";
 			var parts = relativePath.Split(new char[] {Path.DirectorySeparatorChar});
 			foreach (var part in parts)
 			{
-				if(Filter.SubdirectoryExcludes.Any(s => s.ToLower() == part.ToLower()))
-					return true;
+			    foreach (var pattern in Filter.SubdirectoryExcludes)
+			    {
+			        if(pattern.ToLower() == part.ToLower())
+			        {
+                        reasonForSkiping = string.Format("'{0}' matches directory exclusion pattern '{1}'",part, pattern); 
+                        return true;
+			        }
+			    }
 			}
 
-            if (Filter.FileNameExcludes.Any(pattern => parts.Last().ToLower().EndsWith(pattern.Replace("*.","").ToLower())))
-                return true;
-
+		    foreach (var pattern in Filter.FileNameExcludes)
+		    {
+		        if(parts.Last().ToLower().EndsWith(pattern.Replace("*.","").ToLower()))
+		        {
+		            reasonForSkiping = string.Format("file name matches exclusion pattern: '{0}'", pattern);
+                    return true;
+		        }
+		    }
+		    reasonForSkiping = string.Empty;
 			return false;
 		}
 	}
