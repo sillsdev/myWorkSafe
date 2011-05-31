@@ -57,21 +57,27 @@
 <div><font size="2" class="style2">#I never would put something I want to backup on the desktop. 
     <br />[Desktop] 
     <br />skip 
-    <br />#My machine is loaded with other people’s data, but this language 
+    <br />
+    <br />
+    #My machine is loaded with other people’s data, but this language 
     <br />#is one we actually work in, so I want to give it priority 
     <br />
     <br />[EdoloData] 
     <br />rootFolder = $MyDocuments$ /LanguageData/Edolo 
     <br />
     <br />
-    #I keep my WeSay folder somewhere special</span>
-        class="style2"><br />
+    #I keep my WeSay folder somewhere special<br />
     [WeSay] 
-    <br />rootFolder=c:\dev\WeSayProjects 
-    <br />#I want to backup FieldWorks version 7 data, by looking in the Registry
+    <br />rootFolder=c:\dev\WeSayProjects<br />
+&nbsp;<br />#I want to backup FieldWorks version 7 data, by looking in the Registry
     <br />[FieldWorks7]
     <br />rootFolder=HKEY_LOCAL_MACHINE\SOFTWARE\SIL\FieldWorks\7.0,ProjectsDir
-  <br /></font></div>
+    <br />
+    #I don&#39;t want to backup the sample file which comes with FieldWorks<br />
+    excludeFolder=Sena 3<br />
+    #I don&#39;t want these lock files, either. Note, &quot;*&quot; only works at the beginning of 
+    file names, not in directories or other parts of filenames.<br />
+    excludeFile = *.lock<br /></font></div>
 
 <p>So far, we’ve seen two levels of settings: one comes with the program, and another can override that a user with special needs.&#160; There is a third level: drive-specific settings.&#160; For example, you could have one drive for data, and another for videos.&#160; In my case, I like to get a very small amount of data backed up constantly: my current list of passwords/registrations.&#160; To do that, place a file named, again, “myWorkSafe.ini” inside the folder used 
     for backup on the device; in my case, “f:/myWorkSafe-John-THINKPAD”. Here’s the contents:</p>
