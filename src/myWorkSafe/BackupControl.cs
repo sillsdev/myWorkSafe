@@ -342,7 +342,7 @@ namespace myWorkSafe
 		
 		}
 
-		bool GetIsCancellationPending(string pathUnused)
+		bool GetIsCancellationPending(MirrorEventArgs unused)
 		{
 			return _preparationWorker.CancellationPending || (_backupWorker!=null &&_backupWorker.CancellationPending);
 				
@@ -352,7 +352,7 @@ namespace myWorkSafe
 		/// returns true if we want to cancel
 		/// </summary>
 		/// <returns></returns>
-		public bool OnFileProgress(string path)
+        public bool OnFileProgress(MirrorEventArgs args)
 		{
 			InvokeIfRequired(()=>
 			                 	{
@@ -363,30 +363,53 @@ namespace myWorkSafe
 									}
 									var max = 40;
 									string display="";
-			                 		var parts = path.Split(new char[] {Path.DirectorySeparatorChar});
+			                 		var parts = args.Path.Split(new char[] {Path.DirectorySeparatorChar});
 									//in case the neame itself is too long...
 									if (parts.Length == 0)
 										return;
 									if (parts[parts.Length -1].Length > max)
 									{
-										var length = path.Length;
+										var length = args.Path.Length;
 										var start = length > max ? length - max : 0;
 										length = length > max ? max : length;
-										display = path.Substring(start, length);
+										display = args.Path.Substring(start, length);
 									}
 									else for (int i = parts.Length-1; i >= 0 ; i--)
 			                 		{
-										var potential = parts[i] + display;
+										var potential = parts[i] + "/" + display;
 										if (potential.Length > max)
 											break;
 			                 			display = potential;
 			                 		}
+			                 	    display = display.TrimEnd(new char []{'/'});
 
-
-			                 		_status.Text = string.Format("Copying files... ({0})", display);
+                                    switch(args.PendingAction)
+                                    {
+                                        case MirrorAction.Skip:
+			                 	            _status.Text = string.Format("Skipping {0}", display);
+                                            break;
+                                        case MirrorAction.Create:
+                                            if (args.Situation == MirrorSituation.DirectoryMissing)
+                                            {
+                                                break; // don't make it look like we're copying a directory which we may later delete (because it ends up empty), which is then confusing "Why does it keep copying that thing over and over?"
+                                            }
+			                 	            _status.Text = string.Format("Copying {0}", display);
+                                            break;
+                                        case MirrorAction.Delete:
+			                 	            _status.Text = string.Format("Processing {0}", display); //nb "deleting" would scare people
+                                            break;
+                                        case MirrorAction.DoNothing:
+                                            _status.Text = string.Format("Checking {0}", display);  //another euphemism
+                                            break;
+                                        case MirrorAction.Update:
+			                 	            _status.Text = string.Format("Updating {0}", display);
+                                            break;
+                                        default:
+                                            break;
+                                    }
 
 								});
-			return GetIsCancellationPending(path);
+			return GetIsCancellationPending(args);
 		}
 
 		public void InvokeIfRequired(Action action)

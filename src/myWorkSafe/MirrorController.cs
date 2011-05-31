@@ -136,6 +136,7 @@ namespace myWorkSafe
 			if (ShouldSkip("Backup", args))
 			{
 				args.PendingAction = MirrorAction.Skip;
+                InvokeProgress(args);
 				return;
 			}
 
@@ -352,22 +353,29 @@ namespace myWorkSafe
                     //which don't actually work.
                     if (e.Exception is UnauthorizedAccessException)
                     {
-                        _progress.WriteWarning("Could not access a directory or file: '{0}'. Reason={1}. Exception Follows:", e.Path, e.Exception.Message);
-                        return;
-                    } 
-/*                    if(e.Exception is AccessViolationException)
-                    {
-                        _progress.WriteWarning("Could not access a directory or file: '{0}'. Reason={1}. Exception Follows:", e.Path, e.Exception.Message);
-                        return;
+                        if (IsReparsePoint(e.Path))
+                        {
+                            //thinks like "my videos" junction in the windows 7 "my documents"
+                            _progress.WriteVerbose("Skipping link/junction: '{0}'.", e.Path);
+                            return;
+                        }
+                        else
+                        {
+                            _progress.WriteWarning(
+                                "Could not access a directory or file: '{0}'. Reason={1}. Exception Follows:", e.Path,
+                                e.Exception.Message);
+                        }
+
                     }
 
-  */
-				    var msg = string.Format("Error while processing file'{0}'. Reason={1}. Exception Follows:", e.Path,
-				                            e.Exception.Message);
-                    _progress.WriteError(msg);
-				    if(_firstErrorMessage!=null)
-                        _firstErrorMessage = msg;
-
+                    else
+                    {
+                        var msg = string.Format("Error while processing file'{0}'. Reason={1}. Exception Follows:", e.Path,
+                                                e.Exception.Message);
+                        _progress.WriteError(msg);
+                        if (_firstErrorMessage != null)
+                            _firstErrorMessage = msg;
+                    }
 					if(e.Exception !=null)
 						_progress.WriteException(e.Exception);
 
@@ -391,9 +399,22 @@ namespace myWorkSafe
 					}
 				}
 			}
-		
-		 
-		private void CleanupTempFiles()
+
+	    private bool IsReparsePoint(string path)
+	    {
+	        try
+	        {
+                var info = new FileInfo(path);
+                return (info.Attributes & FileAttributes.ReparsePoint) != 0;
+            }
+	        catch (Exception)
+	        {
+	            return false;
+	        }
+	    }
+
+
+	    private void CleanupTempFiles()
 		{
 			foreach (var group in _groups)
 			{
@@ -494,7 +515,7 @@ namespace myWorkSafe
 		/// <summary>
 		/// Return true if you want to cancel
 		/// </summary>
-		public event Func<string, bool> FileProgress;
+		public event Func<MirrorEventArgs, bool> FileProgress;
 
 		public event Action GroupProgress;
 
@@ -502,7 +523,7 @@ namespace myWorkSafe
 		{
 			if (FileProgress != null)
 			{
-				if (FileProgress(args.Path))
+				if (FileProgress(args))
 				{
 					_cancelRequested = true;
 					_engine.Cancel();
