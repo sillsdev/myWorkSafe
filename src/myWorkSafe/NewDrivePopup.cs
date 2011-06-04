@@ -32,7 +32,7 @@ namespace myWorkSafe
 			_goDownTimer.Interval = 50;
 			_goDownTimer.Tick += GoDownTimerTick;
 			_pauseTimer = new Timer();
-			_pauseTimer.Interval = 10000;
+			_pauseTimer.Interval = 15000;
 			_pauseTimer.Tick += PauseTimerTick;
 		}
 
