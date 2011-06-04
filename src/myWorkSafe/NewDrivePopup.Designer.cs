@@ -54,7 +54,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(179, 60);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Do you want to back up you work to this USB flash drive?";
+            this.label1.Text = "Do you want to back up your work to this USB flash drive?";
             // 
             // pictureBox1
             // 
