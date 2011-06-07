@@ -92,9 +92,21 @@ namespace myWorkSafe
 					WasCancelled = true;
 					return;
 				}
-				string destination = GetDestination(sourceFile.Path);
-				HandleFile(sourceFile.Path, destination);
-				RemoveDestinationItemFromRemainingList(destination);
+                try
+                {
+                    if(sourceFile.Path.Contains("BreakOnThisFile"))
+                    {
+                        throw new ApplicationException("testing");
+                    }
+                    string destination = GetDestination(sourceFile.Path);
+
+                    HandleFile(sourceFile.Path, destination);
+                    RemoveDestinationItemFromRemainingList(destination);
+                }
+                catch(Exception e)
+                {
+                    RaiseItemHandlingError(sourceFile.Path, MirrorAction.Unspecified, e);
+                }
 			}
 			
 			HandleRemainingDestinationDirectories();
@@ -388,7 +400,8 @@ namespace myWorkSafe
 
 	public enum MirrorAction { Skip, Create, Delete,
 		DoNothing,
-		Update
+		Update,
+        Unspecified
 	}
 	public enum MirrorSituation { DirectoryMissing, FileMissing, SourceFileOlder, SourceFileNewer,
 		DirectoryExists,
