@@ -149,10 +149,30 @@ namespace myWorkSafe
                 else
                 {
                     WIN32_FIND_DATA data;
-                    FindFirstFile(LongPathPrefix + path, out data);
-                    return DateTime.FromFileTimeUtc(((((long)data.ftLastWriteTime.dwHighDateTime) << 32) | data.ftLastWriteTime.dwLowDateTime));
+                    IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
+                    IntPtr handle = INVALID_HANDLE_VALUE;
+                    try
+                    {
+                        FindClose(FindFirstFile(LongPathPrefix + path, out data));
+                    }
+                    catch(Exception e)
+                    {
+                        throw new ApplicationException(string.Format("Error handling long file GetLastWriteTimeUtc('{0}'). Full path tried was '{1}'.", path, LongPathPrefix+path), e);
+                    }
+                    long fileTime = 0;
+                    try
+                    {
+                        return data.ftLastWriteTime.ToDateTime();
+                    }
+                    catch(Exception e)
+                    {
+                        throw new ApplicationException(string.Format("Error handling long file GetLastWriteTimeUtc('{0}'). Part that failed was DateTime.FromFileTimeUtc({1})", path, fileTime), e);
+                    }
+
                 }
             }
+
+
 
             public static void SetLastWriteTimeUtc(string path, DateTime time)
             {
@@ -191,7 +211,12 @@ namespace myWorkSafe
             internal static extern FileAttributes GetFileAttributes(string lpFileName);
 
             [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-            internal static extern Microsoft.Win32.SafeHandles.SafeHandleZeroOrMinusOneIsInvalid FindFirstFile(string lpFileName, out WIN32_FIND_DATA lpFindFileData);
+//            internal static extern Microsoft.Win32.SafeHandles.SafeHandleZeroOrMinusOneIsInvalid FindFirstFile(string lpFileName, out WIN32_FIND_DATA lpFindFileData);
+            internal static extern IntPtr FindFirstFile(string lpFileName, out WIN32_FIND_DATA lpFindFileData);
+
+            [DllImport("kernel32.dll")]
+            public static extern bool FindClose(IntPtr hFindFile);
+
 
             internal const int INVALID_FILE_ATTRIBUTES = -1;
 
@@ -209,6 +234,19 @@ namespace myWorkSafe
             [DllImport("kernel32.dll")]
             public static extern bool GetFileTime(SafeFileHandle hf, out long cre, out long acc, out long mod);
 
+        }
+    }
+
+    /// <summary>
+    /// from http://stackoverflow.com/questions/724148/is-there-a-faster-way-to-scan-through-a-directory-recursively-in-net/724184#724184
+    /// </summary>
+    public static class FILETIMEExtensions
+    {
+        public static DateTime ToDateTime(this System.Runtime.InteropServices.ComTypes.FILETIME filetime)
+        {
+            long highBits = filetime.dwHighDateTime;
+            highBits = highBits << 32;
+            return DateTime.FromFileTimeUtc(highBits + (long)filetime.dwLowDateTime);
         }
     }
 }
