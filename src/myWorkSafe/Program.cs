@@ -182,7 +182,16 @@ namespace myWorkSafe
         
 	    private static bool IsAKnownBackupDrive(UsbDriveInfo drive)
 		{
-			return Directory.Exists(BackupControl.GetDestinationFolderPath(drive.RootDirectory.ToString()));
+            //though I could not reproduce it D Rowe had found that removing the drive before the popup closed gave and exception here
+            try
+            {
+                return Directory.Exists(BackupControl.GetDestinationFolderPath(drive.RootDirectory.ToString()));
+            }
+            catch
+            {
+                return false;
+            }
+
 		}
 
 		private static List<UsbDriveInfo> GetFoundDrives()
