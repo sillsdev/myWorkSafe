@@ -88,8 +88,15 @@ namespace myWorkSafe
             if (e.Button != MouseButtons.Left)
                 return;//don't do this when they use the menu
 
-		    if(DialogResult.Abort == new InfoWindow().ShowDialog())
-				Application.Exit();
+            switch (new InfoWindow().ShowDialog())
+            {
+                case DialogResult.Abort:
+                    Application.Exit();
+                    break;
+                case DialogResult.Yes:
+                    OnStartViaMenu(null, null);
+                    break;
+            }
 		}
 
 		static void Application_Idle(object sender, EventArgs e)
