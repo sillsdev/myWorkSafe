@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Windows.Forms;
 using Palaso.IO;
+using Palaso.UsbDrive;
 
 namespace myWorkSafe
 {
@@ -10,6 +13,7 @@ namespace myWorkSafe
 		public InfoWindow()
 		{
 			InitializeComponent();
+            SetWindowText();
 		}
 
 		private void InfoWindow_Load(object sender, EventArgs e)
@@ -18,7 +22,17 @@ namespace myWorkSafe
 			var path = FileLocator.GetFileDistributedWithApplication( "about.htm");
 			_webBrowser.Navigate(path);
 
+		    flowLayoutPanel1.Controls.Clear();
+		    var control = new DriveCommandsAndSettingsControl("x: foo");
+            flowLayoutPanel1.Controls.Add(control);
+
 		}
+
+        private void SetWindowText()
+        {
+            var ver = Assembly.GetExecutingAssembly().GetName().Version;
+            Text = string.Format("{0}, build {1}.{2}.{3}", Assembly.GetExecutingAssembly().GetName().Name, ver.Major, ver.Minor, ver.Build);
+        }
 
 		private void OnExitClick(object sender, EventArgs e)
 		{

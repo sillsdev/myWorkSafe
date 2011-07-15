@@ -119,23 +119,23 @@ namespace myWorkSafe
 		{
 			MultiProgress progress= new MultiProgress(new IProgress[]{});
 
-		    List<UsbDriveInfo> foundDrives = GetFoundDrives();
-			var drive = foundDrives.FirstOrDefault(d => d.RootDirectory.ToString() == driveLetter);
-			if (drive == null || !drive.IsReady)
+		    IEnumerator<Drive> foundDrives = Drive.GetFoundDrives();
+			var firstDrive = foundDrives.FirstOrDefault(d => d.RootDirectory.ToString() == driveLetter);
+			if (firstDrive == null || !firstDrive.IsReady)
 				return;
 			try
 			{
-				if (!IsAKnownBackupDrive(drive))
+				if (!IsAKnownBackupDrive(firstDrive))
 				{
 					if(DialogResult.Yes == new NewDrivePopup().ShowDialog())
 					{
-						Directory.CreateDirectory(BackupControl.GetDestinationFolderPath(drive.RootDirectory.ToString()));
+						Directory.CreateDirectory(BackupControl.GetDestinationFolderPath(firstDrive.RootDirectory.ToString()));
 					}
 				}
 				//based on that popup, it might now pass this test:
-				if (IsAKnownBackupDrive(drive))
+				if (IsAKnownBackupDrive(firstDrive))
 				{
-					LaunchBackup(progress, GetFileLogProgress(progress), drive);
+					LaunchBackup(progress, GetFileLogProgress(progress), firstDrive);
 				}
 			}
 			catch (Exception error)
@@ -180,19 +180,7 @@ namespace myWorkSafe
 	        }
 	    }
         
-	    private static bool IsAKnownBackupDrive(UsbDriveInfo drive)
-		{
-            //though I could not reproduce it D Rowe had found that removing the drive before the popup closed gave and exception here
-            try
-            {
-                return Directory.Exists(BackupControl.GetDestinationFolderPath(drive.RootDirectory.ToString()));
-            }
-            catch
-            {
-                return false;
-            }
 
-		}
 
 		private static List<UsbDriveInfo> GetFoundDrives()
 		{
@@ -246,6 +234,7 @@ namespace myWorkSafe
 
 			new MainWindow(backupControl, progress).ShowDialog();
 		}
+
 
 		private static void SetUpErrorHandling()
 		{

@@ -53,6 +53,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\Palaso.dll</HintPath>
     </Reference>
+    <Reference Include="PalasoUIWindowsForms">
+      <HintPath>..\..\lib\PalasoUIWindowsForms.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -81,6 +84,13 @@
     </Compile>
     <Compile Include="AllDonePopup.Designer.cs">
       <DependentUpon>AllDonePopup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Drive.cs" />
+    <Compile Include="DriveCommandsAndSettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="DriveCommandsAndSettingsControl.Designer.cs">
+      <DependentUpon>DriveCommandsAndSettingsControl.cs</DependentUpon>
     </Compile>
     <Compile Include="MirrorController.cs" />
     <Compile Include="DirectoryScanner.cs" />
@@ -133,6 +143,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AllDonePopup.resx">
       <DependentUpon>AllDonePopup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DriveCommandsAndSettingsControl.resx">
+      <DependentUpon>DriveCommandsAndSettingsControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="InfoWindow.resx">
       <DependentUpon>InfoWindow.cs</DependentUpon>
