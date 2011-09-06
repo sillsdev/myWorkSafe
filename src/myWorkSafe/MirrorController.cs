@@ -339,8 +339,9 @@ namespace myWorkSafe
 	    void OnItemHandlingError(object sender, ItemHandlingErrorArgs e)
 		{
 	            //todo: make work for non-english
-				if(e.Exception.Message.Contains("space")
-					|| e.Exception.Message.Contains("full"))
+				if(!e.Exception.Message.Contains("too long") 
+                    && (e.Exception.Message.Contains("space")
+					|| e.Exception.Message.Contains("full")))
 				{
 					_progress.WriteError(e.Exception.Message);
 					_gotIOExceptionProbablyDiskFull = true;
