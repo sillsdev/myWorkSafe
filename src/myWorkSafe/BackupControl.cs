@@ -442,25 +442,35 @@ namespace myWorkSafe
 
 		void OnBackupWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
-			if (Progress.ErrorEncountered)
-			{
-				ChangeState(State.ErrorEncountered);
-			}
-			else
-			{
-				ChangeState(State.Succeeded);
+            try //In Oct-2011 I got a typically vague null value crash report in this method.  
+                //Added the check to ParentForm above, and am wrapping it in a catch block
+		    {
+		        if (Progress.ErrorEncountered)
+		        {
+		            ChangeState(State.ErrorEncountered);
+		        }
+		        else
+		        {
+		            ChangeState(State.Succeeded);
 
-                if (!((MainWindow)ParentForm).IsActiveWindow)
-                {
-                    using (var dlg = new AllDonePopup())
-                    {
-                        dlg.ShowDialog();
-                        CloseNow.Invoke();
-                    }
-                }
+		            if (ParentForm == null || !((MainWindow) ParentForm).IsActiveWindow)
+		            {
+		                using (var dlg = new AllDonePopup())
+		                {
+		                    dlg.ShowDialog();
+		                    CloseNow.Invoke();
+		                }
+		            }
 
-			    //AttemptEjectInAMoment();
-			}
+		            //AttemptEjectInAMoment();
+		        }
+		    }
+            catch(Exception error) 
+            {
+#if DEBUG
+                throw error;    // nothing in here is worth talking to the user about
+#endif
+            }
 		}
 
 		private void AttemptEjectInAMoment()
