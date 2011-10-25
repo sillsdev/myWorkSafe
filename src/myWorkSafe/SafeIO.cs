@@ -19,7 +19,9 @@ namespace myWorkSafe
     class SafeIO
     {
 
-        internal const int MAX_PATH = 260;
+        // Error says "The fully qualified file name must be less than 260 characters, and the directory name must be less than 248 characters.", even when it hit a directory with 254 characters.
+        // So, um, I'm going to make this 248 now.
+        internal const int MAX_PATH = 248;//260;
     
         public class Directory
         {

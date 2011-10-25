@@ -368,7 +368,14 @@ namespace myWorkSafe
                         }
 
                     }
+                    else if(e.Exception is PathTooLongException)
+                    {
+                        //we don't want to keep getting error reports, when the longpath stuff can't cope (not sure *why* it doesn't... maybe fat32 rather than ntfs on sticks?
 
+                            _progress.WriteWarning(
+                                "Windows could not handle this folder which is extremely deep: '{0}'. Reason={1}. Exception Follows:", e.Path,
+                                e.Exception.Message);
+                   }
                     else
                     {
                         var msg = string.Format("Error while processing file'{0}'. Reason={1}. Exception Follows:", e.Path,
