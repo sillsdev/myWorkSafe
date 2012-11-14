@@ -5,9 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using Dolinay; //drive detector
-
+using Palaso.Progress;
 using myWorkSafe.Properties;
-using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.UsbDrive;
 

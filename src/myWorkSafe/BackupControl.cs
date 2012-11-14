@@ -9,12 +9,11 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Dolinay;
-
+using Palaso.Progress;
 using myWorkSafe.Groups;
 using myWorkSafe.Usb;
 using System.IO;
 using Palaso.IO;
-using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 
 
