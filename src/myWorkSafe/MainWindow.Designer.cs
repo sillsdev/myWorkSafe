@@ -1,4 +1,4 @@
-﻿using Palaso.Progress.LogBox;
+﻿using Palaso.UI.WindowsForms.Progress;
 
 namespace myWorkSafe
 {

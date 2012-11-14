@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Palaso.Progress;
 using myWorkSafe.Groups;
 using Palaso.Code;
-using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 
 namespace myWorkSafe
@@ -268,9 +268,10 @@ namespace myWorkSafe
                     }
                     catch (Exception error)
                     {
-                        _progress.WriteError("Exception processing group: " + group.Name);
+                        var message = "Exception processing group: " + group.Name;
+                        _progress.WriteError(message);
                         _progress.WriteException(error);
-                        UsageReporter.ReportException(false,"backup",error);
+                        UsageReporter.ReportException(false,"backup",error, message);
                     }
                     _engine = null;
                     _progress.WriteMessage("Controller finished normally.");

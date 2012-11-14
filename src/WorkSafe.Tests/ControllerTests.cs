@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Palaso.Progress;
 using myWorkSafe;
 using myWorkSafe.Groups;
 using NUnit.Framework;
-using Palaso.Progress.LogBox;
 using Palaso.TestUtilities;
 using System.IO;
 using Palaso.Extensions;

@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 11
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkSafe.Tests", "src\WorkSafe.Tests\WorkSafe.Tests.csproj", "{212AD974-7299-48B7-B9BD-A63250A54999}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "myWorkSafe", "src\myWorkSafe\myWorkSafe.csproj", "{C573DDE1-9BC6-4358-8671-3F5BC17462F1}"
