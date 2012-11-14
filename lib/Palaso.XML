@@ -4,6 +4,125 @@
         <name>Palaso</name>
     </assembly>
     <members>
+        <member name="T:Palaso.WritingSystems.StandardTags">
+            <summary>
+            This class parses the IANA subtag registry in order to provide a list of valid language, script, region and variant subtags
+            for use by the Rfc5646Tag and other classes.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.StandardTags.IsPrivateUseRegionCode(System.String)">
+            <summary>
+            Determines whether the specified region code is private use. These are considered valid region codes,
+            but not predefined ones with a known meaning.
+            </summary>
+            <param name="regionCode">The region code.</param>
+            <returns>
+            	<c>true</c> if the region code is private use.
+            </returns>
+        </member>
+        <member name="P:Palaso.WritingSystems.StandardTags.IanaVariantSubtag.Prefixes">
+            <summary>
+            A Variant with no prefixes (prefixes will be null) may be applied to any language. One with one or more prefixes may only be
+            applied to those language tags which begin with that prefix. (This is currently not enforced, but the information is available
+            for use by dialogs which display variant choices.)
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.Migration.Rfc5646TagCleaner.MoveFirstPartToPrivateUseIfNecessary(Palaso.WritingSystems.Migration.Rfc5646TagCleaner.SubTag,System.Func{System.String,System.Boolean},System.String,System.Boolean)">
+            <summary>
+            This is used to move one part if appropriate from the 'from' subtag to private use.
+            Alternatively, if any part is appropriate for the tag according to the test predicate,
+            it is moved to the first position (unless it follows an x- and keepStandardPartInPrivateUse is true).
+            If we didn't find a valid part, but did move something, insert standardPrivateCode at the START of "from".
+            As a side effect, this method may remove non-alphanumeric characters from the from tag.
+            (I don't like having such a side effect, but it seems necessary to produce the desired behavior).
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.Migration.Rfc5646TagCleaner.MoveStandardPartToStart(Palaso.WritingSystems.Migration.Rfc5646TagCleaner.SubTag,System.Func{System.String,System.Boolean},System.Boolean)">
+            <summary>
+            If there is a standard part (that passes test) in the parts of the subtag, move it to the start and return true.
+            If keepStandardPartInPrivateUse is true, only a part before the first 'x' may be moved.
+            Return true if an acceptable part was found.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.Migration.Rfc5646TagCleaner.MovePartsToPrivateUseIfNecessary(Palaso.WritingSystems.Migration.Rfc5646TagCleaner.SubTag)">
+            <summary>
+            If the given subtag has an "x" part move all subsequent parts into private use and remove the x 
+            and all subsequent parts from the from SubTag.
+            </summary>
+            <param name="from"></param>
+        </member>
+        <member name="M:Palaso.WritingSystems.Migration.Rfc5646TagCleaner.MoveTagsMatching(Palaso.WritingSystems.Migration.Rfc5646TagCleaner.SubTag,Palaso.WritingSystems.Migration.Rfc5646TagCleaner.SubTag,System.Predicate{System.String},System.Predicate{System.String})">
+            <summary>
+            This method should move all subtag parts in the 'from' subtag which match the moveAllMatching predicate into the 'to' subtag.
+            Because some parts of a subtag may match in more than one language tag area care must be taken to prevent emptying all parts of
+            one subtag into another so the first part that matches the keepFirstMatching predicate will not be moved.
+            i.e. if the languageTag is 'from' and the regionTag is 'to' and keepFirstMatching matches language codes and moveAllMatching
+            matches region codes, all region looking parts would be placed in 'to' with the possible exception of the first language looking 
+            part. 
+            </summary>
+            <param name="from">SubTag to move parts from</param>
+            <param name="to">SubTag to move matching parts to</param>
+            <param name="moveAllMatching">predicate matching parts to move</param>
+            <param name="keepFirstMatching">predicate matching part to keep</param>
+        </member>
+        <member name="T:Palaso.WritingSystems.Migration.GlobalWritingSystemRepositoryMigrator">
+            <summary>
+             This migrates the global writing system repository. This migrator will not remove older versions of the repository, rather
+             it leaves the older versions behind for apps that may be running older versions of the palaso library.
+             Note that the migrator does not continue to harvest data from older versions of the library.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.Migration.GlobalWritingSystemRepositoryMigrator.#ctor(System.String,Palaso.WritingSystems.Migration.WritingSystemsLdmlV0To1Migration.LdmlVersion0MigrationStrategy.MigrationHandler)">
+            <summary>
+             Initializes the migrator with the given basePath (i.e. excluding the version), and a callback
+             for informing the consumer of changes to writing system tags during migration. Applications
+             should ensure that all writing systems tags they store are updated accordingly when the callback
+             is called.
+            </summary>
+            <param name="basePath"></param>
+            <param name="migrationHandler"></param>
+        </member>
+        <member name="M:Palaso.WritingSystems.Migration.GlobalWritingSystemRepositoryMigrator.NeedsMigration">
+            <summary>
+             Returns true if migration is required. Simply returns true if the destination folder is present.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.WritingSystems.Migration.GlobalWritingSystemRepositoryMigrator.Migrate">
+            <summary>
+             Performs the migration. If existing, but old, ldml is present then it is migrated. Failing that
+             ldml is harvested from older versions of the library, or the older flex location.
+             If both old palaso, and flex locations have the same ldml file the flex version is preferred.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.Migration.GlobalWritingSystemRepositoryMigrator.VersionPath(System.Int32)">
+            <summary>
+             Returns the versioned path to the global writing system store (i.e. including the version).
+            </summary>
+            <param name="version"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Palaso.WritingSystems.Migration.GlobalWritingSystemRepositoryMigrator.FlexLdmlPathPre0">
+            <summary>
+             The path to old flex ldml files.
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.Migration.GlobalWritingSystemRepositoryMigrator.PalasoLdmlPathPre0">
+            <summary>
+             The path to old palaso ldml files.
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.Migration.GlobalWritingSystemRepositoryMigrator.BasePath">
+            <summary>
+             The base path (i.e. excluding the version) to the global writing system store.
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.Migration.GlobalWritingSystemRepositoryMigrator.CurrentVersionPath">
+            <summary>
+             Returns the versioned path to the current global writing system store.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Spart.Parsers.Composite.XorParser">
             <summary>
             Recognizes anything which is found in the first parser or the second, but not both
@@ -175,13 +294,34 @@
             <param name="scanner">scanner</param>
             <returns>the match</returns>
         </member>
+        <member name="T:Palaso.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Palaso.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Palaso.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Palaso.Properties.Resources.spy16x16">
+            <summary>
+              Looks up a localized resource of type System.Drawing.Bitmap.
+            </summary>
+        </member>
         <!-- Badly formed XML comment ignored for member "T:Palaso.Progress.XslTransformWithProgress" -->
         <member name="T:Palaso.Progress.XslTransformWithProgress.CancelingException">
             <summary>
             used to break us out of the xslt transformer if the user cancels
             </summary>
         </member>
-        <member name="M:Palaso.Network.RobustNetworkOperation.Do(System.Action{System.Net.IWebProxy})">
+        <member name="M:Palaso.Network.RobustNetworkOperation.Do(System.Action{System.Net.IWebProxy},System.Action{System.String})">
             <summary>
             Perform a web action, trying various things to use a proxy if needed, including requesting
             (and remembering) user credentials from the user.
@@ -193,7 +333,7 @@
             for testing
             </summary>
         </member>
-        <member name="M:Palaso.Network.RobustNetworkOperation.DoHttpGetAndGetProxyInfo(System.String,System.String@,System.String@,System.String@)">
+        <member name="M:Palaso.Network.RobustNetworkOperation.DoHttpGetAndGetProxyInfo(System.String,System.String@,System.String@,System.String@,System.Action{System.String})">
             <summary>
             Used by Chorus to get proxy name, user name, and password of the remote repository.
             </summary>
@@ -217,6 +357,12 @@
             Gets or sets the item for this event args
             </summary>
             <value>The item.</value>
+        </member>
+        <member name="M:Palaso.Code.IClonableGeneric`1.Clone">
+            <summary>
+            Deepclone
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:Palaso.Base32.Base32Convert">
             <summary>
@@ -249,6 +395,317 @@
             This is suitable for encoding sort keys in xml documents such
             that xslt 1 can produce a proper ordering.
             </remarks>
+        </member>
+        <member name="T:Palaso.WritingSystems.Migration.WritingSystemLdmlVersionGetter">
+            <summary>
+            This identifies the version of an LDML file via /ldml/special/palaso:version/@value node
+            Note that there is an exception for LDML files containing /ldml/identity/language/@type beginning with "x-". 
+            This is in order to accomodate Flex LDML files that store enirely private use language tags differently.
+            There should also be checks for private use script and region, but we'll wait and see if this is really a problem.
+            The counterpart to this exception is found in the LdmlDataMapper which treats these types of files specially.
+            </summary>
+        </member>
+        <member name="T:Palaso.WritingSystems.LdmlNodeComparerV0">
+            <summary>
+            Class for comparison of order of nodes in an LDML document.
+            Based on http://www.unicode.org/cldr/data/docs/design/ldml_canonical_form.html
+            The supplemental metadata shipped with the current CLDR release will have more complete
+            element and attribute order data.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.LdmlNodeComparerV0.CompareAttributeValues(System.Xml.XmlNode,System.Xml.XmlNode)">
+            <summary>
+            Compares two attribute values.  There is a value order table that defines the order of values
+            for some attributes of some elements.  After that, sort in numeric order, and then in alphabetic order.
+            There is a more complicated rule for the "type" attribute of the "zone" element, but since we're
+            not using that element at this time, I'm not going to try to write code for it.
+            </summary>
+        </member>
+        <member name="T:Palaso.Migration.FolderMigrator">
+            <summary>
+             Migrates a set of files (of one type) in a folder matching an optional SearchPattern up to the given version using a set of strategies to migrate each
+             version of the file.
+            </summary>
+        </member>
+        <member name="M:Palaso.Migration.FolderMigrator.#ctor(System.Int32,System.String)">
+            <summary>
+             Constructor
+            </summary>
+            <param name="versionToMigrateTo">Target version to migrate to</param>
+            <param name="sourcePath">FolderMigratorProblemHandler callback to pass exceptions thrown during migration</param>
+        </member>
+        <member name="M:Palaso.Migration.FolderMigrator.#ctor(System.Int32,System.String,Palaso.Migration.FolderMigrator.FolderMigratorProblemHandler)">
+            <summary>
+             Constructor with FolderMigratorProblemHandler which is passed a collection of exceptions thrown during migration.
+            </summary>
+            <param name="versionToMigrateTo">Target version to migrate to</param>
+            <param name="sourcePath">Folder path containing files to migrate</param>
+            <param name="problemHandler">Folder path containing files to migrate</param>
+        </member>
+        <member name="M:Palaso.Migration.FolderMigrator.OnFolderMigrationProblem(System.Collections.Generic.IEnumerable{Palaso.Migration.FolderMigrator.FolderMigratorProblem})">
+            <summary>
+             Default FolderMigrationProblemHandler, does nothing.
+            </summary>
+        </member>
+        <member name="M:Palaso.Migration.FolderMigrator.Migrate">
+            <summary>
+             Perform the migration
+            </summary>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="P:Palaso.Migration.FolderMigrator.SearchPattern">
+            <summary>
+             The pattern used to match files to migrate.
+            </summary>
+        </member>
+        <member name="T:Palaso.Migration.FolderMigrator.FolderMigratorProblemHandler">
+            <summary>
+             A handler delegate for notification of issues encountered during migration.
+            </summary>
+            <param name="problems"></param>
+        </member>
+        <member name="T:Palaso.Migration.FolderMigrator.FolderMigratorProblem">
+            <summary>
+             FolderMigrationProblem contains information about exceptions thrown during execution
+             of a migration strategy.
+            </summary>
+        </member>
+        <member name="P:Palaso.Migration.FolderMigrator.FolderMigratorProblem.Exception">
+            <summary>
+             The exceptions that was thrown by the migration stragegy.
+            </summary>
+        </member>
+        <member name="P:Palaso.Migration.FolderMigrator.FolderMigratorProblem.FilePath">
+            <summary>
+             The file being migrated when the problem occurred.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.Migration.LdmlInFolderWritingSystemRepositoryMigrator.OnFolderMigrationProblem(System.Collections.Generic.IEnumerable{Palaso.Migration.FolderMigrator.FolderMigratorProblem})">
+            <summary>
+             Converts FolderMigrationProblem probelms to WritingSystemRepositoryProblem stored in MigrationProblems property.
+            </summary>
+        </member>
+        <member name="T:Palaso.WritingSystems.WritingSystemRepositoryBase">
+            <summary>
+            This class forms the bases for managing collections of WritingSystemDefinitions. WritingSystemDefinitions
+            can be registered and then retrieved and deleted by Id. The preferred use when editting a WritingSystemDefinition stored 
+            in the WritingSystemRepository is to Get the WritingSystemDefinition in question and then to clone it either via the
+            Clone method on WritingSystemDefinition or via the MakeDuplicate method on the WritingSystemRepository. This allows
+            changes made to a WritingSystemDefinition to be registered back with the WritingSystemRepository via the Set method,
+            or to be discarded by simply discarding the object.
+            Internally the WritingSystemRepository uses the WritingSystemDefinition's StoreId property to establish the identity of
+            a WritingSystemDefinition. This allows the user to change the Rfc646Tag components and thereby the Id of a 
+            WritingSystemDefinition and the WritingSystemRepository to update itself and the underlying store correctly.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.Set(Palaso.WritingSystems.WritingSystemDefinition)">
+            <summary>
+            Adds the writing system to the store or updates the store information about
+            an already-existing writing system.  Set should be called when there is a change
+            that updates the RFC5646 information.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.CanSet(Palaso.WritingSystems.WritingSystemDefinition)">
+            <summary>
+            Returns true if a call to Set should succeed, false if a call to Set would throw
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.Get(System.String)">
+            <summary>
+            Gets the writing system object for the given Store ID
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.GetNewStoreIDWhenSet(Palaso.WritingSystems.WritingSystemDefinition)">
+            <summary>
+            If the given writing system were passed to Set, this function returns the
+            new StoreID that would be assigned.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.Exists(System.String)">
+            <summary>
+            Returns true if a writing system with the given Store ID exists in the store
+            Contains is preferred
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.Contains(System.String)">
+            <summary>
+            Returns true if a writing system with the given Store ID exists in the store
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.CreateNew">
+            <summary>
+            Creates a new writing system object and returns it.  Set will need to be called
+            once identifying information has been changed in order to save it in the store.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.Conflate(System.String,System.String)">
+            <summary>
+            Merges two writing systems into one.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.Remove(System.String)">
+            <summary>
+            Removes the writing system with the specified Store ID from the store.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.MakeDuplicate(Palaso.WritingSystems.WritingSystemDefinition)">
+            <summary>
+            Makes a duplicate of an existing writing system definition.  Set will need
+            to be called with this new duplicate once identifying information has been changed
+            in order to place the new definition in the store.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.WritingSystemIdHasChanged(System.String)">
+            <summary>
+            If a consumer has a writingSystemId that is not contained in the
+            repository he can query the repository as to whether the id was once
+            contained and has since changed.
+            Note that changes are only logged on Save() i.e. changes made between
+            saves are not tracked
+            Use WritingSystemIdHasChangedTo to determine the new Id if there has 
+            been a change
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.WritingSystemIdHasChangedTo(System.String)">
+            <summary>
+            If a consumer has a writing system ID that was once contained in this
+            repository, but has since been changed, this method will return the
+            new ID. If there are multiple possibilities or if the ID was never
+            contained in the repo the method will return null. If the consumer 
+            queries for an ID that has not changed and is still contained in the
+            repo it will return the ID.
+            Note that changes are only logged on Save() i.e. changes made between
+            saves are not tracked
+            Use WritingSystemIdHasChanged to determine whether an Id has changed 
+            at all
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.Save">
+            <summary>
+            Writes the store to a persistable medium, if applicable.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.WritingSystemsNewerIn(System.Collections.Generic.IEnumerable{Palaso.WritingSystems.WritingSystemDefinition})">
+            <summary>
+            Returns a list of writing systems from rhs which are newer than ones in the store.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.OnWritingSystemIDChange(Palaso.WritingSystems.WritingSystemDefinition,System.String)">
+            <summary>
+            Event Handler that updates the store when a writing system id has changed
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.IWritingSystemRepository.FilterForTextIds(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+             Returns a list of writing system tags that apply only to text based writing systems.
+             i.e. audio writing systems (and all non written writing systems) are excluded.
+            </summary>
+            <param name="idsToFilter"></param>
+            <returns></returns>
+        </member>
+        <member name="E:Palaso.WritingSystems.IWritingSystemRepository.WritingSystemIdChanged">
+            <summary>
+            Notifies a consuming class of a changed writing system id on Set()
+            </summary>
+        </member>
+        <member name="E:Palaso.WritingSystems.IWritingSystemRepository.WritingSystemDeleted">
+            <summary>
+            Notifies a consuming class of a deleted writing system
+            </summary>
+        </member>
+        <member name="E:Palaso.WritingSystems.IWritingSystemRepository.WritingSystemConflated">
+            <summary>
+            Notifies a consuming class of a conflated writing system
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.IWritingSystemRepository.Count">
+            <summary>
+            Gives the total number of writing systems in the store
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.IWritingSystemRepository.WritingSystemDefinitions">
+            <summary>
+            Returns a list of all writing system definitions in the store.
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.IWritingSystemRepository.AllWritingSystems">
+            <summary>
+            Returns a list of all writing system definitions in the store.
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.IWritingSystemRepository.TextWritingSystems">
+            <summary>
+            Returns a list of *text* writing systems in the store
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.IWritingSystemRepository.VoiceWritingSystems">
+            <summary>
+            Returns a list of *audio* writing systems in the store
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.IWritingSystemRepository.CompatibilityMode">
+            <summary>
+             Gets / Sets the compatibilitiy mode imposed on this repository.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemRepositoryBase.#ctor(Palaso.WritingSystems.WritingSystemCompatibility)">
+            <summary>
+            Constructor, set the CompatibilityMode
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemRepositoryBase.FilterForTextIds(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            filters the list down to those that are texts (not audio), while preserving their order
+            </summary>
+            <param name="idsToFilter"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.WritingSystems.LdmlInXmlWritingSystemRepository.#ctor">
+            <summary>
+            Use the default repository
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.LdmlInFolderWritingSystemRepository.Initialize(System.String,Palaso.WritingSystems.Migration.WritingSystemsLdmlV0To1Migration.LdmlVersion0MigrationStrategy.MigrationHandler,Palaso.WritingSystems.WritingSystemLoadProblemHandler)">
+            <summary>
+             Returns an instance of an ldml in folder writing system reposistory.
+            </summary>
+            <param name="basePath">base location of the global writing system repository</param>
+            <param name="migrationHandler">Callback if during the initialization any writing system id's are changed</param>
+            <param name="loadProblemHandler">Callback if during the initialization any writing systems cannot be loaded</param>
+        </member>
+        <member name="M:Palaso.WritingSystems.LdmlInFolderWritingSystemRepository.Initialize(System.String,Palaso.WritingSystems.Migration.WritingSystemsLdmlV0To1Migration.LdmlVersion0MigrationStrategy.MigrationHandler,Palaso.WritingSystems.WritingSystemLoadProblemHandler,Palaso.WritingSystems.WritingSystemCompatibility)">
+            <summary>
+             Returns an instance of an ldml in folder writing system reposistory.
+            </summary>
+            <param name="basePath">base location of the global writing system repository</param>
+            <param name="migrationHandler">Callback if during the initialization any writing system id's are changed</param>
+            <param name="loadProblemHandler">Callback if during the initialization any writing systems cannot be loaded</param>
+            <param name="roundtripFlex70PrivateUse"></param>
+        </member>
+        <member name="M:Palaso.WritingSystems.LdmlInFolderWritingSystemRepository.#ctor(System.String)">
+            <summary>
+            use a special path for the repository
+            </summary>
+            <param name="basePath"></param>
+        </member>
+        <member name="M:Palaso.WritingSystems.LdmlInFolderWritingSystemRepository.#ctor(System.String,Palaso.WritingSystems.WritingSystemCompatibility)">
+            <summary>
+            use a special path for the repository
+            </summary>
+            <param name="basePath"></param>
+            <param name="compatibilityMode"></param>
+        </member>
+        <member name="M:Palaso.WritingSystems.LdmlInFolderWritingSystemRepository.GetFilePathFromIdentifier(System.String)">
+            <summary>
+             Returns the full path to the underlying store for this writing system.
+            </summary>
+            <param name="identifier"></param>
+            <returns>FilePath</returns>
+        </member>
+        <member name="P:Palaso.WritingSystems.LdmlInFolderWritingSystemRepository.SystemWritingSystemProvider">
+            <summary>
+            Provides writing systems from a repository that comes, for example, with the OS
+            </summary>
         </member>
         <member name="T:Palaso.Annotations.Annotation">
             <summary>
@@ -366,6 +823,12 @@
             only a limitted number of the most recent of these events will show up in the log
             </summary>
         </member>
+        <member name="M:Palaso.Reporting.Logger.ShowUserATextFileRelatedToCatastrophicError(System.Exception)">
+            <summary>
+            if you're working with unmanaged code and get a System.AccessViolationException, well you're toast, and anything
+            that requires UI is gonna freeze up.  So call this instead
+            </summary>
+        </member>
         <member name="P:Palaso.Reporting.Logger.IsDisposed">
             <summary>
             See if the object has been disposed.
@@ -378,6 +841,16 @@
             </summary>
             <returns></returns>
             ------------------------------------------------------------------------------------
+        </member>
+        <member name="P:Palaso.Reporting.Logger.MinorEventsLog">
+            <summary>
+            added this for a case of a catastrophic error so bad I couldn't get the means of finding out what just happened
+            </summary>
+        </member>
+        <member name="P:Palaso.Reporting.Logger.LogPath">
+            <summary>
+            the place on disk where we are storing the log
+            </summary>
         </member>
         <member name="T:Palaso.Progress.ProgressState">
             <summary>
@@ -452,21 +925,53 @@
         </member>
         <member name="T:Palaso.CommandLineProcessing.CommandLineRunner">
             <summary>
-             
+             Used to run external processes, with support for things like timeout, 
+             async progress reporting, and user UI cancellability.
             </summary>
         </member>
-        <member name="T:Palaso.CommandLineProcessing.ProcessStream">
+        <member name="M:Palaso.CommandLineProcessing.CommandLineRunner.Run(System.String,System.String,System.String,System.Int32,Palaso.Progress.IProgress)">
             <summary>
-            This is class originally from  SeemabK (seemabk@yahoo.com).  It has been enhanced for chorus.
+            This one doesn't attemtp to influence the encoding used
             </summary>
         </member>
-        <member name="M:Palaso.CommandLineProcessing.ProcessOutputReader.Read(System.Diagnostics.Process@,System.Int32,Palaso.CommandLineProcessing.IProgress)">
+        <member name="M:Palaso.CommandLineProcessing.CommandLineRunner.Run(System.String,System.String,System.Text.Encoding,System.String,System.Int32,Palaso.Progress.IProgress,System.Action{System.String})">
             <summary>
-            Safely read the streams of the process
+            
             </summary>
-            <param name="process"></param>
+            <param name="exePath"></param>
+            <param name="arguments"></param>
+            <param name="encoding"></param>
+            <param name="fromDirectory"></param>
             <param name="secondsBeforeTimeOut"></param>
-            <returns>true if the process completed before the timeout or cancellation</returns>
+            <param name="progress"></param>
+            <param name="actionForReportingProgress"> Normally a simple thing like this: (s)=>progress.WriteVerbose(s). If you pass null, then the old synchronous reader will be used instead, with no feedback to the user as the process runs.
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.CommandLineProcessing.CommandLineRunner.Start(System.String,System.String,System.Text.Encoding,System.String,System.Int32,Palaso.Progress.IProgress,System.Action{System.String})">
+            <summary>
+            use this one if you're doing a long running task that you'll have running in a thread, so that you need a way to abort it
+            </summary>
+        </member>
+        <member name="M:Palaso.CommandLineProcessing.CommandLineRunner.MakePathToFileSafeFromEncodingProblems(System.String)">
+            <summary>
+            On Windows, We can't get unicode over the command-line barrier, so
+            instead create 8.3 filename, which, happily, will have no non-english characters
+            for any part of the path. This is safe to call from Linux, too
+            </summary>
+        </member>
+        <member name="M:Palaso.CommandLineProcessing.CommandLineRunner.MakePathToDirectorySafeFromEncodingProblems(System.String)">
+            <summary>
+            On Windows, We can't get unicode over the command-line barrier, so
+            instead create 8.3 filename, which, happily, will have no non-english characters
+            for any part of the path. This is safe to call from Linux, too
+            </summary>
+        </member>
+        <member name="M:Palaso.CommandLineProcessing.CommandLineRunner.HtmlEncodeNonAsciiCharacters(System.String)">
+            <summary>
+            Some command line applications (e.g. exiftool) can handle html-encoded characters in their command arguments
+            </summary>
+            <remarks>From Rick Strahl at http://www.west-wind.com/weblog/posts/2009/Feb/05/Html-and-Uri-String-Encoding-without-SystemWeb</remarks>
         </member>
         <member name="M:Palaso.Text.MultiTextBase.ContainsAlternative(System.String)">
             <summary>
@@ -559,7 +1064,7 @@
             will accept
             </typeparam>
         </member>
-        <member name="M:Rhino.Commons.DisposableAction`1.#ctor(Palaso.Proc{`0},`0)">
+        <member name="M:Rhino.Commons.DisposableAction`1.#ctor(Palaso.EventsAndDelegates.Proc{`0},`0)">
             <summary>
             Initializes a new instance of the <see cref="T:Rhino.Commons.DisposableAction`1"/> class.
             </summary>
@@ -585,7 +1090,7 @@
             Basically, it mimics Java's anonymous classes.
             </summary>
         </member>
-        <member name="M:Rhino.Commons.DisposableAction.#ctor(Palaso.Proc)">
+        <member name="M:Rhino.Commons.DisposableAction.#ctor(Palaso.EventsAndDelegates.Proc)">
             <summary>
             Initializes a new instance of the <see cref="T:Rhino.Commons.DisposableAction"/> class.
             </summary>
@@ -596,105 +1101,52 @@
             Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
             </summary>
         </member>
-        <member name="T:Palaso.Func`1">
-            <summary>
-            Common delegate definition
-            </summary>
-            <summary>
-            Common delegate definition
-            </summary>
-        </member>
-        <member name="T:Palaso.Func`2">
+        <member name="T:Palaso.EventsAndDelegates.Proc">
             <summary>
             Common delegate definition
             </summary>
         </member>
-        <member name="T:Palaso.Func`3">
+        <member name="T:Palaso.EventsAndDelegates.Proc`1">
             <summary>
             Common delegate definition
             </summary>
         </member>
-        <member name="T:Palaso.Func`4">
+        <member name="T:Palaso.EventsAndDelegates.Proc`2">
             <summary>
             Common delegate definition
             </summary>
         </member>
-        <member name="T:Palaso.Func`5">
+        <member name="T:Palaso.EventsAndDelegates.Proc`3">
             <summary>
             Common delegate definition
             </summary>
         </member>
-        <member name="T:Palaso.Func`6">
+        <member name="T:Palaso.EventsAndDelegates.Proc`4">
             <summary>
             Common delegate definition
             </summary>
         </member>
-        <member name="T:Palaso.Func`7">
+        <member name="T:Palaso.EventsAndDelegates.Proc`5">
             <summary>
             Common delegate definition
             </summary>
         </member>
-        <member name="T:Palaso.Func`8">
+        <member name="T:Palaso.EventsAndDelegates.Proc`6">
             <summary>
             Common delegate definition
             </summary>
         </member>
-        <member name="T:Palaso.Func`9">
+        <member name="T:Palaso.EventsAndDelegates.Proc`7">
             <summary>
             Common delegate definition
             </summary>
         </member>
-        <member name="T:Palaso.Func`10">
+        <member name="T:Palaso.EventsAndDelegates.Proc`8">
             <summary>
             Common delegate definition
             </summary>
         </member>
-        <member name="T:Palaso.Proc">
-            <summary>
-            Common delegate definition
-            </summary>
-        </member>
-        <member name="T:Palaso.Proc`1">
-            <summary>
-            Common delegate definition
-            </summary>
-        </member>
-        <member name="T:Palaso.Proc`2">
-            <summary>
-            Common delegate definition
-            </summary>
-        </member>
-        <member name="T:Palaso.Proc`3">
-            <summary>
-            Common delegate definition
-            </summary>
-        </member>
-        <member name="T:Palaso.Proc`4">
-            <summary>
-            Common delegate definition
-            </summary>
-        </member>
-        <member name="T:Palaso.Proc`5">
-            <summary>
-            Common delegate definition
-            </summary>
-        </member>
-        <member name="T:Palaso.Proc`6">
-            <summary>
-            Common delegate definition
-            </summary>
-        </member>
-        <member name="T:Palaso.Proc`7">
-            <summary>
-            Common delegate definition
-            </summary>
-        </member>
-        <member name="T:Palaso.Proc`8">
-            <summary>
-            Common delegate definition
-            </summary>
-        </member>
-        <member name="T:Palaso.Proc`9">
+        <member name="T:Palaso.EventsAndDelegates.Proc`9">
             <summary>
             Common delegate definition
             </summary>
@@ -706,6 +1158,20 @@
             </summary>
             <param name="fieldName"></param>
             <param name="canBeRemoved"></param>
+        </member>
+        <member name="T:Palaso.WritingSystems.Migration.WritingSystemsLdmlV0To1Migration.LdmlVersion0MigrationStrategy">
+            <summary>
+            This class is used to migrate an LdmlFile from LDML palaso version 0 (or 1) to 2. It takes any LDML file and transforms
+            a non-conformant rfc5646 tag contained therein into a conformant one. Note that the constructor expects a callback
+            to help a consumer perform changes to its own files where necassary.
+            Also note that the files are not written until all writing systems have been migrated in order to deal correctly 
+            with duplicate Rfc5646 tags that might result from migration.
+            </summary>
+        </member>
+        <member name="T:Palaso.Migration.IMigrationStrategy">
+            <summary>
+             Used by Migrator to migrate from one version to another.
+            </summary>
         </member>
         <member name="M:Palaso.WritingSystems.Collation.IcuRulesCollator.Compare(System.String,System.String)">
             <summary>Compares two strings and returns a value indicating whether one is less than, 
@@ -752,6 +1218,18 @@
             The typed parse result
             </summary>
         </member>
+        <member name="T:Palaso.Progress.WaitCursor">
+            ----------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.Progress.WaitCursor.Show">
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.Progress.WaitCursor.Hide">
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.Progress.WaitCursor.ToggleWaitCursorState(System.Boolean)">
+            ------------------------------------------------------------------------------------
+        </member>
         <member name="M:Palaso.Code.ReentryDetecter.AndThrow">
             <example>
               using (Detect.Reentry(this, "OnPropertyValueChanged").AndThrow())
@@ -765,6 +1243,38 @@
                     if(x.DidReenter)
                         return;
             </example>
+        </member>
+        <member name="M:Palaso.Extensions.DateTimeExtensions.ParseDateTimePermissivelyWithException(System.String)">
+            <summary>
+            We have this permsissive business because we released versions of SayMore which used the local
+            format, rather than a universal one.
+            </summary>
+        </member>
+        <member name="T:Palaso.WritingSystems.RFC5646Tag">
+            <summary>
+            The RFC5646Tag class represents a language tag that conforms to Rfc5646. It relies heavily on the StandardTags class for
+            valid Language, Script, Region and Variant subtags. The RFC5646 class enforces strict adherence to the Rfc5646 spec.
+            Exceptions are:
+            - does not support singletons other than "x-"
+            - does not support grandfathered, regular or irregular tags
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.RFC5646Tag.#ctor(Palaso.WritingSystems.RFC5646Tag)">
+            <summary>
+             Copy constructor
+            </summary>
+            <param name="rhs"></param>
+        </member>
+        <member name="M:Palaso.WritingSystems.RFC5646Tag.Parse(System.String)">
+            <summary>Constructor method to parse a valid RFC5646 tag as a string
+            </summary>
+            <param name="inputString">valid RFC5646 string</param>
+            <returns>RFC5646Tag object</returns>
+        </member>
+        <member name="P:Palaso.WritingSystems.RFC5646Tag.RequiresValidTag">
+            <summary>
+            Setting this true will throw unless the tag has previously been put into a valid state.
+            </summary>
         </member>
         <member name="F:Palaso.Text.ApproximateMatcherOptions.None">
             <summary>
@@ -1000,10 +1510,24 @@
             <param name="ex"></param>
             <returns></returns>
         </member>
-        <member name="M:Palaso.Reporting.UsageReporter.RecordLaunch">
-            <summary>
-            call this each time the application is launched
-            </summary>
+        <member name="M:Palaso.Reporting.UsageReporter.Init(Palaso.Reporting.ReportingSettings,System.String,System.String,System.Boolean)">
+             <summary>
+             
+             </summary>
+             <example>
+             UsageReporter.Init(Settings.Default.Reporting, "myproduct.org", "UA-11111111-2",
+            #if DEBUG
+                            true
+            #else
+                            false
+            #endif
+                            );
+             </example>
+             <param name="settings"></param>
+             <param name="domain"></param>
+             <param name="googleAnalyticsAccountCode"></param>
+             <param name="reportAsDeveloper">Normally this is true for DEBUG builds. It is separated out here because sometimes a developer
+             uses a Release build of Palaso.dll, but would still want his/her activities logged as a developer.</param>
         </member>
         <member name="M:Palaso.Reporting.UsageReporter.MakeLaunchDateSafe">
             <summary>
@@ -1015,13 +1539,47 @@
             used for testing purposes
             </summary>
         </member>
-        <member name="M:Palaso.Reporting.UsageReporter.DoTrivialUsageReport(System.String,System.String,System.Int32[])">
+        <member name="M:Palaso.Reporting.UsageReporter.GetAllApplicationValuesForThisUser">
             <summary>
-            if you call this every time the application starts, it will send reports on those intervals
-            (e.g. {1, 10}) that are listed in the intervals parameter.  It will get version number and name out of the application.
+            store and retrieve values which are the same for all apps using this usage libary
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.Reporting.UsageReporter.BeginGoogleAnalytics(System.String,System.String,System.Boolean)">
+            <summary>
+             Reports upgrades, launches, etc., and allows for later calls to notify analytics of navigation and events
             </summary>
         </member>
-        <member name="P:Palaso.Reporting.UsageReporter.AppReportingSettings">
+        <member name="M:Palaso.Reporting.UsageReporter.SendNavigationNotice(System.String,System.Object[])">
+            <summary>
+            Send an navigation notice to Google Analytics, if BeginGoogleAnalytics was previously called
+            Record a visit to part of the application, just as if it  were a page.
+            Leave it up to this method to insert things like the fact that you are in DEBUG mode, or what version is being used, etc.
+            </summary>
+            <example>SendNavigationNotice("aboutBox"), SendNavigationNotice("dictionary/browseView")</example>
+        </member>
+        <member name="M:Palaso.Reporting.UsageReporter.SendEvent(System.String,System.String,System.String,System.String,System.Int32)">
+            <summary>
+            Send an event to Google Analytics, if BeginGoogleAnalytics was previously called
+            </summary>
+            <param name="programArea">DictionaryBrowse</param>
+            <param name="action">       DeleteWord                   Error</param>
+            <param name="optionalLabel">Some Exception Message</param>
+            <param name="optionalInteger">some integer that makes sense for this event</param>
+            <example>SendEvent("dictionary/browseView", "Command", "DeleteWord", "","")</example>
+            <example>SendEvent("dictionary/browseView", "Error", "DeleteWord", "some error message we got","")</example>
+        </member>
+        <member name="M:Palaso.Reporting.UsageReporter.ReportException(System.Boolean,System.String,System.Exception,System.String)">
+            <summary>
+            Send an error to Google Analytics, if BeginGoogleAnalytics was previously called
+            </summary>
+        </member>
+        <member name="P:Palaso.Reporting.UsageReporter.UserGuid">
+            <summary>
+            A unique guid for this machine, which is the same for all palaso apps (because we store it in special palaso text file in appdata)
+            </summary>
+        </member>
+        <member name="P:Palaso.Reporting.UsageReporter.AppNameToUseInDialogs">
             <summary>
             The deal here is, Cambell changed this so that it is the responsibility of
             the client to set this, and then save the settings.
@@ -1036,14 +1594,32 @@
             	}
             </summary>
         </member>
+        <member name="T:Palaso.Reporting.ExceptionHandler">
+            ----------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.Reporting.ExceptionHandler.Init">
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.Reporting.ExceptionHandler.#ctor">
+            ------------------------------------------------------------------------------------
+            <summary>
+            Set exception handler. Needs to be done before we create splash screen (don't
+            understand why, but otherwise some exceptions don't get caught).
+            </summary>
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.Reporting.ExceptionHandler.AddDelegate(Palaso.Reporting.ExceptionHandler.CancelExceptionHandlingEventHandler)">
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.Reporting.ExceptionHandler.RemoveDelegate(Palaso.Reporting.ExceptionHandler.CancelExceptionHandlingEventHandler)">
+            ------------------------------------------------------------------------------------
+        </member>
         <member name="M:Palaso.Reporting.ExceptionHandler.HandleUnhandledException(System.Object,System.UnhandledExceptionEventArgs)">
             ------------------------------------------------------------------------------------
             <summary>
             Catches and displays otherwise unhandled exception, especially those that happen
             during startup of the application before we show our main window.
             </summary>
-            <param name="sender"></param>
-            <param name="e"></param>
             ------------------------------------------------------------------------------------
         </member>
         <member name="M:Palaso.Reporting.ExceptionHandler.HandleTopLevelError(System.Object,System.Threading.ThreadExceptionEventArgs)">
@@ -1052,8 +1628,11 @@
             Catches and displays a otherwise unhandled exception.
             </summary>
             <param name="sender">sender</param>
-            <param name="eventArgs">Exception</param>
+            <param name="e">Exception</param>
             <remarks>previously <c>AfApp::HandleTopLevelError</c></remarks>
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.Reporting.ExceptionHandler.GetShouldHandleException(System.Object,System.Exception)">
             ------------------------------------------------------------------------------------
         </member>
         <member name="M:Palaso.Reporting.ExceptionHandler.DisplayError(System.Exception)">
@@ -1063,6 +1642,9 @@
             </summary>
             <param name="exception">The exception.</param>
             <returns></returns>
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="P:Palaso.Reporting.ExceptionHandler.Suspend">
             ------------------------------------------------------------------------------------
         </member>
         <member name="P:Palaso.Reporting.ExceptionHandler.ShowUI">
@@ -1077,6 +1659,39 @@
             in the &lt;appSettings> section of the .config file (see MSDN for details).
             </remarks>
             ------------------------------------------------------------------------------------
+        </member>
+        <member name="T:Palaso.Reporting.ExceptionHandler.CancelExceptionHandlingEventHandler">
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="T:Palaso.Reporting.CancelExceptionHandlingEventArgs">
+            ----------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.Reporting.CancelExceptionHandlingEventArgs.#ctor(System.Exception)">
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="P:Palaso.Reporting.CancelExceptionHandlingEventArgs.Exception">
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="T:Palaso.Reporting.AnalyticsEventSender">
+            <summary>
+            For information on what's going on here, google "goolge analytics".
+            </summary>
+        </member>
+        <member name="M:Palaso.Reporting.AnalyticsEventSender.SendEvent(System.String,System.String,System.String,System.String,System.Int32)">
+            <summary>
+            http://code.google.com/apis/analytics/docs/tracking/eventTrackerGuide.html
+            </summary>
+            <param name="category">     Videos                  Runtime</param>
+            <param name="action">       Pause                   Error</param>
+            <param name="optionalLabel">Gone With The Wind      Exception Message</param>
+            <param name="optionalInteger">32 (that is, at 32 seconds into the video)</param>
+        </member>
+        <member name="M:Palaso.Reporting.AnalyticsEventSender.SendNavigationNotice(System.String,System.Object[])">
+            <summary>
+            Record a visit to part of the application, just as if it  were a page.
+            Leave it up to this method to insert things like the fact that you are in DEBUG mode, or what version is being used, etc.
+            </summary>
+            <example>SendNavigationNotice("aboutBox"), SendNavigationNotice("dictionary/browseView")</example>
         </member>
         <member name="P:Palaso.Email.EmailMessage.Subject">
             <summary>
@@ -1103,71 +1718,38 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Palaso.WritingSystems.IWritingSystemStore.Set(Palaso.WritingSystems.WritingSystemDefinition)">
+        <member name="T:Palaso.WritingSystems.LdmlDataMapper">
             <summary>
-            Adds the writing system to the store or updates the store information about
-            an already-existing writing system.  Set should be called when there is a change
-            that updates the RFC5646 information.
+            The LdmlDatamapper Reads and Writes WritingSystemDefinitions to LDML files. A typical consuming application should not
+            need to use the LdmlDataMapper directly but should rather use an IWritingSystemRepository (such as the 
+            LdmlInfolderWritingSystemRepository) to manage it's writing systems.
+            The LdmlDatamapper is tightly tied to a particular (palaso) version of LDML. If the LdmlDatamapper refuses to Read a
+            particular Ldml file it may need to be migrated to the latest version. Please use the 
+            LdmlInFolderWritingSystemRepository class for this purpose.
+            Please note that the LdmlDataMapper.Write method can round trip data that it does not understand if passed an
+            appropriate stream or xmlreader produced from the old file.
+            Be aware that as of Jul-5-2011 an exception was made for certain well defined Fieldworks LDML files whose contained 
+            Rfc5646 tag begin with "x-". These will load correctly, albeit in a transformed state, in spite of being "Version 0".
+            Furthermore writing systems containing RfcTags beginning with "x-" and that have a matching Fieldworks conform LDML file
+            in the repository will not be changed including no marking with "version 1".
             </summary>
         </member>
-        <member name="M:Palaso.WritingSystems.IWritingSystemStore.CanSet(Palaso.WritingSystems.WritingSystemDefinition)">
+        <member name="M:Palaso.WritingSystems.LdmlDataMapper.Write(System.String,Palaso.WritingSystems.WritingSystemDefinition,System.IO.Stream,Palaso.WritingSystems.WritingSystemCompatibility)">
             <summary>
-            Returns true if a call to Set should succeed, false if a call to Set would throw
+            The "oldFile" parameter allows the LdmldataMapper to allow data that it doesn't understand to be roundtripped.
             </summary>
+            <param name="filePath"></param>
+            <param name="ws"></param>
+            <param name="oldFile"></param>
+            <param name="compatibilityMode"></param>
         </member>
-        <member name="M:Palaso.WritingSystems.IWritingSystemStore.Get(System.String)">
+        <member name="M:Palaso.WritingSystems.LdmlDataMapper.Write(System.Xml.XmlWriter,Palaso.WritingSystems.WritingSystemDefinition,System.Xml.XmlReader,Palaso.WritingSystems.WritingSystemCompatibility)">
             <summary>
-            Gets the writing system object for the given Store ID
+            The "oldFileReader" parameter allows the LdmldataMapper to allow data that it doesn't understand to be roundtripped.
             </summary>
-        </member>
-        <member name="M:Palaso.WritingSystems.IWritingSystemStore.GetNewStoreIDWhenSet(Palaso.WritingSystems.WritingSystemDefinition)">
-            <summary>
-            If the given writing system were passed to Set, this function returns the
-            new StoreID that would be assigned.
-            </summary>
-        </member>
-        <member name="M:Palaso.WritingSystems.IWritingSystemStore.Exists(System.String)">
-            <summary>
-            Returns true if a writing system with the given Store ID exists in the store
-            </summary>
-        </member>
-        <member name="M:Palaso.WritingSystems.IWritingSystemStore.CreateNew">
-            <summary>
-            Creates a new writing system object and returns it.  Set will need to be called
-            once identifying information has been changed in order to save it in the store.
-            </summary>
-        </member>
-        <member name="M:Palaso.WritingSystems.IWritingSystemStore.Remove(System.String)">
-            <summary>
-            Removes the writing system with the specified Store ID from the store.
-            </summary>
-        </member>
-        <member name="M:Palaso.WritingSystems.IWritingSystemStore.MakeDuplicate(Palaso.WritingSystems.WritingSystemDefinition)">
-            <summary>
-            Makes a duplicate of an existing writing system definition.  Set will need
-            to be called with this new duplicate once identifying information has been changed
-            in order to place the new definition in the store.
-            </summary>
-        </member>
-        <member name="M:Palaso.WritingSystems.IWritingSystemStore.Save">
-            <summary>
-            Writes the store to a persistable medium, if applicable.
-            </summary>
-        </member>
-        <member name="M:Palaso.WritingSystems.IWritingSystemStore.WritingSystemsNewerIn(System.Collections.Generic.IEnumerable{Palaso.WritingSystems.WritingSystemDefinition})">
-            <summary>
-            Returns a list of writing systems from rhs which are newer than ones in the store.
-            </summary>
-        </member>
-        <member name="P:Palaso.WritingSystems.IWritingSystemStore.Count">
-            <summary>
-            Gives the total number of writing systems in the store
-            </summary>
-        </member>
-        <member name="P:Palaso.WritingSystems.IWritingSystemStore.WritingSystemDefinitions">
-            <summary>
-            Returns a list of all writing system definitions in the store.
-            </summary>
+            <param name="filePath"></param>
+            <param name="ws"></param>
+            <param name="oldFile"></param>
         </member>
         <member name="M:Palaso.IO.SFMReader.#ctor(System.String)">
             <summary>
@@ -1194,6 +1776,111 @@
             </summary>
             <returns>Next text</returns>
         </member>
+        <member name="T:Palaso.Reporting.TaskBarFlasher">
+            <summary>
+            Used to bring the user's attention to the program when there is a problem
+            </summary>
+        </member>
+        <member name="F:Palaso.Reporting.TaskBarFlasher.FLASHW_STOP">
+            <summary>
+            Stop flashing. The system restores the window to its original stae.
+            </summary>
+        </member>
+        <member name="F:Palaso.Reporting.TaskBarFlasher.FLASHW_CAPTION">
+            <summary>
+            Flash the window caption.
+            </summary>
+        </member>
+        <member name="F:Palaso.Reporting.TaskBarFlasher.FLASHW_TRAY">
+            <summary>
+            Flash the taskbar button.
+            </summary>
+        </member>
+        <member name="F:Palaso.Reporting.TaskBarFlasher.FLASHW_ALL">
+            <summary>
+            Flash both the window caption and taskbar button.
+            This is equivalent to setting the FLASHW_CAPTION | FLASHW_TRAY flags.
+            </summary>
+        </member>
+        <member name="F:Palaso.Reporting.TaskBarFlasher.FLASHW_TIMER">
+            <summary>
+            Flash continuously, until the FLASHW_STOP flag is set.
+            </summary>
+        </member>
+        <member name="F:Palaso.Reporting.TaskBarFlasher.FLASHW_TIMERNOFG">
+            <summary>
+            Flash continuously until the window comes to the foreground.
+            </summary>
+        </member>
+        <member name="M:Palaso.Reporting.TaskBarFlasher.FlashTaskBarButtonUntilFocussed(System.Windows.Forms.Form)">
+            <summary>
+            Flash the spacified Window (Form) until it recieves focus.
+            </summary>
+            <param name="form">The Form (Window) to Flash.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.Reporting.TaskBarFlasher.Flash(System.Windows.Forms.Form,System.UInt32)">
+            <summary>
+            Flash the specified Window (form) for the specified number of times
+            </summary>
+            <param name="form">The Form (Window) to Flash.</param>
+            <param name="count">The number of times to Flash.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.Reporting.TaskBarFlasher.Start(System.Windows.Forms.Form)">
+            <summary>
+            Start Flashing the specified Window (form)
+            </summary>
+            <param name="form">The Form (Window) to Flash.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.Reporting.TaskBarFlasher.Stop(System.Windows.Forms.Form)">
+            <summary>
+            Stop Flashing the specified Window (form)
+            </summary>
+            <param name="form"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Palaso.Reporting.TaskBarFlasher.Win2000OrLater">
+            <summary>
+            A boolean value indicating whether the application is running on Windows 2000 or later.
+            </summary>
+        </member>
+        <member name="F:Palaso.Reporting.TaskBarFlasher.FLASHWINFO.cbSize">
+            <summary>
+            The size of the structure in bytes.
+            </summary>
+        </member>
+        <member name="F:Palaso.Reporting.TaskBarFlasher.FLASHWINFO.hwnd">
+            <summary>
+            A Handle to the Window to be Flashed. The window can be either opened or minimized.
+            </summary>
+        </member>
+        <member name="F:Palaso.Reporting.TaskBarFlasher.FLASHWINFO.dwFlags">
+            <summary>
+            The Flash Status.
+            </summary>
+        </member>
+        <member name="F:Palaso.Reporting.TaskBarFlasher.FLASHWINFO.uCount">
+            <summary>
+            The number of times to Flash the window.
+            </summary>
+        </member>
+        <member name="F:Palaso.Reporting.TaskBarFlasher.FLASHWINFO.dwTimeout">
+            <summary>
+            The rate at which the Window is to be flashed, in milliseconds. If Zero, the function uses the default cursor blink rate.
+            </summary>
+        </member>
+        <member name="P:Palaso.Reporting.ReportingSettings.PreviousVersion">
+            <summary>
+            help notice that someone upgraded
+            </summary>
+        </member>
+        <member name="M:Palaso.Xml.XmlNodeExtensions.SafeSelectNodesWithParms(System.Xml.XmlNode,System.String,System.Object[])">
+            <summary>
+            this is safe to use with foreach, unlike SelectNodes
+            </summary>
+        </member>
         <member name="M:Palaso.Xml.XmlNodeExtensions.SafeSelectNodes(System.Xml.XmlNode,System.String,System.Xml.XmlNamespaceManager)">
             <summary>
             this is safe to use with foreach, unlike SelectNodes
@@ -1202,6 +1889,12 @@
         <member name="M:Palaso.Xml.XmlNodeExtensions.SafeSelectNodes(System.Xml.XmlNode,System.String)">
             <summary>
             honors default namespace and will return an empty list rather than null
+            </summary>
+        </member>
+        <member name="M:Palaso.Xml.XmlNodeExtensions.SelectSingleNodeHonoringDefaultNS(System.Xml.XmlNode,System.String)">
+            <summary>
+            This is for doing selections in xhtml, where there is a default namespace, which makes
+            normal selects fail.  This tries to set a namespace and inject prefix into the xpath.
             </summary>
         </member>
         <member name="M:Palaso.Xml.XmlHelpers.GetOptionalBooleanAttributeValue(System.Xml.XmlNode,System.String,System.Boolean)">
@@ -1259,14 +1952,64 @@
             <param name="attrName">The attribute to find.</param>
             <returns>The value of the attribute, or null, if not found.</returns>
         </member>
-        <member name="M:Palaso.WritingSystems.WritingSystemStoreBase.#ctor">
+        <member name="T:Palaso.WritingSystems.WritingSystemChangeLog">
             <summary>
-            Use the default repository
+            This class is used by tthe LdmlInFolderWritingsystemRepository to log any changes that an application makes to the repository.
+            The idea is that consumers can query this class to learn of any changes made to contained writing systems by another program 
+            and update its other files accordingly.
             </summary>
         </member>
-        <member name="M:Palaso.WritingSystems.LdmlInXmlWritingSystemStore.#ctor">
+        <member name="T:Palaso.WritingSystems.GlobalWritingSystemRepository">
             <summary>
-            Use the default repository
+             A system wide writing system repoistory
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.GlobalWritingSystemRepository.Initialize(Palaso.WritingSystems.Migration.WritingSystemsLdmlV0To1Migration.LdmlVersion0MigrationStrategy.MigrationHandler)">
+            <summary>
+             Initializes the global writing system repository.  Migrates any ldml files if required,
+             notifying of any changes of writing system id that occured during migration.
+            </summary>
+            <param name="migrationHandler"></param>
+        </member>
+        <member name="M:Palaso.WritingSystems.GlobalWritingSystemRepository.InitializeWithBasePath(System.String,Palaso.WritingSystems.Migration.WritingSystemsLdmlV0To1Migration.LdmlVersion0MigrationStrategy.MigrationHandler)">
+            <summary>
+             This initializer is intended for tests as it allows setting of the basePath explicitly.
+            </summary>
+            <param name="basePath">base location of the global writing system repository</param>
+            <param name="migrationHandler">Callback if during the initialization any writing system id's are changed</param>
+        </member>
+        <member name="M:Palaso.WritingSystems.GlobalWritingSystemRepository.#ctor(System.String)">
+            <summary>
+             Specify the location of the System Writing System repository explicitly.
+             This is mostly useful for tests.
+            </summary>
+            <param name="basePath"></param>
+        </member>
+        <member name="M:Palaso.WritingSystems.GlobalWritingSystemRepository.CurrentVersionPath(System.String)">
+            <summary>
+             The CurrentVersionPath is %CommonApplicationData%\SIL\WritingSystemRepository\LatestVersion
+             e.g. On Windows 7 this is \ProgramData\SIL\WritingSystemRepository\1
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.GlobalWritingSystemRepository.Instance">
+            <summary>
+             Returns an instance of the global writing system reposistory.  Apps must call Intialize prior to calling this.
+             Apps are not obliged to use this Singleton Instance of GlobalWritingSystemRepository.  Apps can manage their
+             own instance(s) of GlobalWritingSystemRepository returned from Initialize if they so choose.
+            </summary>
+            <returns>A global IWritingSystemRepository</returns>
+        </member>
+        <member name="P:Palaso.WritingSystems.GlobalWritingSystemRepository.DefaultBasePath">
+            <summary>
+             The DefaultBasePath is %CommonApplicationData%\SIL\WritingSystemRepository
+             On Windows 7 this is \ProgramData\SIL\WritingSystemRepository\
+             On Linux this must be in /var/lib so that it may be edited
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.GlobalWritingSystemRepository.BasePath">
+            <summary>
+             The BasePath of this instance of GlobalWritingSystemRepository.
+             e.g. c:\ProgramData\SIL\WritingSystemRepository\
             </summary>
         </member>
         <member name="T:Spart.Scanners.StringScanner">
@@ -1484,6 +2227,22 @@
             <param name="attrName">The optional attribute to find.</param>
             <returns></returns>
         </member>
+        <member name="M:Palaso.Xml.XmlUtils.GetAttributes(System.Byte[],System.Collections.Generic.HashSet{System.String})">
+            <summary>
+            Given bytes that represent an xml element, return the values of requested attributes (if they exist).
+            </summary>
+            <param name="data">Data that is expected to an xml element.</param>
+            <param name="attributes">A set of attributes, the values of which are to be returned.</param>
+            <returns>A dictionary </returns>
+        </member>
+        <member name="M:Palaso.Xml.XmlUtils.GetAttributes(System.String,System.Collections.Generic.HashSet{System.String})">
+            <summary>
+            Given a string that represents an xml element, return the values of requested attributes (if they exist).
+            </summary>
+            <param name="data">Data that is expected to an xml element.</param>
+            <param name="attributes">A set of attributes, the values of which are to be returned.</param>
+            <returns>A dictionary </returns>
+        </member>
         <member name="M:Palaso.Xml.XmlUtils.GetBooleanAttributeValue(System.Xml.XPath.XPathNavigator,System.String)">
             <summary>
             Returns true if value of attrName is 'true' or 'yes' (case ignored)
@@ -1662,6 +2421,84 @@
             <param name="xml"></param>
             <returns></returns>
         </member>
+        <member name="M:Palaso.Xml.XmlUtils.SanitizeString(System.String)">
+            <summary>
+            Remove illegal XML characters from a string.
+            </summary>
+        </member>
+        <member name="M:Palaso.Xml.XmlUtils.IsLegalXmlChar(System.Int32)">
+            <summary>
+            Whether a given character is allowed by XML 1.0.
+            </summary>
+        </member>
+        <member name="T:Palaso.Xml.FastXmlElementSplitter">
+            <summary>
+             Responsible to read a file which has a sequence of similar elements
+             and return byte arrays of each element for further processing.
+            </summary>
+        </member>
+        <member name="M:Palaso.Xml.FastXmlElementSplitter.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="pathname">Pathname of file to process.</param>
+        </member>
+        <member name="M:Palaso.Xml.FastXmlElementSplitter.GetSecondLevelElementBytes(System.String)">
+            <summary>
+             Return the second level elements that are in the input file.
+            </summary>
+            <param name="recordMarker">The element name of elements that are children of the main root elment.</param>
+            <returns>A collection of byte arrays of the records.</returns>
+             <remarks>
+             <para>
+             <paramref name="recordMarker"/> should not contain the angle brackets that start/end an xml element.
+             </para>
+             <para>
+             The input file can contain child elements of the main root element, which are not the same elements
+             as those marked with <paramref name="recordMarker"/>, but if the file has them, they must be before the
+             other <paramref name="recordMarker"/> elments.
+             </para>
+             </remarks>
+             <exception cref="T:System.ArgumentException">
+             Thrown if <paramref name="recordMarker"/> is null, an empty string, or there are no such records in the file.
+             </exception>
+             <exception cref="T:System.InvalidOperationException">
+             Thrown if the input file is not xml.
+             </exception>
+        </member>
+        <member name="M:Palaso.Xml.FastXmlElementSplitter.GetSecondLevelElementStrings(System.String)">
+            <summary>
+             Return the second level elements that are in the input file.
+            </summary>
+            <param name="recordMarker">The element name of elements that are children of the main root elment.</param>
+            <returns>A collection of strings of the records.</returns>
+             <remarks>
+             <para>
+             <paramref name="recordMarker"/> should not contain the angle brackets that start/end an xml element.
+             </para>
+             <para>
+             The input file can contain child elements of the main root element, which are not the same elements
+             as those marked with <paramref name="recordMarker"/>, but if the file has them, they must be before the
+             other <paramref name="recordMarker"/> elments.
+             </para>
+             </remarks>
+             <exception cref="T:System.ArgumentException">
+             Thrown if <paramref name="recordMarker"/> is null, an empty string, or there are no such records in the file.
+             </exception>
+             <exception cref="T:System.InvalidOperationException">
+             Thrown if the input file is not xml.
+             </exception>
+        </member>
+        <member name="M:Palaso.Xml.FastXmlElementSplitter.GetSecondLevelElementBytes(System.String,System.String,System.Boolean@)">
+            <summary>
+            Return the second level elements that are in the input file, including an optional first element.
+            </summary>
+        </member>
+        <member name="M:Palaso.Xml.FastXmlElementSplitter.GetSecondLevelElementStrings(System.String,System.String,System.Boolean@)">
+            <summary>
+            Return the second level elements that are in the input file, including an optional first element.
+            </summary>
+        </member>
         <member name="T:Spart.Parsers.Primitives.EolParser">
             <summary>
             Matches a CR, LF, or CR LF
@@ -1708,22 +2545,66 @@
             current scanner
             </summary>
         </member>
-        <member name="T:Palaso.Progress.LogBox.LogBoxResources">
+        <member name="M:Palaso.Extensions.ControlExtensions.DesignModeAtAll(System.Windows.Forms.Control)">
             <summary>
-              A strongly-typed resource class, for looking up localized strings, etc.
+            the built-in "DesignMode" doesn't work when the control is in someone else's design
+            </summary>
+            <param name="control"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Palaso.Xml.CanonicalXmlSettings">
+            <summary>
+             Canonical xml settings suitable for use in Chorus applications.
             </summary>
         </member>
-        <member name="P:Palaso.Progress.LogBox.LogBoxResources.ResourceManager">
+        <member name="M:Palaso.Xml.CanonicalXmlSettings.CreateXmlReaderSettings(System.Xml.ConformanceLevel)">
             <summary>
-              Returns the cached ResourceManager instance used by this class.
+             Return an XmlReaderSettings suitable for use in Chorus applications.
             </summary>
+             <remarks>
+             This formats with:
+            		CheckCharacters as 'false',
+            		ProhibitDtd as 'true',
+            		ValidationType as ValidationType.None,
+            		CloseInput as 'true', 
+            		IgnoreWhitespace as 'true', and
+            		ConformanceLevel as 'conformanceLevel' parameter.
+             </remarks>
+             <param name="conformanceLevel">Document|Fragment</param>
+            <returns>XmlReaderSettings</returns>
         </member>
-        <member name="P:Palaso.Progress.LogBox.LogBoxResources.Culture">
+        <member name="M:Palaso.Xml.CanonicalXmlSettings.CreateXmlReaderSettings">
             <summary>
-              Overrides the current thread's CurrentUICulture property for all
-              resource lookups using this strongly typed resource class.
+             Return an XmlReaderSettings suitable for use in Chorus applications.
             </summary>
+             <remarks>
+             This formats with:
+            		CheckCharacters as 'false',
+            		ProhibitDtd as 'true',
+            		ValidationType as ValidationType.None,
+            		CloseInput as 'true', 
+            		IgnoreWhitespace as 'true', and
+            		ConformanceLevel as ConformanceLevel.Document.
+             </remarks>
+            <returns>XmlReaderSettings</returns>
         </member>
+        <member name="M:Palaso.Xml.CanonicalXmlSettings.CreateXmlWriterSettings(System.Xml.ConformanceLevel)">
+            <summary>
+             Return an XmlWriterSettings suitable for use in Chorus applications.
+            </summary>
+             <remarks>
+             This formats with new line on attributes, indents with tab, and encoded in UTF8 with no BOM.
+             </remarks>
+             <param name="conformanceLevel">Document|Fragment</param>
+            <returns>XmlWriterSettings</returns>
+        </member>
+        <member name="M:Palaso.Xml.CanonicalXmlSettings.CreateXmlWriterSettings">
+            <summary>
+             
+            </summary>
+            <returns></returns>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:Palaso.WritingSystems.WritingSystemChangeLogDataMapper.#ctor(System.String)" -->
         <member name="M:Palaso.WritingSystems.Collation.SimpleRulesCollator.Compare(System.String,System.String)">
             <summary>Compares two strings and returns a value indicating whether one is less than, 
              equal to, or greater than the other.</summary>
@@ -1895,46 +2776,103 @@
             Gets the exception that occurred, or null if there was an unspecified error
             </summary>
         </member>
-        <member name="T:Palaso.Migration.IMigrationStrategy">
-            <summary>
-             Used by Migrator to migrate from one version to another.
-            </summary>
-        </member>
-        <member name="M:Palaso.CommandLineProcessing.ConsoleProgress.Dispose">
-            <summary>
-            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-            </summary>
-            <filterpriority>2</filterpriority>
-        </member>
-        <member name="T:Palaso.CommandLineProcessing.LabelStatus">
-            <summary>
-            Just conveys status, not all messages
-            </summary>
-        </member>
         <member name="T:Palaso.WritingSystems.WritingSystemDefinition">
             <summary>
-            This class stores the information used to define various writing system properties.
-            </summary>
-        </member>
-        <member name="F:Palaso.WritingSystems.WritingSystemDefinition._scriptOptions">
-            <summary>
-            singleton
-            </summary>
-        </member>
-        <member name="F:Palaso.WritingSystems.WritingSystemDefinition._languageCodes">
-            <summary>
-            singleton
+            This class stores the information used to define various writing system properties. The Language, Script, Region and Variant
+            properties conform to the subtags of the same name defined in BCP47 (Rfc5646) and are enforced by the Rfc5646Tag class. it is worth
+            noting that for historical reasons this class does not provide seperate fields for variant and private use components as
+            defined in BCP47. Instead the ConcatenateVariantAndPrivateUse and SplitVariantAndPrivateUse methods are provided for consumers
+            to generate a single variant subtag that contains both fields seperated by "-x-".
+            Furthermore the WritingSystemDefinition.WellknownSubtags class provides certain well defined Subtags that carry special meaning
+            apart from the IANA subtag registry. In particular this class defines "qaa" as the default "unlisted language" language subtag.
+            It should be used when there is no match for a language in the IANA subtag registry. Private use properties are "emic" and "etic"
+            which mark phonemic and phonetic writing systems respectively. These must always be used in conjunction with the "fonipa" variant.
+            Likewise "audio" marks a writing system as audio and must always be used in conjunction with script "Zxxx". Convenience methods
+            are provided for Ipa and Audio properties as IpaStatus and IsVoice respectively.
             </summary>
         </member>
         <member name="M:Palaso.WritingSystems.WritingSystemDefinition.#ctor">
             <summary>
-            For overridding the other identifier fields, to specify a custom RFC5646
+            Creates a new WritingSystemDefinition with Language subtag set to "qaa"
             </summary>
         </member>
-        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.LoadScriptOptionsIfNeeded">
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.#ctor(System.String)">
             <summary>
-            parse in the text of the script registry we get from http://unicode.org/iso15924/iso15924-text.html
+            Creates a new WritingSystemDefinition by parsing a valid BCP47 tag
             </summary>
+            <param name="bcp47Tag">A valid BCP47 tag</param>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:Palaso.WritingSystems.WritingSystemDefinition.#ctor(System.String,System.String,System.String,System.String,System.String,System.Boolean)" -->
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.#ctor(Palaso.WritingSystems.WritingSystemDefinition)">
+            <summary>
+            Copy constructor.
+            </summary>
+            <param name="ws">The ws.</param>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.AddToVariant(System.String)">
+            <summary>
+            Adds a valid BCP47 registered variant subtag to the variant. Any other tag is inserted as private use.
+            </summary>
+            <param name="registeredVariantOrPrivateUseSubtag">A valid variant tag or another tag which will be inserted into private use.</param>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.SplitVariantAndPrivateUse(System.String,System.String@,System.String@)">
+            <summary>
+            A convenience method to help consumers deal with variant and private use subtags both being stored in the Variant property.
+            This method will search the Variant part of the BCP47 tag for an "x" extension marker and split the tag into variant and private use sections
+            Note the complementary method "ConcatenateVariantAndPrivateUse"
+            </summary>
+            <param name="variantAndPrivateUse">The string containing variant and private use sections seperated by an "x" private use subtag</param>
+            <param name="variant">The resulting variant section</param>
+            <param name="privateUse">The resulting private use section</param>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.ConcatenateVariantAndPrivateUse(System.String,System.String)">
+            <summary>
+            A convenience method to help consumers deal with registeredVariantSubtags and private use subtags both being stored in the Variant property.
+            This method will insert a "x" private use subtag between a set of registered BCP47 variants and a set of private use subtags
+            Note the complementary method "ConcatenateVariantAndPrivateUse"
+            </summary>
+            <param name="registeredVariantSubtags">A set of registered variant subtags</param>
+            <param name="privateUseSubtags">A set of private use subtags</param>
+            <returns>The resulting combination of registeredVariantSubtags and private use.</returns>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.SetAllComponents(System.String,System.String,System.String,System.String)">
+            <summary>
+            Sets all BCP47 language tag components at once. 
+            This method is useful for avoiding invalid intermediate states when switching from one valid tag to another.
+            </summary>
+            <param name="language">A valid BCP47 language subtag.</param>
+            <param name="script">A valid BCP47 script subtag.</param>
+            <param name="region">A valid BCP47 region subtag.</param>
+            <param name="variant">A valid BCP47 variant subtag.</param>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.CreateCopyWithUniqueId(Palaso.WritingSystems.WritingSystemDefinition,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            This method will make a copy of the given writing system and 
+            then make the Id unique compared to list of Ids passed in by
+            appending dupl# where # is a digit that increases with the
+            number of duplicates found.
+            </summary>
+            <param name="writingSystemToCopy"></param>
+            <param name="otherWritingsystemIds"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.SortUsingOtherLanguage(System.String)">
+            <summary>
+            A convenience method for sorting like anthoer language
+            </summary>
+            <param name="languageCode">A valid language code</param>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.SortUsingCustomICU(System.String)">
+            <summary>
+            A convenience method for sorting with custom ICU rules
+            </summary>
+            <param name="sortRules">custom ICU sortrules</param>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.SortUsingCustomSimple(System.String)">
+            <summary>
+            A convenience method for sorting with "shoebox" style rules
+            </summary>
+            <param name="sortRules">"shoebox" style rules</param>
         </member>
         <member name="M:Palaso.WritingSystems.WritingSystemDefinition.ValidateCollationRules(System.String@)">
             <summary>
@@ -1943,42 +2881,168 @@
             <param name="message">Used for an error message if rules do not validate.</param>
             <returns>True if rules are valid, false otherwise.</returns>
         </member>
-        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.LanguageCodes">
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.Clone">
             <summary>
-            Provides a list of ISO language codes.  Uses ISO 639-1 and 639-3 where ISO 639-1 is not available.
+            Creates a clone of the current writing system. 
+            Note that this excludes the properties: Modified, MarkedForDeletion and StoreID
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.SetTagFromString(System.String)">
+            <summary>
+            Parses the supplied BCP47 tag and sets the Language, Script, Region and Variant properties accordingly
+            </summary>
+            <param name="completeTag">A valid BCP47 tag</param>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.Parse(System.String)">
+            <summary>
+            Parses the supplied BCP47 tag and return a new writing system definition with the correspnding Language, Script, Region and Variant properties
+            </summary>
+            <param name="bcp47Tag">A valid BCP47 tag</param>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.FromSubtags(System.String,System.String,System.String,System.String)">
+            <summary>
+            Returns a new writing system definition with the corresponding Language, Script, Region and Variant properties set
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemDefinition.FilterWellKnownPrivateUseTags(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Filters out all "WellKnownSubTags" out of a list of subtags
+            </summary>
+            <param name="privateUseTokens"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.RequiresValidTag">
+            <summary>
+            True when the validity of the writing system defn's tag is being enforced. This is the normal and default state.
+            Setting this true will throw unless the tag has previously been put into a valid state.
+            Attempting to Save the writing system defn will set this true (and may throw).
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.VersionNumber">
+            <summary>
+            This is the version of the locale data contained in this writing system. 
+            This should not be confused with the version of our writingsystemDefinition implementation which is mostly used for migration purposes. 
+            That information is stored in the "LatestWritingSystemDefinitionVersion" property.
             </summary>
         </member>
         <member name="P:Palaso.WritingSystems.WritingSystemDefinition.IpaStatus">
             <summary>
-            Note: this treats the etic and emic extensions as if they were variants, which we can get 
-            away with for now, but maybe not if this class grows to be extension aware.
-            Ideally, these should be suffixes rather than private use
+            Adjusts the BCP47 tag to indicate the desired form of Ipa by inserting fonipa in the variant and emic or etic in private use where necessary.
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.IsVoice">
+            <summary>
+            Adjusts the BCP47 tag to indicate that this is an "audio writing system" by inserting "audio" in the private use and "Zxxx" in the script
             </summary>
         </member>
         <member name="P:Palaso.WritingSystems.WritingSystemDefinition.Variant">
             <summary>
-            Todo: this could/should become an ordered list of variant tags
+            A string representing the subtag of the same name as defined by BCP47. 
+            Note that the variant also includes the private use subtags. These are appended to the variant subtags seperated by "-x-"
+            Also note the convenience methods "SplitVariantAndPrivateUse" and "ConcatenateVariantAndPrivateUse" for easier 
+            variant/ private use handling
             </summary>
         </member>
-        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.ISO">
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.Region">
             <summary>
-            The ISO-639 code which is also the Ethnologue code.
+            A string representing the subtag of the same name as defined by BCP47. 
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.Language">
+            <summary>
+            A string representing the subtag of the same name as defined by BCP47. 
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.Abbreviation">
+            <summary>
+            The desired abbreviation for the writing system
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.Script">
+            <summary>
+            A string representing the subtag of the same name as defined by BCP47. 
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.LanguageName">
+            <summary>
+            The language name to use. Typically this is the language name associated with the BCP47 language subtag as defined by the IANA subtag registry
             </summary>
         </member>
         <member name="P:Palaso.WritingSystems.WritingSystemDefinition.StoreID">
             <summary>
-            Other classes that persist this need to know when our id changed, so they can
-            clean up the old copy which is based on the old name.
+            Used by IWritingSystemRepository to identify writing systems. Only change this if you would like to replace a writing system with the same StoreId
+            already contained in the repo. This is useful creating a temporary copy of a writing system that you may or may not care to persist to the 
+            IWritingSystemRepository.
+            Typical use would therefor be:
+            ws.Clone(wsorig);
+            ws.StoreId=wsOrig.StoreId;
+            **make changes to ws**
+            repo.Set(ws);
             </summary>
         </member>
-        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.ScriptOption">
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.DisplayLabel">
             <summary>
-            If we don't have an option for the current script, returns null
+            A automatically generated descriptive label for the writing system definition.
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.Bcp47Tag">
+            <summary>
+            The current BCP47 tag which is a concatenation of the Language, Script, Region and Variant properties.
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.Id">
+            <summary>
+            The identifier for this writing syetm definition. Use this in files and as a key to the IWritingSystemRepository.
+            Note that this is usually identical to the Bcp47 tag and should rarely differ.
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.Modified">
+            <summary>
+            Indicates whether the writing system definition has been modified.
+            Note that this flag is automatically set by all methods that cause a modification and is reset by the IwritingSystemRepository.Save() method
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.DefaultFontName">
+            <summary>
+            The font used to display data encoded in this writing system
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.DefaultFontSize">
+            <summary>
+            the preferred font size to use for data encoded in this writing system.
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.Keyboard">
+            <summary>
+            The preferred keyboard to use to generate data encoded in this writing system.
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.RightToLeftScript">
+            <summary>
+            Indicates whether this writing system is read and written from left to right or right to left
             </summary>
         </member>
         <member name="P:Palaso.WritingSystems.WritingSystemDefinition.NativeName">
             <summary>
             The windows "NativeName" from the Culture class
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.SortUsing">
+            <summary>
+            Indicates the type of sort rules used to encode the sort order.
+            Note that the actual sort rules are contained in the SortRules property
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.SortRules">
+            <summary>
+            The sort rules that efine the sort order.
+            Note that you must indicate the type of sort rules used by setting the "SortUsing" property
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.SpellCheckingId">
+            <summary>
+            The id used to select the spell checker.
             </summary>
         </member>
         <member name="P:Palaso.WritingSystems.WritingSystemDefinition.Collator">
@@ -1987,9 +3051,14 @@
             on the custom collation rules.
             </summary>
         </member>
+        <member name="P:Palaso.WritingSystems.WritingSystemDefinition.IsUnicodeEncoded">
+            <summary>
+            Indicates whether this writing system is unicode encoded or legacy encoded
+            </summary>
+        </member>
         <member name="F:Palaso.WritingSystems.WritingSystemDefinition.SortRulesType.DefaultOrdering">
             <summary>
-            Default Unicode ordering rules
+            Default Unicode ordering rules (actually CustomICU without any rules)
             </summary>
         </member>
         <member name="F:Palaso.WritingSystems.WritingSystemDefinition.SortRulesType.CustomSimple">
@@ -2004,8 +3073,40 @@
         </member>
         <member name="F:Palaso.WritingSystems.WritingSystemDefinition.SortRulesType.OtherLanguage">
             <summary>
-            Use the sort rules from another language. When this is set, the SortRules are interpretted as a cultureId for the language to sort like.
+            Use the sort rules from another language. When this is set, the SortRules are interpreted as a cultureId for the language to sort like.
             </summary>
+        </member>
+        <member name="T:Palaso.WritingSystems.WritingSystemOrphanFinder">
+            <summary>
+            The WritingSystemOrphanFinder class provides a uniform way for dealing with orphaned writing system ids.
+            Orphaned writing system ids are writing system ids found in a file that are not contained
+            in a given writing system repository.
+            The algorithm used:
+            1. For each of these writing system ids passed in, check if it is contained in the repo. 
+               If so goto step 5.
+            2. Check with the repo whether the writing system id has been changed. 
+               If so, rename the writing system throughout the file and goto step 5.
+            3. Run the tag in question through the RfcTagCleaner and check if the new tag is in the repo.
+               If so, rename the writing system throughout the file and goto step 5.
+            4. Create a new writing system with "cleaned" id and set it in the repo. 
+            5. Complete
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.WritingSystemOrphanFinder.FindOrphans(System.Collections.Generic.IEnumerable{System.String},Palaso.WritingSystems.WritingSystemOrphanFinder.IdReplacementStrategy,Palaso.WritingSystems.IWritingSystemRepository)">
+            <summary>
+             Constructor.
+            </summary>
+            <param name="idsInFile"></param>
+            <param name="replaceIdsInFile"></param>
+            <param name="writingSystemRepository"></param>
+        </member>
+        <member name="T:Palaso.WritingSystems.WritingSystemOrphanFinder.IdReplacementStrategy">
+            <summary>
+             A delegate that implements the actual replacement of writing system tags in the file. 
+             The method is given the old writing system id 'oldId' and the new writing system id 'newId'.
+            </summary>
+            <param name="newId"></param>
+            <param name="oldId"></param>
         </member>
         <member name="P:Palaso.UiBindings.IBindableControl`1.Value">
             <summary>
@@ -2115,7 +3216,7 @@
         <member name="P:Palaso.Resource.scriptNames">
              <summary>
                Looks up a localized string similar to #
-            # ISO 15924 - Codes for the representation of names of scripts
+            # Language 15924 - Codes for the representation of names of scripts
             #             Codes pour la représentation des noms d’écritures
             # Format: 
             #             Code;N°;English Name;Nom français;PVA;Date
@@ -2131,12 +3232,44 @@
              [rest of string was truncated]&quot;;.
              </summary>
         </member>
+        <member name="P:Palaso.Resource.IanaSubtags">
+             <summary>
+               Looks up language subtags
+            
+             Type: language
+            Subtag: aa
+            Description: Afar
+            Added: 2005-10-16
+            %%
+            Type: language
+            Subtag: ab
+            Description: Abkhazian
+            Added: 2005-10-16
+            Suppress-Script: Cyrl
+            %%
+            Type: language
+            Subtag: ae
+            Description: Avestan
+            Added: 2005-10-16
+            %%
+             </summary>
+        </member>
+        <member name="P:Palaso.Resource.TwoToThreeCodes">
+            <summary>
+              Looks up file containing mappings from two to (old) three letter codes
+            </summary>
+        </member>
         <member name="M:Palaso.Reporting.ProblemNotificationDialog.#ctor(System.String,System.String)">
             <summary>
             Use this one if you need to customize the dialog, e.g. to setup an alternate button
             </summary>
             <param name="message"></param>
             <param name="dialogTitle"></param>
+        </member>
+        <member name="M:Palaso.Reporting.ProblemNotificationDialog.#ctor(System.String,System.String,System.Drawing.Image)">
+            <summary>
+            Use this one if you need to customize the dialog, e.g. to setup an alternate button
+            </summary>
         </member>
         <member name="F:Palaso.Reporting.ProblemNotificationDialog.components">
             <summary>
@@ -2155,37 +3288,21 @@
             the contents of this method with the code editor.
             </summary>
         </member>
-        <member name="T:Palaso.Migration.XmlReaderWriterMigrator">
+        <member name="T:Palaso.WritingSystems.WritingSystemCompatibility">
             <summary>
-             Copies an xml file, giving an opportunity to inspect each node in the CopyNode method.
+             Specifies any comaptibiltiy modes that can be imposed on a WritingSystemRepository
             </summary>
         </member>
-        <member name="M:Palaso.Migration.XmlReaderWriterMigrator.Migrate(System.String,System.String)">
+        <member name="F:Palaso.WritingSystems.WritingSystemCompatibility.Strict">
             <summary>
-             Copies sourceFilePath to destinationFilePath calling CopyNode for each node read.
-            </summary>
-            <param name="source"></param>
-            <param name="destinationFilePath"></param>
-        </member>
-        <member name="M:Palaso.WritingSystems.LdmlInFolderWritingSystemStore.#ctor">
-            <summary>
-            Use the default repository
+             Strict adherence to the current LDML standard (with extensions)
             </summary>
         </member>
-        <member name="M:Palaso.WritingSystems.LdmlInFolderWritingSystemStore.#ctor(System.String)">
+        <member name="F:Palaso.WritingSystems.WritingSystemCompatibility.Flex7V0Compatible">
             <summary>
-            use a special path for the repository
-            </summary>
-            <param name="path"></param>
-        </member>
-        <member name="P:Palaso.WritingSystems.LdmlInFolderWritingSystemStore.SystemWritingSystemProvider">
-            <summary>
-            Provides writing systems from a repository that comes, for example, with the OS
-            </summary>
-        </member>
-        <member name="M:Palaso.WritingSystems.LdmlSharedWritingSystemCollection.#ctor">
-            <summary>
-            Use the default repository
+             Permits backward compatibility with Flex 7.0.x and 7.1.x V0 LDML
+             notably custom language tags having all elements in private use.
+             e.g. x-abc-Zxxx-x-audio
             </summary>
         </member>
         <member name="T:Spart.Scanners.ToLowerFilter">
@@ -2414,18 +3531,21 @@
             this is for interacting with test code which doesn't want to allow an actual UI
             </summary>
         </member>
-        <member name="M:Palaso.Progress.LogBox.ConsoleProgress.Dispose">
+        <member name="T:Palaso.Progress.MultiPhaseProgressIndicator">
             <summary>
-            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-            </summary>
-            <filterpriority>2</filterpriority>
-        </member>
-        <member name="T:Palaso.Progress.LogBox.LabelStatus">
-            <summary>
-            Just conveys status, not all messages
+             MultiPhaseProgressIndicator makes updating an IProgressIndicator representing THE WHOLE PROCESS when in fact
+             there are several sub processes or phases that are run sequentially but which do not know about each other.
+             
+             This class manages a global IProgressIndicator
             </summary>
         </member>
-        <member name="M:Palaso.IO.FileLocator.GetFileDistributedWithApplication(System.String[])">
+        <member name="M:Palaso.IO.FileLocator.GetSearchPaths">
+            <summary>
+            Subclasses (e.g. in Bloom) override this to provide a dynamic set of paths
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.IO.FileLocator.GetFileDistributedWithApplication(System.Boolean,System.String[])">
             <summary>
             Find a file which, on a development machine, lives in [solution]/[distFileFolderName]/[subPath],
             and when installed, lives in 
@@ -2434,13 +3554,89 @@
             </summary>
             <example>GetFileDistributedWithApplication("info", "releaseNotes.htm");</example>
         </member>
-        <member name="M:Palaso.IO.FileLocator.GetDirectoryDistributedWithApplication(System.String[])">
+        <member name="M:Palaso.IO.FileLocator.GetFileDistributedWithApplication(System.String[])">
+            <summary>
+            Find a file which MUST EXIST. On a development machine, lives in [solution]/[distFileFolderName]/[subPath],
+            and when installed, lives in 
+            [applicationFolder]/[distFileFolderName]/[subPath1]/[subPathN]  or
+            [applicationFolder]/[subPath]/[subPathN]
+            </summary>
+            <example>GetFileDistributedWithApplication("info", "releaseNotes.htm");</example>
+        </member>
+        <member name="M:Palaso.IO.FileLocator.GetDirectoryDistributedWithApplication(System.Boolean,System.String[])">
             <summary>
             Find a file which, on a development machine, lives in [solution]/DistFiles/[subPath],
             and when installed, lives in 
             [applicationFolder]/[subPath1]/[subPathN]
             </summary>
             <example>GetFileDistributedWithApplication("info", "releaseNotes.htm");</example>
+        </member>
+        <member name="M:Palaso.IO.FileLocator.GetDirectoryDistributedWithApplication(System.String[])">
+            <summary>
+            Find a directory which MUST EXIST. On a development machine, lives in [solution]/DistFiles/[subPath],
+            and when installed, lives in 
+            [applicationFolder]/[subPath1]/[subPathN]
+            </summary>
+            <example>GetFileDistributedWithApplication("info", "releaseNotes.htm");</example>
+        </member>
+        <member name="M:Palaso.IO.FileLocator.CloneAndCustomize(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Use this when you can't mess with the whole application's filelocator, but you want to add a path or two, e.g., the folder of the current book in Bloom.
+            </summary>
+            <param name="addedSearchPaths"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.IO.FileLocator.LocateInProgramFiles(System.String,System.Boolean,System.String[])">
+            ------------------------------------------------------------------------------------
+            <summary>
+            Locates the specified program in the program files folder, returning the full path
+            (including the exeName). Searching is only done in the OS's program files folder(s)
+            and sub folders. On a 64-bit Windows OS, both program files folders are searched.
+            
+            When subFoldersToSearch are specified:
+            	- The specified sub folders are searched first.
+            	- If fallBackToDeepSearch is true, then after the search in the specified sub
+            	  folders fails, a deep search will be made in each of the sub folders, and
+            	  if that fails, the entire program files folder (and all sub folders)
+            	  is searched.
+            	- If fallBackToDeepSearch is false, only subFoldersToSearch are searched.
+            	
+            When subFoldersToSearch are not specified:
+            	- If fallBackToDeepSearch is true, then the entire program files folder (and all
+            	  (sub folders) is searched.
+            	- If fallBackToDeepSearch is false, then only the top-level program files
+            	  folder is searched.
+            </summary>
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.IO.FileLocator.LocateInProgramFilesUsingShallowSearch(System.String,System.String[])">
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.IO.FileLocator.LocateInProgramFilesUsingDeepSearch(System.String,System.String[])">
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.IO.FileLocator.LocateInProgramFilesFolder(System.String,System.IO.SearchOption,System.String[])">
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.IO.FileLocator.GetFromRegistryProgramThatOpensFileType(System.String)">
+            ------------------------------------------------------------------------------------
+            <summary>
+            Searches the registry and returns the full path to the application program used to
+            open files having the specified extention. The fileExtension can be with or without
+            the preceding period. If the command cannot be found in the registry, then null is
+            returned. If a command in the registry is found, but it refers to a program file
+            that does not exist, null is returned.
+            </summary>
+            ------------------------------------------------------------------------------------
+        </member>
+        <member name="M:Palaso.IO.FileLocator.GetPossibleProgramFilesFolders">
+            ------------------------------------------------------------------------------------
+            <summary>
+            Returns a list of the possible paths to the program files folder, taking into
+            account that 2 often (or always?) exist in a Win64 OS (i.e. "Program Files" and
+            "Program Files (x86)").
+            </summary>
+            ------------------------------------------------------------------------------------
         </member>
         <member name="P:Palaso.IO.FileLocator.DirectoryOfApplicationOrSolution">
             <summary>
@@ -2497,16 +3693,47 @@
             <param name="pattern"></param>
             <param name="replaceWith"></param>
         </member>
+        <member name="M:Palaso.IO.FileUtils.CheckValidPathname(System.String,System.String)">
+            <summary>
+            Make sure the given <paramref name="pathToFile"/> file is 'valid'.
+            
+            Valid means that
+            	1. <paramref name="pathToFile"/> must not be null or an empty string
+            	2. <paramref name="pathToFile"/> must exist, and
+            	3. The extension for <paramref name="pathToFile"/> must equal <paramref name="expectedExtension"/>
+            		(Or both must be null)
+            </summary>
+        </member>
         <member name="M:Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(System.String,System.String,System.String)">
             <summary>
             If there is a problem doing the replace, a dialog is shown which tells the user
             what happened, and lets them try to fix it.  It also lets them "Give up", in 
             which case this returns False.
+            
+            To help with situations where something may temporarily be holding on to the file, 
+            this will retry for up to 5 seconds.
             </summary>
             <param name="sourcePath"></param>
             <param name="destinationPath"></param>
             <param name="backupPath">can be null if you don't want a replacement</param>
             <returns>if the user gives up, throws whatever exception the file system gave</returns>
+        </member>
+        <member name="M:Palaso.IO.FileUtils.MakePathSafeFromEncodingProblems(System.String)">
+            <summary>
+            When calling external exe's on Windows any non-ascii characters can get converted to '?'. This
+            will convert them to 8.3 format which is all ascii (and do nothing on Linux).
+            </summary>
+        </member>
+        <member name="T:Palaso.Data.ValidationException">
+            <summary>
+             General data validation exception
+            </summary>
+        </member>
+        <member name="M:Palaso.Data.ValidationException.#ctor(System.String)">
+            <summary>
+             Constructor with a helpful error message.
+            </summary>
+            <param name="message"></param>
         </member>
         <member name="T:Spart.Debug.Debugger">
             <summary>
@@ -2538,43 +3765,115 @@
             The current parser context
             </summary>
         </member>
-        <member name="T:Palaso.Reporting.ReportingStrings">
+        <member name="T:Palaso.IO.TempFile">
             <summary>
-              A strongly-typed resource class, for looking up localized strings, etc.
+            This is useful a temporary file is needed. When it is disposed, it will delete the file.
+            </summary>
+            <example>using(f = new TempFile())</example>
+        </member>
+        <member name="M:Palaso.IO.TempFile.TrackExisting(System.String)">
+            <summary>
+            Create a TempFile based on a pre-existing file, which will be deleted when this is disposed.
             </summary>
         </member>
-        <member name="P:Palaso.Reporting.ReportingStrings.ResourceManager">
+        <member name="M:Palaso.IO.TempFile.WithExtension(System.String)">
             <summary>
-              Returns the cached ResourceManager instance used by this class.
+            Use this one when it's important to have a certain file extension 
+            </summary>
+            <param name="extension">with or with out '.', will work the same</param>
+        </member>
+        <member name="M:Palaso.IO.TempFile.WithFilename(System.String)">
+            <summary>
+            Use this one when it's important to have a certain file name (with, or without extension). 
+            </summary>
+            <param name="filename">with or with out an extension, will work the same</param>
+        </member>
+        <member name="M:Palaso.IO.TempFile.FromResource(System.IO.Stream,System.String)">
+            <summary>
+            Used to make a real file out of a resource for the purpose of testing 
+            </summary>
+            <param name="resource">e.g., an audio resource</param>
+            <param name="extension">with or with out '.', will work the same</param>
+        </member>
+        <member name="M:Palaso.IO.TempFile.FromResource(System.Byte[],System.String)">
+            <summary>
+            Used to make a real file out of a resource for the purpose of testing 
+            </summary>
+            <param name="resource">e.g., a video resource</param>
+            <param name="extension">with or with out '.', will work the same</param>
+        </member>
+        <member name="M:Palaso.IO.TempFile.MoveTo(System.String)">
+            <summary>
+            Used to move a file to a new path 
             </summary>
         </member>
-        <member name="P:Palaso.Reporting.ReportingStrings.Culture">
+        <member name="M:Palaso.IO.DirectoryUtilities.CopyDirectoryToTempDirectory(System.String)">
             <summary>
-              Overrides the current thread's CurrentUICulture property for all
-              resource lookups using this strongly typed resource class.
+            Makes a full copies of the specified directory in the system's temporary directory.
+            If the copy fails at any point in the process, the user is notified of the
+            problem and an attempt is made to remove the destination directory if the failure
+            happened part way through the process.
             </summary>
+            <param name="srcDirectory">Directory to copy</param>
+            <returns>Null if the copy was unsuccessful, otherwise the path to the copied directory</returns>
         </member>
-        <member name="P:Palaso.Reporting.ReportingStrings.ks_Ok">
+        <member name="M:Palaso.IO.DirectoryUtilities.CopyDirectory(System.String,System.String)">
             <summary>
-              Looks up a localized string similar to &amp;Ok.
+            Makes a copy of the specifed source directory and its contents in the specified
+            destination directory. The copy has the same directory name as the source, but ends up
+            as a sub directory of the specified destination directory. The destination directory must
+            already exist. If the copy fails at any point in the process, the user is notified
+            of the problem and an attempt is made to remove the destination directory if the
+            failure happened part way through the process.
             </summary>
+            <param name="srcDirectory">Directory being copied</param>
+            <param name="dstDirectoryParent">Destination directory where source directory and its contents are copied</param>
+            <returns>true if successful, otherwise, false.</returns>
         </member>
-        <member name="P:Palaso.Reporting.ReportingStrings.ksPleaseEMailThisToUs">
-             <summary>
-               Looks up a localized string similar to Please e-mail this to {0} 
+        <member name="M:Palaso.IO.DirectoryUtilities.CopyDirectoryContents(System.String,System.String)">
+            <summary>
+            Copies the specified source directory's contents to the specified destination directory.
+            If the destination directory does not exist, it will be created first. If the source
+            directory contains sub directorys, those and their content will also be copied. If the
+            copy fails at any point in the process, the user is notified of the problem and
+            an attempt is made to remove the destination directory if the failure happened part
+            way through the process.
+            </summary>
+            <param name="sourcePath">Directory whose contents will be copied</param>
+            <param name="destinationPath">Destination directory receiving the content of the source directory</param>
+            <returns>true if successful, otherwise, false.</returns>
             
-            {1}.
-             </summary>
         </member>
-        <member name="P:Palaso.Reporting.ReportingStrings.kstidFieldWorksErrorCaption">
+        <member name="M:Palaso.IO.DirectoryUtilities.MoveDirectorySafely(System.String,System.String)">
             <summary>
-              Looks up a localized string similar to Error.
+            Directory.Move fails if the src and dest are on different partitions (e.g., temp and documents are on differen drives).
+            This will do a move if it can, else do a copy followed by a delete.
             </summary>
         </member>
-        <member name="P:Palaso.Reporting.ReportingStrings.kstidFieldWorksErrorExitInfo">
+        <member name="M:Palaso.IO.DirectoryUtilities.GetSafeDirectories(System.String)">
             <summary>
-              Looks up a localized string similar to This application must exit..
+            Return subdirectories of <paramref name="path"/> that are not system or hidden.
+            There are some cases where our call to Directory.GetDirectories() throws.
+            For example, when the access permissions on a folder are set so that it can't be read.
+            Another possible example may be Windows Backup files, which apparently look like directories.
             </summary>
+            <param name="path">Directory path to look in.</param>
+            <returns>Zero or more directory names that are not system or hidden.</returns>
+            <exception cref="T:System.UnauthorizedAccessException">E.g. when the user does not have read permission.</exception>
+        </member>
+        <member name="M:Palaso.IO.DirectoryUtilities.DeleteDirectoryRobust(System.String)">
+            <summary>
+            There are various things which can prevent a simple directory deletion, mostly timing related things which are hard to debug.
+            This method uses all the tricks to do its best.
+            </summary>
+            <returns>returns true if the directory is fully deleted</returns>
+        </member>
+        <member name="M:Palaso.IO.DirectoryUtilities.GetUniqueFolderPath(System.String)">
+            <summary>
+            If necessary, append a number to make the folder path unique.
+            </summary>
+            <param name="folderPath">Source folder pathname.</param>
+            <returns>A unique folder pathname at the same level as <paramref name="folderPath"/>. It may have a number apended to <paramref name="folderPath"/>, or it may be <paramref name="folderPath"/>.</returns>
         </member>
         <member name="T:Palaso.Data.PreciseDateTime">
             <summary>
@@ -2582,6 +3881,61 @@
             conform to the definition of Ticks but will be strictly increasing
             each time it is called.
             </summary>
+        </member>
+        <member name="M:Palaso.Xml.XmlHelpersV0.GetOptionalBooleanAttributeValue(System.Xml.XmlNode,System.String,System.Boolean)">
+            <summary>
+            Get an optional attribute value from an XmlNode.
+            </summary>
+            <param name="node">The XmlNode to look in.</param>
+            <param name="attrName">The attribute to find.</param>
+            <param name="defaultValue"></param>
+            <returns>The value of the attribute, or the default value, if the attribute dismissing</returns>
+        </member>
+        <member name="M:Palaso.Xml.XmlHelpersV0.GetBooleanAttributeValue(System.Xml.XmlNode,System.String)">
+            <summary>
+            Returns true if value of attrName is 'true' or 'yes' (case ignored)
+            </summary>
+            <param name="node">The XmlNode to look in.</param>
+            <param name="attrName">The optional attribute to find.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.Xml.XmlHelpersV0.GetBooleanAttributeValue(System.String)">
+            <summary>
+            Returns true if sValue is 'true' or 'yes' (case ignored)
+            </summary>
+        </member>
+        <member name="M:Palaso.Xml.XmlHelpersV0.GetAttributeValue(System.Xml.XmlNode,System.String,System.String)">
+            <summary>
+            Deprecated: use GetOptionalAttributeValue instead.
+            </summary>
+            <param name="node"></param>
+            <param name="attrName"></param>
+            <param name="defaultValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Palaso.Xml.XmlHelpersV0.GetAttributeValue(System.Xml.XmlNode,System.String)">
+            <summary>
+            Get an optional attribute value from an XmlNode.
+            </summary>
+            <param name="node">The XmlNode to look in.</param>
+            <param name="attrName">The attribute to find.</param>
+            <returns>The value of the attribute, or null, if not found.</returns>
+        </member>
+        <member name="M:Palaso.Xml.XmlHelpersV0.GetOptionalAttributeValue(System.Xml.XmlNode,System.String)">
+            <summary>
+            Get an optional attribute value from an XmlNode.
+            </summary>
+            <param name="node">The XmlNode to look in.</param>
+            <param name="attrName">The attribute to find.</param>
+            <returns>The value of the attribute, or null, if not found.</returns>
+        </member>
+        <member name="M:Palaso.Xml.XmlHelpersV0.GetOptionalAttributeValue(System.Xml.XmlNode,System.String,System.String)">
+            <summary>
+            Get an optional attribute value from an XmlNode.
+            </summary>
+            <param name="node">The XmlNode to look in.</param>
+            <param name="attrName">The attribute to find.</param>
+            <returns>The value of the attribute, or null, if not found.</returns>
         </member>
         <!-- Badly formed XML comment ignored for member "T:Palaso.UiBindings.StringToObjectEnumerableWrapper" -->
         <member name="T:Palaso.Text.LanguageForm">
@@ -2730,37 +4084,15 @@
             <param name="e">The exception</param>
             <returns>The help link</returns>
         </member>
-        <member name="T:Palaso.Reporting.ErrorReportTests">
+        <member name="M:Palaso.Progress.ConsoleProgress.Dispose">
             <summary>
-            Summary description for ErrorReportTests.
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
             </summary>
+            <filterpriority>2</filterpriority>
         </member>
-        <member name="M:Palaso.Reporting.ErrorReportTests.TestSend">
+        <member name="T:Palaso.Progress.LabelStatus">
             <summary>
-            
-            </summary>
-        </member>
-        <member name="F:Palaso.Progress.LogBox.LogBox.components">
-            <summary> 
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:Palaso.Progress.LogBox.LogBox.Dispose(System.Boolean)">
-            <summary> 
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:Palaso.Progress.LogBox.LogBox.InitializeComponent">
-            <summary> 
-            Required method for Designer support - do not modify 
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="P:Palaso.Progress.LogBox.LogBox.GetDiagnosticsMethod">
-            <summary>
-            This is a callback the client can set to soemthing which will then generate
-            Write() calls.  If it is set, the user sees a "Run diagnostics" menu item.
+            Just conveys status, not all messages
             </summary>
         </member>
         <member name="T:Palaso.Progress.InitializeProgressCallback">
@@ -2791,6 +4123,12 @@
             Delegate for a worker method which provides additional callbacks
             </summary>
         </member>
+        <member name="M:Palaso.Network.ProxyCredentialsRequestDialog.ReadProxyCredentials(System.String@,System.String@)">
+            <summary>
+            Get proxy creds from a place (not settings) that all palaso apps can share
+            </summary>
+            <returns>true if some credentials were found</returns>
+        </member>
         <member name="M:Palaso.Network.ProxyCredentialsRequestDialog.GetCredentials(System.Boolean)">
             <summary>
             
@@ -2815,6 +4153,85 @@
             Required method for Designer support - do not modify
             the contents of this method with the code editor.
             </summary>
+        </member>
+        <member name="T:Palaso.CommandLineProcessing.AsyncProcessOutputReader">
+            <summary>
+            Read from the process asynchronously, so as to fuel some UI progres downstream
+            
+            NOTE: THIS WILL NOT WORK as expected with some programs. They look fine in a console app, but
+            in this context, then give all the output at the end. The going guess is that they
+            are buffering their output.
+            I've had this problem with wkhtml2pdf,
+            but it seems that others have had it with other programs:
+            http://stackoverflow.com/questions/3626537/asynchronous-capture-from-a-process-output-not-working-properly?rq=1
+            http://stackoverflow.com/questions/6597800/capture-output-of-process-synchronously-i-e-when-it-happens?lq=1
+            http://stackoverflow.com/questions/5362121/reading-other-process-console-output
+            http://stackoverflow.com/questions/4501511/c-sharp-realtime-console-output-redirection
+            http://stackoverflow.com/questions/3844267/how-to-disable-output-buffering-in-process-standardoutput?lq=1
+            
+            In the case that data is available on the stream, but just no linefeed, it looks like maybe this would be
+            worth trying:
+            http://stackoverflow.com/questions/4501511/c-sharp-realtime-console-output-redirection
+            that is, there may be bytes available to read before the OutputDataReceived would be called.
+            </summary>
+        </member>
+        <member name="M:Palaso.CommandLineProcessing.ProcessOutputReaderBase.Read(System.Int32)">
+            <summary>
+            Safely read the streams of the process
+            </summary>
+            <param name="secondsBeforeTimeOut"></param>
+            <returns>true if the process completed before the timeout or cancellation</returns>
+        </member>
+        <member name="M:Palaso.CommandLineProcessing.AsyncProcessOutputReader.Read(System.Int32)">
+            <param name="secondsBeforeTimeOut"></param>
+            <returns>true if the process completed before the timeout or cancellation</returns>
+        </member>
+        <member name="T:Palaso.WritingSystems.Migration.WritingSystemsLdmlV0To1Migration.WritingSystemDefinitionV0">
+            <summary>
+            This class stores the information used to define various writing system properties.
+            </summary>
+        </member>
+        <member name="P:Palaso.WritingSystems.Migration.WritingSystemsLdmlV0To1Migration.WritingSystemDefinitionV0.StoreID">
+            <summary>
+            Other classes that persist this need to know when our id changed, so they can
+            clean up the old copy which is based on the old name.
+            </summary>
+        </member>
+        <member name="F:Palaso.WritingSystems.Migration.WritingSystemsLdmlV0To1Migration.WritingSystemDefinitionV0.SortRulesType.DefaultOrdering">
+            <summary>
+            Default Unicode ordering rules (actually CustomICU without any rules)
+            </summary>
+        </member>
+        <member name="F:Palaso.WritingSystems.Migration.WritingSystemsLdmlV0To1Migration.WritingSystemDefinitionV0.SortRulesType.CustomSimple">
+            <summary>
+            Custom Simple (Shoebox/Toolbox) style rules
+            </summary>
+        </member>
+        <member name="F:Palaso.WritingSystems.Migration.WritingSystemsLdmlV0To1Migration.WritingSystemDefinitionV0.SortRulesType.CustomICU">
+            <summary>
+            Custom ICU rules
+            </summary>
+        </member>
+        <member name="F:Palaso.WritingSystems.Migration.WritingSystemsLdmlV0To1Migration.WritingSystemDefinitionV0.SortRulesType.OtherLanguage">
+            <summary>
+            Use the sort rules from another language. When this is set, the SortRules are interpreted as a cultureId for the language to sort like.
+            </summary>
+        </member>
+        <member name="M:Palaso.WritingSystems.Collation.LdmlCollationParser.ReplaceUnicodeEscapesForICU(System.String)">
+            <summary>
+            This method will replace any unicode escapes in rules with their actual unicode characters
+            and return the resulting string.
+            Method created since IcuRulesCoallator does not appear to interpret unicode escapes.
+            </summary>
+            <param name="rules"></param>
+        </member>
+        <member name="M:Palaso.WritingSystems.Collation.LdmlCollationParser.EscapeForIcu(System.String)">
+            <summary>
+            This method will escape necessary characters while avoiding escaping characters that are already escaped 
+            and leave unicode escape sequences alone.
+            </summary>
+            <param name="unescapedData"></param>
+            <returns></returns>
         </member>
         <member name="T:Spart.Debug.DebugContext">
             <summary>
@@ -2849,6 +4266,11 @@
         <member name="P:Spart.Debug.DebugContext.Tab">
             <summary>
             A string with the current indentation suitable for prepending to output that should be nested
+            </summary>
+        </member>
+        <member name="M:Palaso.Xml.XmlWriterExtensions.WriteNodeShallow(System.Xml.XmlWriter,System.Xml.XmlReader)">
+            <summary>
+            Unlike WriteNodes, this method does not descend through the tree.
             </summary>
         </member>
         <member name="M:Palaso.WritingSystems.Collation.AddSortKeysToXml.AddSortKeys(System.Xml.XPath.XPathNavigator,System.String,Palaso.WritingSystems.Collation.AddSortKeysToXml.SortKeyGenerator,System.String,System.String)">
@@ -2900,11 +4322,72 @@
             Action handler delegate
             </summary>
         </member>
+        <member name="M:Palaso.Network.HttpUtilityFromMono.HtmlDecode(System.String)">
+            <summary>
+            Decodes an HTML-encoded string and returns the decoded string.
+            </summary>
+            <param name="s">The HTML string to decode. </param>
+            <returns>The decoded text.</returns>
+        </member>
+        <member name="M:Palaso.Network.HttpUtilityFromMono.HtmlDecode(System.String,System.IO.TextWriter)">
+            <summary>
+            Decodes an HTML-encoded string and sends the resulting output to a TextWriter output stream.
+            </summary>
+            <param name="s">The HTML string to decode</param>
+            <param name="output">The TextWriter output stream containing the decoded string. </param>
+        </member>
+        <member name="M:Palaso.Network.HttpUtilityFromMono.HtmlEncode(System.String,System.IO.TextWriter)">
+            <summary>
+            HTML-encodes a string and sends the resulting output to a TextWriter output stream.
+            </summary>
+            <param name="s">The string to encode. </param>
+            <param name="output">The TextWriter output stream containing the encoded string. </param>
+        </member>
+        <member name="M:Palaso.Extensions.StringExtensions.FormatWithErrorStringInsteadOfException(System.String,System.Object[])">
+            <summary>
+            normal string.format will throw if it can't do the format; this is dangerous if you're, for example
+            just logging stuff that might contain messed up strings (myWorkSafe paths)
+            </summary>
+        </member>
         <member name="M:Palaso.Extensions.StringExtensions.CombineForPath(System.String,System.String[])">
             <summary>
             Similar to Path.Combine, but it combines as may parts as you have into a single, platform-appropriate path.
             </summary>
             <example> string path = "my".Combine("stuff", "toys", "ball.txt")</example>
+        </member>
+        <member name="M:Palaso.Extensions.StringExtensions.SanitizeFilename(System.String,System.Char)">
+            <summary>
+            Finds and replaces invalid characters in a filename
+            </summary>
+            <param name="input">the string to clean</param>
+            <param name="errorChar">the character which replaces bad characters</param>
+        </member>
+        <member name="M:Palaso.Extensions.StringExtensions.SanitizePath(System.String,System.Char)">
+            <summary>
+            Finds and replaces invalid characters in a path
+            </summary>
+            <param name="input">the string to clean</param>
+            <param name="errorChar">the character which replaces bad characters</param>
+        </member>
+        <member name="M:Palaso.Extensions.StringExtensions.ToUpperFirstLetter(System.String)">
+            <summary>
+            Make the first letter of the string upper-case, and the rest lower case. Does not consider words.
+            </summary>
+        </member>
+        <member name="T:Palaso.CommandLineProcessing.SynchronousProcessOutputReader">
+            <summary>
+            Read from the process at the end; this one won't keep UI up to date on long-running processes,
+            but this old approach is relied on by many existing clients of CommandLineRunner,
+            so I didn't want to shake things up needlessly when I introduced the AsyncProcessOutputReader.
+            </summary>
+        </member>
+        <member name="M:Palaso.CommandLineProcessing.SynchronousProcessOutputReader.Read(System.Int32)">
+            <summary>
+            Safely read the streams of the process
+            </summary>
+            <param name="process"></param>
+            <param name="secondsBeforeTimeOut"></param>
+            <returns>true if the process completed before the timeout or cancellation</returns>
         </member>
         <member name="T:Palaso.Progress.BackgroundWorkerState">
             <summary>
@@ -3225,22 +4708,45 @@
             a label which describes what we are busy doing
             </summary>
         </member>
-        <member name="T:Palaso.Migration.XslMigrator">
+        <member name="T:Palaso.Migration.XslMigrationStrategy">
             <summary>
             </summary>
         </member>
-        <member name="M:Palaso.Migration.XslMigrator.#ctor(System.Int32,System.Int32,System.String)">
+        <member name="M:Palaso.Migration.XslMigrationStrategy.#ctor(System.Int32,System.Int32,System.String)">
             <summary>
             </summary>
             <param name="fromVersion"></param>
             <param name="toVersion"></param>
             <param name="xslSource">A string reference to the source of the xslt</param>
         </member>
-        <member name="M:Palaso.Migration.XslMigrator.Migrate(System.String,System.String)">
+        <member name="M:Palaso.Migration.XslMigrationStrategy.Migrate(System.String,System.String)">
             <summary>
             </summary>
             <param name="source"></param>
             <param name="destinationFilePath"></param>
+        </member>
+        <member name="T:Palaso.Migration.XmlReaderWriterMigrationStrategy">
+            <summary>
+             Copies an xml file, giving an opportunity to inspect each node in the CopyNode method.
+            </summary>
+        </member>
+        <member name="M:Palaso.Migration.XmlReaderWriterMigrationStrategy.Migrate(System.String,System.String)">
+            <summary>
+             Copies sourceFilePath to destinationFilePath calling CopyNode for each node read.
+            </summary>
+            <param name="source"></param>
+            <param name="destinationFilePath"></param>
+        </member>
+        <member name="M:Palaso.Extensions.ByteArrayExtensions.IndexOfSubArray(System.Byte[],System.Byte[])">
+            <summary>
+            Like string.IndexOf, returns the place where the subsequence occurs (or -1).
+            Throws if source or target is null or target is empty.
+            </summary>
+        </member>
+        <member name="M:Palaso.Extensions.ByteArrayExtensions.SubArray(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Return the subarray from start for count items.
+            </summary>
         </member>
         <member name="M:Palaso.Email.MAPI.SendMail(System.String,System.String,System.Int32)">
             <summary>
