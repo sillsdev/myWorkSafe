@@ -79,9 +79,10 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
           <Component Id="Palaso.dll" Guid="{5FE4352D-0FE2-495e-90DE-B60F8CD76CFF}">
             <File Id="Palaso.dll" Name="Palaso.dll" KeyPath="yes" Source="..\..\output\release\Palaso.dll" />
           </Component>
-          <Component Id="LocalizationManager.dll" Guid="{3F548E74-7D7B-4462-B7F4-FAD54ACFD150}">
+<!--          <Component Id="LocalizationManager.dll" Guid="{3F548E74-7D7B-4462-B7F4-FAD54ACFD150}">
             <File Id="LocalizationManager.dll" Name="LocalizationManager.dll" KeyPath="yes" Source="..\..\output\release\LocalizationManager.dll" />
           </Component>
+-->
           <Component Id="Microsoft.Experimental.IO.dll" Guid="{A7F71192-32A9-4F3D-A09E-289AF8B5BDC6}">
             <File Id="Microsoft.Experimental.IO.dll" Name="Microsoft.Experimental.IO.dll" KeyPath="yes" Source="..\..\output\release\Microsoft.Experimental.IO.dll" />
           </Component>
@@ -99,7 +100,6 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 
       <ComponentRef Id="Palaso.dll"/>
       <ComponentRef Id="PalasoUIWindowsForms.dll"/>
-      <ComponentRef Id="LocalizationManager.dll"/>
       <ComponentRef Id="Microsoft.Experimental.IO.dll"/>
       <ComponentRef Id="myWorkSafe.exe" />
 
@@ -119,8 +119,6 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
                   Return="asyncNoWait"/>
 
     <InstallExecuteSequence>
-      <RemoveExistingProducts After="InstallInitialize" />
-
       <!--We need the condition here so that we only launch the executable when we make an installation but not when we remove the product-->
       <Custom Action='LaunchmyWorkSafe' After="InstallFinalize">NOT Installed</Custom>
     </InstallExecuteSequence>
