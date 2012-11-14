@@ -20,6 +20,9 @@ http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->
              UpgradeCode="$(var.Property_UpgradeCode)">
 
     <Package  Compressed="yes" InstallerVersion="200" />
+    
+    <MajorUpgrade   Schedule="afterInstallInitialize"
+ DowngradeErrorMessage="A later version of MyWorkSafe is already installed. If you really want to downgrade, first uninstall MyWorkSafe, then do this install again."/>
 
     <Upgrade Id ="$(var.Property_UpgradeCode)" >
       <UpgradeVersion Minimum ="$(var.Property_ProductVersion)" OnlyDetect ="yes" Property ="NEWVERSIONDETECTED" />
@@ -42,9 +45,10 @@ rest of the app the first time the icon is run.  If this is not behavior you
 are trying to support, you're better off using non-advertised shortcuts. "-->
 
 
-    <PropertyRef Id="NETFRAMEWORK35" />
-    <Condition Message="Before myWorkSafe can install, you need to install Microsoft's free .NET Framework 3.5.  A full discussion of myWorkSafe's requirements can be found at myWorkSafe.org/wiki/Prerequisites.">
-      Installed OR NETFRAMEWORK35
+    <PropertyRef Id="NETFRAMEWORK40CLIENT" />
+    <PropertyRef Id="NETFRAMEWORK40FULL" />
+    <Condition Message="Before SayMore can install, you need to install Microsoft's free .NET Framework 4.0 Client Profile.  A full discussion of SayMore's requirements can be found at SayMore.palaso.org.">
+      <![CDATA[Installed OR (NETFRAMEWORK40CLIENT OR NETFRAMEWORK40FULL)]]>
     </Condition>
 
     <!--because of bug, this needs to be 1 -->
@@ -81,12 +85,10 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
           <Component Id="Microsoft.Experimental.IO.dll" Guid="{A7F71192-32A9-4F3D-A09E-289AF8B5BDC6}">
             <File Id="Microsoft.Experimental.IO.dll" Name="Microsoft.Experimental.IO.dll" KeyPath="yes" Source="..\..\output\release\Microsoft.Experimental.IO.dll" />
           </Component>
-          <!--          <Component Id="PalasoUIWindowsForms.dll" Guid="{CD1AF43D-5800-4bf1-BA9A-B7C74D4780FA}">
+          <Component Id="PalasoUIWindowsForms.dll" Guid="{CD1AF43D-5800-4bf1-BA9A-B7C74D4780FA}">
             <File Id="PalasoUIWindowsForms.dll" Name="PalasoUIWindowsForms.dll" KeyPath="yes" Source="..\..\output\release\PalasoUIWindowsForms.dll" />
           </Component>
-          -->
-
-        </Directory>
+         </Directory>
       </Directory>
     </Directory>
 
@@ -96,7 +98,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
       <!--      <ComponentRef Id ="removeShortcutDir"/>-->
 
       <ComponentRef Id="Palaso.dll"/>
-      <!--   <ComponentRef Id="PalasoUIWindowsForms.dll"/>-->
+      <ComponentRef Id="PalasoUIWindowsForms.dll"/>
       <ComponentRef Id="LocalizationManager.dll"/>
       <ComponentRef Id="Microsoft.Experimental.IO.dll"/>
       <ComponentRef Id="myWorkSafe.exe" />
