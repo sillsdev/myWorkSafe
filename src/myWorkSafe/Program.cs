@@ -125,7 +125,7 @@ namespace myWorkSafe
 		{
 			MultiProgress progress= new MultiProgress(new IProgress[]{});
 
-		    List<UsbDriveInfo> foundDrives = GetFoundDrives();
+		    List<IUsbDriveInfo> foundDrives = GetFoundDrives();
 			var drive = foundDrives.FirstOrDefault(d => d.RootDirectory.ToString() == driveLetter);
 			if (drive == null || !drive.IsReady)
 				return;
@@ -166,7 +166,7 @@ namespace myWorkSafe
 	        return fileLogProgress;
 	    }
 
-	    private static void LaunchBackup(IProgress progress, IProgress fileLogProgress, UsbDriveInfo drive)
+	    private static void LaunchBackup(IProgress progress, IProgress fileLogProgress, IUsbDriveInfo drive)
 	    {
 	        long totalSpaceInKilobytes = (long) (drive.TotalSize/1024);
 	        long freeSpaceInKilobytes = (long) (drive.AvailableFreeSpace/1024);
@@ -186,7 +186,7 @@ namespace myWorkSafe
 	        }
 	    }
         
-	    private static bool IsAKnownBackupDrive(UsbDriveInfo drive)
+	    private static bool IsAKnownBackupDrive(IUsbDriveInfo drive)
 		{
             //though I could not reproduce it D Rowe had found that removing the drive before the popup closed gave and exception here
             try
@@ -200,9 +200,9 @@ namespace myWorkSafe
 
 		}
 
-		private static List<UsbDriveInfo> GetFoundDrives()
+		private static List<IUsbDriveInfo> GetFoundDrives()
 		{
-			var foundDrives = new List<UsbDriveInfo>();
+			var foundDrives = new List<IUsbDriveInfo>();
 			try
 			{
 				foundDrives = UsbDriveInfo.GetDrives();
