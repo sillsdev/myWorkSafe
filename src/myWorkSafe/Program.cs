@@ -5,10 +5,10 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using Dolinay; //drive detector
-using Palaso.Progress;
 using myWorkSafe.Properties;
-using Palaso.Reporting;
-using Palaso.UsbDrive;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.UsbDrive;
 
 
 namespace myWorkSafe
@@ -110,7 +110,7 @@ namespace myWorkSafe
 				}
 				catch (Exception error)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, something went wrong.");
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, something went wrong.");
 				}
 			}						
 		}
@@ -146,7 +146,7 @@ namespace myWorkSafe
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, something went wrong.");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, something went wrong.");
 			}
 		}
 
@@ -166,7 +166,7 @@ namespace myWorkSafe
 	        return fileLogProgress;
 	    }
 
-	    private static void LaunchBackup(IProgress progress, IProgress fileLogProgress, IUsbDriveInfo drive)
+	    private static void LaunchBackup(IProgress progress, IProgress fileLogProgress,  IUsbDriveInfo drive)
 	    {
 	        long totalSpaceInKilobytes = (long) (drive.TotalSize/1024);
 	        long freeSpaceInKilobytes = (long) (drive.AvailableFreeSpace/1024);
@@ -220,7 +220,7 @@ namespace myWorkSafe
             var drives = UsbDriveInfo.GetDrives();
             if (drives.Count == 0)
             {
-                Palaso.Reporting.ErrorReport.NotifyUserOfProblem("No USB drives found");
+                SIL.Reporting.ErrorReport.NotifyUserOfProblem("No USB drives found");
                 return;
             }
             var progress = new MultiProgress(new IProgress[]{});

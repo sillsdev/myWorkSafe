@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Palaso.Progress;
 using myWorkSafe.Groups;
-using Palaso.Code;
-using Palaso.Reporting;
+using SIL.Code;
+using SIL.Progress;
+using SIL.Reporting;
 
 namespace myWorkSafe
 {
@@ -404,7 +404,7 @@ namespace myWorkSafe
 					}
 					catch (Exception progressException)
 					{ 
-						Palaso.Reporting.ErrorReport.ReportFatalException(progressException);
+						SIL.Reporting.ErrorReport.ReportFatalException(progressException);
 					}
 				}
 			}

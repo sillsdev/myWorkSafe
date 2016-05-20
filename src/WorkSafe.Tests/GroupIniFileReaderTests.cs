@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using myWorkSafe;
 using myWorkSafe.Groups;
 using NUnit.Framework;
-using Palaso.IO;
-using Palaso.TestUtilities;
 using System.IO;
 using System.Linq;
+using SIL.IO;
 
 namespace WorkSafe.Tests
 {

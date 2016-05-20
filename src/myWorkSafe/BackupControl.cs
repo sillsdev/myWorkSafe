@@ -9,12 +9,12 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Dolinay;
-using Palaso.Progress;
 using myWorkSafe.Groups;
 using myWorkSafe.Usb;
 using System.IO;
-using Palaso.IO;
-using Palaso.Reporting;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
 
 
 namespace myWorkSafe
@@ -541,7 +541,7 @@ namespace myWorkSafe
 			}
 			catch(Exception err)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(err, "Could not eject the usb memory stick.");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(err, "Could not eject the usb memory stick.");
 				return false;
 			}
 

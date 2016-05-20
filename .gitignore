@@ -1,0 +1,6 @@
+*.user
+_ReSharper*
+*.suo
+output
+obj
+packages

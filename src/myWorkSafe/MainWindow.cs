@@ -3,9 +3,9 @@ using System.Drawing;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Palaso.Progress;
 using myWorkSafe.Usb;
-using Palaso.IO;
+using SIL.IO;
+using SIL.Progress;
 
 namespace myWorkSafe
 {

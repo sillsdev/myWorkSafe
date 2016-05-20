@@ -1,4 +1,4 @@
-﻿using Palaso.UI.WindowsForms.Progress;
+﻿using SIL.Windows.Forms.Progress;
 
 namespace myWorkSafe
 {

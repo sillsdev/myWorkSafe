@@ -4,9 +4,8 @@ using System.Reflection;
 using myWorkSafe;
 using myWorkSafe.Groups;
 using NUnit.Framework;
-using Palaso.IO;
-using Palaso.TestUtilities;
-using System.IO;
+using SIL.IO;
+
 
 namespace WorkSafe.Tests
 {
@@ -24,7 +23,7 @@ namespace WorkSafe.Tests
 		public void Scan_OnSourceCode_FindsLotsOfFiles()
 		{
 			var files = _scanner.Scan(FileLocator.DirectoryOfApplicationOrSolution);
-			Assert.That(files.Count(), Is.GreaterThan(300));
+			Assert.That(files.Count(), Is.GreaterThan(200));
 		}
 	}
 }

@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using Palaso.Progress;
-using myWorkSafe;
+using System.Collections.Generic;using myWorkSafe;
 using myWorkSafe.Groups;
+using System.IO;
+using Microsoft.Experimental.IO;
 using NUnit.Framework;
 using Palaso.TestUtilities;
-using System.IO;
-using Palaso.Extensions;
-using Microsoft.Experimental.IO;
+using SIL.Extensions;
+using SIL.Progress;
 
 namespace WorkSafe.Tests
 {

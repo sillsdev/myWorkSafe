@@ -50,7 +50,7 @@ namespace myWorkSafe.Groups
 					{
 						if(nextInsertLocation >0)
 						{
-							Palaso.Reporting.ErrorReport.NotifyUserOfProblem("The [Settings] section needs to be at the top of the file in '{0}'.",
+							SIL.Reporting.ErrorReport.NotifyUserOfProblem("The [Settings] section needs to be at the top of the file in '{0}'.",
 												 _path);
 						}
 						ReadSettingsSection(reader, groups);
@@ -94,7 +94,7 @@ namespace myWorkSafe.Groups
 								group.AddExcludeFolder(reader.Value);
 								break;
 							default:
-								Palaso.Reporting.ErrorReport.NotifyUserOfProblem("The program doesn't understand this '{0}', in the file {1}",
+								SIL.Reporting.ErrorReport.NotifyUserOfProblem("The program doesn't understand this '{0}', in the file {1}",
 								                                                 reader.Name, _path);
 								break;
 
@@ -115,7 +115,7 @@ namespace myWorkSafe.Groups
 						groups.Clear();
 						break;
 					default:
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem("The program doesn't understand this '{0}', in the Settings section of file {1}",
+						SIL.Reporting.ErrorReport.NotifyUserOfProblem("The program doesn't understand this '{0}', in the Settings section of file {1}",
 																		 reader.Name, _path);
 						break;
 
