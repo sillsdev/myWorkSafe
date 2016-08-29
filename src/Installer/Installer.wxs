@@ -20,7 +20,7 @@ http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->
              UpgradeCode="$(var.Property_UpgradeCode)">
 
     <Package  Compressed="yes" InstallerVersion="200" />
-    
+
     <MajorUpgrade   Schedule="afterInstallInitialize"
  DowngradeErrorMessage="A later version of MyWorkSafe is already installed. If you really want to downgrade, first uninstall MyWorkSafe, then do this install again."/>
 
@@ -38,7 +38,7 @@ http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->
     <WixVariable Id="WixUILicenseRtf" Value="..\..\distfiles\License.rtf" />
 
 
-    <!-- 
+    <!--
     "from the list: Don't use Advertise="yes" Advertised shortcuts are designed to allow
 users to install just the shortcut for your app, then demand-install the
 rest of the app the first time the icon is run.  If this is not behavior you
@@ -75,9 +75,11 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
             <Shortcut Id="startmenuShortcut"  Directory="StartupFolder" Name="myWorkSafe"
              WorkingDirectory="ProgramDir" Icon ="myWorkSafe.exe" Advertise="yes"/>
           </Component>
-
-          <Component Id="Palaso.dll" Guid="{5FE4352D-0FE2-495e-90DE-B60F8CD76CFF}">
-            <File Id="Palaso.dll" Name="Palaso.dll" KeyPath="yes" Source="..\..\output\release\Palaso.dll" />
+          <Component Id="myWorkSafe.pdb" Guid="{32735933-8E76-4c13-9D4D-DB7C5A8FD733}">
+            <File Id="myWorkSafe.pdb" Name="myWorkSafe.pdb" KeyPath ="yes"  Source="..\..\output\release\myWorkSafe.pdb" />
+          </Component>
+          <Component Id="SIL.CORE.dll" Guid="{5FE4352D-0FE2-495e-9999-B60F8CD76CFF}">
+            <File Id="SIL.CORE.dll" Name="SIL.CORE.dll" KeyPath="yes" Source="..\..\output\release\SIL.CORE.dll" />
           </Component>
 <!--          <Component Id="LocalizationManager.dll" Guid="{3F548E74-7D7B-4462-B7F4-FAD54ACFD150}">
             <File Id="LocalizationManager.dll" Name="LocalizationManager.dll" KeyPath="yes" Source="..\..\output\release\LocalizationManager.dll" />
@@ -86,8 +88,8 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
           <Component Id="Microsoft.Experimental.IO.dll" Guid="{A7F71192-32A9-4F3D-A09E-289AF8B5BDC6}">
             <File Id="Microsoft.Experimental.IO.dll" Name="Microsoft.Experimental.IO.dll" KeyPath="yes" Source="..\..\output\release\Microsoft.Experimental.IO.dll" />
           </Component>
-          <Component Id="PalasoUIWindowsForms.dll" Guid="{CD1AF43D-5800-4bf1-BA9A-B7C74D4780FA}">
-            <File Id="PalasoUIWindowsForms.dll" Name="PalasoUIWindowsForms.dll" KeyPath="yes" Source="..\..\output\release\PalasoUIWindowsForms.dll" />
+          <Component Id="SIL.Windows.Forms.dll" Guid="{CD1AF43D-5800-9999-BA9A-B7C74D4780FA}">
+            <File Id="SIL.Windows.Forms.dll" Name="SIL.Windows.Forms.dll" KeyPath="yes" Source="..\..\output\release\SIL.Windows.Forms.dll" />
           </Component>
          </Directory>
       </Directory>
@@ -98,11 +100,11 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
     <Feature Id="ProductFeature" Level="1" Title="Basic Stuff">
       <!--      <ComponentRef Id ="removeShortcutDir"/>-->
 
-      <ComponentRef Id="Palaso.dll"/>
-      <ComponentRef Id="PalasoUIWindowsForms.dll"/>
+      <ComponentRef Id="SIL.CORE.dll"/>
+      <ComponentRef Id="SIL.Windows.Forms.dll"/>
       <ComponentRef Id="Microsoft.Experimental.IO.dll"/>
       <ComponentRef Id="myWorkSafe.exe" />
-
+      <ComponentRef Id="myWorkSafe.pdb" />
       <ComponentGroupRef Id ="DistFiles"/>
 
     </Feature>
