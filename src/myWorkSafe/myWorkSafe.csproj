@@ -85,6 +85,9 @@
     <Reference Include="SIL.Core">
       <HintPath>..\..\lib\SIL.Core.dll</HintPath>
     </Reference>
+    <Reference Include="SIL.TestUtilities">
+      <HintPath>..\..\lib\SIL.TestUtilities.dll</HintPath>
+    </Reference>
     <Reference Include="SIL.Windows.Forms">
       <HintPath>..\..\lib\SIL.Windows.Forms.dll</HintPath>
     </Reference>

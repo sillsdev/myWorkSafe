@@ -4,7 +4,7 @@ using myWorkSafe.Groups;
 using System.IO;
 using Microsoft.Experimental.IO;
 using NUnit.Framework;
-using Palaso.TestUtilities;
+using SIL.TestUtilities;
 using SIL.Extensions;
 using SIL.Progress;
 

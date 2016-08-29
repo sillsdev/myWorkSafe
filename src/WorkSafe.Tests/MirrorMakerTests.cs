@@ -2,7 +2,7 @@
 using System.IO;
 using myWorkSafe;
 using NUnit.Framework;
-using Palaso.TestUtilities;
+using SIL.TestUtilities;
 
 namespace WorkSafe.Tests
 {
