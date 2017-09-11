@@ -8,4 +8,4 @@ Then automatically finds data files and backs them up:
 
 ![](http://i.imgur.com/hqe0K5s.png)
 
-[More info](http://myworksafe.palaso.org/)
+[More info](http://software.sil.org/myworksafe/)
