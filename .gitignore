@@ -4,3 +4,4 @@ _ReSharper*
 output
 obj
 packages/
+/.vs/
